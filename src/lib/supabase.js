@@ -1,0 +1,700 @@
+/**
+ * ============================================================================
+ * X FIT FORMULA — Supabase Client, Auth & Database Helpers
+ * ============================================================================
+ * Architecture:
+ *   - When VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY are set → live Supabase
+ *   - When not configured → graceful fallback to local seed data (demo/offline mode)
+ *
+ * Security rules (enforced here):
+ *   - VITE_SUPABASE_ANON_KEY only — never service-role in browser code
+ *   - Service-role key lives ONLY in scripts/ (Node, not bundled by Vite)
+ *   - All writes go through Supabase Auth + RLS
+ * ============================================================================
+ */
+
+import { createClient } from '@supabase/supabase-js'
+import seedExercises from '../../data/exercises-seed.json'
+import homeWorkoutSeed from '../../data/home-workout-seed.json'
+
+// ─── Client Initialisation ───────────────────────────────────────────────────
+
+const SUPABASE_URL     = import.meta.env.VITE_SUPABASE_URL     || ''
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+
+export const isSupabaseConfigured = Boolean(
+  SUPABASE_URL &&
+  SUPABASE_ANON_KEY &&
+  !SUPABASE_URL.includes('your-project') &&
+  !SUPABASE_ANON_KEY.includes('your-anon-key')
+)
+
+export const supabase = isSupabaseConfigured
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    })
+  : null
+
+if (!isSupabaseConfigured && import.meta.env.DEV) {
+  console.info('[XFF] Supabase not configured — running in demo/seed mode.')
+}
+
+const BUCKET = 'x-fit-formula-exercises'
+
+// ─── Storage URL Resolver ────────────────────────────────────────────────────
+/**
+ * Converts a storage-relative path to a full public URL.
+ * Falls back to local /media/ path for development.
+ */
+export function getMediaUrl(path) {
+  if (!path) return null
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+    return path
+  }
+  if (isSupabaseConfigured && supabase) {
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
+    if (data?.publicUrl) return data.publicUrl
+  }
+  return `/media/${path}`
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+/** Sign up a new user. Creates profile via database trigger. */
+export async function signUp(email, password, fullName, role = 'client') {
+  if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured')
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name: fullName, role },
+    },
+  })
+  if (error) throw error
+  return data
+}
+
+/** Sign in with email + password. */
+export async function signIn(email, password) {
+  if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured')
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) throw error
+  return data
+}
+
+/** Sign out the current session. */
+export async function signOut() {
+  if (!isSupabaseConfigured || !supabase) return
+  const { error } = await supabase.auth.signOut()
+  if (error) throw error
+}
+
+/** Get the current session (null if not logged in). */
+export async function getSession() {
+  if (!isSupabaseConfigured || !supabase) return null
+  const { data: { session } } = await supabase.auth.getSession()
+  return session
+}
+
+/** Get the current authenticated user (null if not logged in). */
+export async function getCurrentUser() {
+  if (!isSupabaseConfigured || !supabase) return null
+  const { data: { user } } = await supabase.auth.getUser()
+  return user
+}
+
+// ─── Profiles ────────────────────────────────────────────────────────────────
+
+/** Fetch a single user profile by UUID. */
+export async function getProfile(userId) {
+  if (!isSupabaseConfigured || !supabase || !userId) return null
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle()
+    if (error) throw error
+    return data
+  } catch (err) {
+    console.warn('[Supabase] getProfile failed:', err.message)
+    return null
+  }
+}
+
+/** Create or update a profile record. */
+export async function upsertProfile(userId, patch) {
+  if (!isSupabaseConfigured || !supabase || !userId) return null
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert({ id: userId, ...patch, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  } catch (err) {
+    console.warn('[Supabase] upsertProfile failed:', err.message)
+    return null
+  }
+}
+
+// ─── Exercises (Read) ─────────────────────────────────────────────────────────
+
+/**
+ * Fetch exercises with optional filters.
+ * Falls back to local seed data when Supabase is not available.
+ */
+export async function fetchExercises({
+  search     = '',
+  bodyPart   = 'All',
+  target     = 'All',
+  equipment  = 'All',
+  difficulty = 'All',
+  category   = 'All',
+  limit      = 20,
+  offset     = 0,
+} = {}) {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      let query = supabase
+        .from('exercises')
+        .select('*', { count: 'exact' })
+        .eq('active', true)
+
+      if (search && search.trim()) {
+        const term = `%${search.trim()}%`
+        query = query.or(
+          `name.ilike.${term},target.ilike.${term},equipment.ilike.${term},body_part.ilike.${term}`
+        )
+      }
+      if (bodyPart   && bodyPart   !== 'All') query = query.eq('body_part',  bodyPart)
+      if (target     && target     !== 'All') query = query.eq('target',     target)
+      if (equipment  && equipment  !== 'All') query = query.eq('equipment',  equipment)
+      if (difficulty && difficulty !== 'All') query = query.eq('difficulty', difficulty)
+      if (category   && category   !== 'All') {
+        query = query.or(`category.eq.${category},category.eq.Both`)
+      }
+
+      query = query.order('name', { ascending: true }).range(offset, offset + limit - 1)
+
+      const { data, count, error } = await query
+      if (error) throw error
+
+      return {
+        exercises:  (data || []).map(formatExerciseRecord),
+        totalCount: count || (data || []).length,
+        source:     'supabase',
+      }
+    } catch (err) {
+      console.warn('[Supabase] fetchExercises failed, using seed fallback:', err.message)
+    }
+  }
+
+  // ── Local / demo fallback ──────────────────────────────────────────────────
+  let list = [...seedExercises]
+
+  if (search && search.trim()) {
+    const q = search.trim().toLowerCase()
+    list = list.filter(
+      (ex) =>
+        ex.name.toLowerCase().includes(q) ||
+        ex.target.toLowerCase().includes(q) ||
+        ex.equipment.toLowerCase().includes(q) ||
+        ex.body_part.toLowerCase().includes(q) ||
+        (ex.secondary_muscles || []).some((m) => m.toLowerCase().includes(q))
+    )
+  }
+  if (bodyPart   && bodyPart   !== 'All') list = list.filter((ex) => ex.body_part.toLowerCase()  === bodyPart.toLowerCase())
+  if (target     && target     !== 'All') list = list.filter((ex) => ex.target.toLowerCase()     === target.toLowerCase())
+  if (equipment  && equipment  !== 'All') list = list.filter((ex) => ex.equipment.toLowerCase()  === equipment.toLowerCase())
+  if (difficulty && difficulty !== 'All') list = list.filter((ex) => ex.difficulty.toLowerCase() === difficulty.toLowerCase())
+  if (category   && category   !== 'All') list = list.filter((ex) => ex.category === category || ex.category === 'Both')
+
+  const totalCount = list.length
+  const paginated  = list.slice(offset, offset + limit).map(formatExerciseRecord)
+  return { exercises: paginated, totalCount, source: 'seed_fallback' }
+}
+
+/** Fetch a single exercise by UUID, slug, source_id, or name. */
+export async function fetchExerciseById(id) {
+  if (!id) return null
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('exercises')
+        .select('*')
+        .or(`id.eq.${id},slug.eq.${id},source_id.eq.${id}`)
+        .maybeSingle()
+      if (error) throw error
+      if (data) return formatExerciseRecord(data)
+    } catch (err) {
+      console.warn('[Supabase] fetchExerciseById failed:', err.message)
+    }
+  }
+  const found = seedExercises.find(
+    (ex) =>
+      ex.id === id ||
+      ex.slug === id ||
+      ex.source_id === id ||
+      ex.name.toLowerCase() === String(id).toLowerCase()
+  )
+  return found ? formatExerciseRecord(found) : null
+}
+
+export async function fetchExerciseBySlug(slug) {
+  return fetchExerciseById(slug)
+}
+
+// ─── Home Workout Videos (Read) ───────────────────────────────────────────────
+
+/**
+ * Fetch official Home Workout videos.
+ * Supports filtering by level ('Beginner', 'Intermediate', 'Advanced', or 'All') and search.
+ */
+export async function fetchHomeWorkoutVideos({ level = 'All', search = '' } = {}) {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      let query = supabase.from('home_workout_videos').select('*')
+      if (level && level !== 'All') {
+        query = query.eq('level', level)
+      }
+      if (search && search.trim()) {
+        const term = `%${search.trim()}%`
+        query = query.or(`exercise_name.ilike.${term},video_title.ilike.${term},target_muscle.ilike.${term}`)
+      }
+      query = query.order('id', { ascending: true })
+
+      const { data, error } = await query
+      if (error) throw error
+      if (data && data.length > 0) {
+        return {
+          videos: data.map(formatHomeWorkoutRecord),
+          totalCount: data.length,
+          source: 'supabase',
+        }
+      }
+    } catch (err) {
+      console.warn('[Supabase] fetchHomeWorkoutVideos failed, using seed fallback:', err.message)
+    }
+  }
+
+  // Fallback to official seed dataset
+  let list = [...homeWorkoutSeed]
+  if (level && level !== 'All') {
+    list = list.filter((v) => v.level.toLowerCase() === level.toLowerCase())
+  }
+  if (search && search.trim()) {
+    const q = search.trim().toLowerCase()
+    list = list.filter(
+      (v) =>
+        v.exercise_name.toLowerCase().includes(q) ||
+        v.video_title.toLowerCase().includes(q) ||
+        (v.target_muscle && v.target_muscle.toLowerCase().includes(q))
+    )
+  }
+
+  return {
+    videos: list.map(formatHomeWorkoutRecord),
+    totalCount: list.length,
+    source: 'seed_fallback',
+  }
+}
+
+/** Fetch a single home workout video by id or slug */
+export async function fetchHomeWorkoutVideoById(id) {
+  if (!id) return null
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('home_workout_videos')
+        .select('*')
+        .or(`id.eq.${id},slug.eq.${id},video_id.eq.${id}`)
+        .maybeSingle()
+      if (error) throw error
+      if (data) return formatHomeWorkoutRecord(data)
+    } catch (err) {
+      console.warn('[Supabase] fetchHomeWorkoutVideoById failed:', err.message)
+    }
+  }
+  const found = homeWorkoutSeed.find(
+    (v) =>
+      v.id === id ||
+      v.slug === id ||
+      v.video_id === id ||
+      v.exercise_name.toLowerCase() === String(id).toLowerCase()
+  )
+  return found ? formatHomeWorkoutRecord(found) : null
+}
+
+// ─── Workouts (Read) ──────────────────────────────────────────────────────────
+
+/** Fetch all active workouts with their exercises. */
+export async function fetchWorkouts() {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('workouts')
+        .select(`
+          *,
+          workout_exercises (
+            id, exercise_order, sets, reps,
+            duration_seconds, rest_seconds, notes,
+            exercise_name,
+            exercise:exercises (*)
+          )
+        `)
+        .eq('active', true)
+        .order('name')
+
+      if (error) throw error
+      if (data && data.length) return data
+    } catch (err) {
+      console.warn('[Supabase] fetchWorkouts failed, using demo workouts:', err.message)
+    }
+  }
+  // Demo fallback workouts
+  return [
+    {
+      id: 'w-home-fullbody-1',
+      name: 'Foundation Home Bodyweight Protocol',
+      slug: 'foundation-home-bodyweight-protocol',
+      description: 'Zero-equipment foundational full-body circuit targeting pushing power, knee flexion, and core stability.',
+      goal: 'general', difficulty: 'Beginner', category: 'Home',
+      duration_minutes: 35, equipment: 'Bodyweight',
+      exercises: seedExercises.filter((e) => e.category === 'Home'),
+    },
+    {
+      id: 'w-gym-hypertrophy-1',
+      name: 'Upper Hypertrophy Foundation',
+      slug: 'upper-hypertrophy-foundation',
+      description: 'Gym-based precision protocol for upper body pushing, vertical pulling, and mid-back development.',
+      goal: 'muscle', difficulty: 'Beginner', category: 'Gym',
+      duration_minutes: 45, equipment: 'Gym',
+      exercises: seedExercises.filter((e) => e.category === 'Gym'),
+    },
+  ]
+}
+
+/** Fetch a single workout by ID with its exercises. */
+export async function fetchWorkoutById(workoutId) {
+  if (!workoutId) return null
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('workouts')
+        .select(`
+          *,
+          workout_exercises (
+            id, exercise_order, sets, reps,
+            duration_seconds, rest_seconds, notes,
+            exercise_name,
+            exercise:exercises (*)
+          )
+        `)
+        .eq('id', workoutId)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    } catch (err) {
+      console.warn('[Supabase] fetchWorkoutById failed:', err.message)
+    }
+  }
+  return null
+}
+
+// ─── Workouts (Write — trainers only) ────────────────────────────────────────
+
+/**
+ * Create a new workout and its exercise list.
+ * @param {object} workoutData - { name, slug, goal, difficulty, category, duration_minutes, equipment, created_by, active }
+ * @param {Array}  exerciseRows - [{ name, sets, reps, exercise_id? }]
+ */
+export async function createWorkout(workoutData, exerciseRows = []) {
+  if (!isSupabaseConfigured || !supabase) return null
+  try {
+    const { data: workout, error: wErr } = await supabase
+      .from('workouts')
+      .insert({ ...workoutData, updated_at: new Date().toISOString() })
+      .select()
+      .single()
+    if (wErr) throw wErr
+
+    if (exerciseRows.length > 0) {
+      const rows = exerciseRows
+        .filter((ex) => ex.name?.trim())
+        .map((ex, i) => ({
+          workout_id:      workout.id,
+          exercise_id:     ex.exercise_id || null,
+          exercise_name:   ex.name || null,
+          exercise_order:  i + 1,
+          sets:            ex.sets  || '3',
+          reps:            ex.reps  || '10-12',
+          duration_seconds: ex.duration_seconds || null,
+          rest_seconds:    ex.rest_seconds || 60,
+          notes:           ex.notes || null,
+        }))
+
+      const { error: exErr } = await supabase
+        .from('workout_exercises')
+        .insert(rows)
+      if (exErr) console.warn('[Supabase] createWorkout exercises insert failed:', exErr.message)
+    }
+
+    return workout
+  } catch (err) {
+    console.warn('[Supabase] createWorkout failed:', err.message)
+    return null
+  }
+}
+
+/** Update an existing workout and replace its exercise list. */
+export async function updateWorkout(workoutId, workoutData, exerciseRows = []) {
+  if (!isSupabaseConfigured || !supabase || !workoutId) return null
+  try {
+    const { data: workout, error: wErr } = await supabase
+      .from('workouts')
+      .update({ ...workoutData, updated_at: new Date().toISOString() })
+      .eq('id', workoutId)
+      .select()
+      .single()
+    if (wErr) throw wErr
+
+    // Replace exercise list
+    await supabase.from('workout_exercises').delete().eq('workout_id', workoutId)
+
+    if (exerciseRows.length > 0) {
+      const rows = exerciseRows
+        .filter((ex) => ex.name?.trim())
+        .map((ex, i) => ({
+          workout_id:     workoutId,
+          exercise_id:    ex.exercise_id || null,
+          exercise_name:  ex.name || null,
+          exercise_order: i + 1,
+          sets:           ex.sets || '3',
+          reps:           ex.reps || '10-12',
+          rest_seconds:   ex.rest_seconds || 60,
+          notes:          ex.notes || null,
+        }))
+      await supabase.from('workout_exercises').insert(rows)
+    }
+
+    return workout
+  } catch (err) {
+    console.warn('[Supabase] updateWorkout failed:', err.message)
+    return null
+  }
+}
+
+// ─── Client Workouts (Assignments) ───────────────────────────────────────────
+
+/** Assign a workout to a client. */
+export async function assignWorkoutToClient({ clientId, workoutId, assignedBy, scheduledDate }) {
+  if (!isSupabaseConfigured || !supabase) return null
+  try {
+    const { data, error } = await supabase
+      .from('client_workouts')
+      .insert({
+        client_id:      clientId,
+        workout_id:     workoutId,
+        assigned_by:    assignedBy || null,
+        scheduled_date: scheduledDate || null,
+        status:         'assigned',
+      })
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  } catch (err) {
+    console.warn('[Supabase] assignWorkoutToClient failed:', err.message)
+    return null
+  }
+}
+
+/** Fetch all workouts assigned to a specific client. */
+export async function fetchClientWorkouts(clientId) {
+  if (!isSupabaseConfigured || !supabase || !clientId) return []
+  try {
+    const { data, error } = await supabase
+      .from('client_workouts')
+      .select(`
+        *,
+        workout:workouts (
+          *,
+          workout_exercises (
+            id, exercise_order, sets, reps,
+            duration_seconds, rest_seconds, notes,
+            exercise_name,
+            exercise:exercises (*)
+          )
+        )
+      `)
+      .eq('client_id', clientId)
+      .order('scheduled_date', { ascending: true })
+    if (error) throw error
+    return data || []
+  } catch (err) {
+    console.warn('[Supabase] fetchClientWorkouts failed:', err.message)
+    return []
+  }
+}
+
+/** Update the status of a client workout assignment. */
+export async function updateClientWorkoutStatus(assignmentId, status) {
+  if (!isSupabaseConfigured || !supabase || !assignmentId) return null
+  const validStatuses = ['assigned', 'in_progress', 'completed', 'skipped']
+  if (!validStatuses.includes(status)) {
+    console.warn('[Supabase] Invalid status:', status)
+    return null
+  }
+  try {
+    const { data, error } = await supabase
+      .from('client_workouts')
+      .update({
+        status,
+        completed_at:  status === 'completed' ? new Date().toISOString() : null,
+        updated_at:    new Date().toISOString(),
+      })
+      .eq('id', assignmentId)
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  } catch (err) {
+    console.warn('[Supabase] updateClientWorkoutStatus failed:', err.message)
+    return null
+  }
+}
+
+// ─── Workout Progress ─────────────────────────────────────────────────────────
+
+/** Log exercise progress for a workout session. */
+export async function logWorkoutProgress({
+  clientId, workoutId, exerciseId, exerciseName,
+  completed, setsCompleted, repsCompleted, durationSeconds, notes,
+}) {
+  if (!isSupabaseConfigured || !supabase) return null
+  try {
+    const { data, error } = await supabase
+      .from('workout_progress')
+      .insert({
+        client_id:        clientId,
+        workout_id:       workoutId,
+        exercise_id:      exerciseId || null,
+        exercise_name:    exerciseName || null,
+        completed:        completed ?? false,
+        sets_completed:   setsCompleted || null,
+        reps_completed:   repsCompleted || null,
+        duration_seconds: durationSeconds || null,
+        notes:            notes || null,
+        completed_at:     completed ? new Date().toISOString() : null,
+      })
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  } catch (err) {
+    console.warn('[Supabase] logWorkoutProgress failed:', err.message)
+    return null
+  }
+}
+
+/** Fetch workout progress for a client, optionally filtered by workout. */
+export async function fetchWorkoutProgress(clientId, workoutId = null) {
+  if (!isSupabaseConfigured || !supabase || !clientId) return []
+  try {
+    let query = supabase
+      .from('workout_progress')
+      .select('*')
+      .eq('client_id', clientId)
+    if (workoutId) query = query.eq('workout_id', workoutId)
+    query = query.order('completed_at', { ascending: false })
+    const { data, error } = await query
+    if (error) throw error
+    return data || []
+  } catch (err) {
+    console.warn('[Supabase] fetchWorkoutProgress failed:', err.message)
+    return []
+  }
+}
+
+// ─── Trainer–Client Relationship ─────────────────────────────────────────────
+
+/** Fetch all clients assigned to a trainer. */
+export async function fetchTrainerClients(trainerId) {
+  if (!isSupabaseConfigured || !supabase || !trainerId) return []
+  try {
+    const { data, error } = await supabase
+      .from('trainer_clients')
+      .select('client_id, created_at, client:profiles!trainer_clients_client_id_fkey(*)')
+      .eq('trainer_id', trainerId)
+    if (error) throw error
+    return (data || []).map((row) => row.client).filter(Boolean)
+  } catch (err) {
+    console.warn('[Supabase] fetchTrainerClients failed:', err.message)
+    return []
+  }
+}
+
+/** Create a trainer↔client relationship. */
+export async function addTrainerClientRelationship(trainerId, clientId) {
+  if (!isSupabaseConfigured || !supabase) return null
+  try {
+    const { data, error } = await supabase
+      .from('trainer_clients')
+      .upsert({ trainer_id: trainerId, client_id: clientId }, { onConflict: 'trainer_id,client_id' })
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  } catch (err) {
+    console.warn('[Supabase] addTrainerClientRelationship failed:', err.message)
+    return null
+  }
+}
+
+// ─── Internal Helpers ─────────────────────────────────────────────────────────
+
+/** Normalise a raw database exercise record into the standard app shape. */
+function formatExerciseRecord(item) {
+  return {
+    ...item,
+    maleVideoUrl:       getMediaUrl(item.male_video_path     || item.maleVideoUrl),
+    femaleVideoUrl:     getMediaUrl(item.female_video_path   || item.femaleVideoUrl),
+    maleThumbnailUrl:   getMediaUrl(item.male_thumbnail_path || item.maleThumbnailUrl),
+    femaleThumbnailUrl: getMediaUrl(item.female_thumbnail_path || item.femaleThumbnailUrl),
+  }
+}
+
+/** Normalise a raw home_workout_videos record into standard app shape. */
+function formatHomeWorkoutRecord(item) {
+  const thumbPath = item.thumbnail_url || item.thumbnail_path || `thumbnails/home-workouts/${item.slug}.jpg`
+  return {
+    ...item,
+    id: item.id,
+    name: item.exercise_name,
+    exercise_name: item.exercise_name,
+    slug: item.slug,
+    level: item.level,
+    videoUrl: item.video_url || (item.storage_path ? getMediaUrl(item.storage_path) : null),
+    videoId: item.video_id,
+    title: item.video_title || `${item.level} ${item.exercise_name} Tutorial`,
+    video_title: item.video_title || `${item.level} ${item.exercise_name} Tutorial`,
+    description: item.video_description || '',
+    video_description: item.video_description || '',
+    thumbnailUrl: getMediaUrl(thumbPath),
+    duration: item.duration || '02:00',
+    target: item.target_muscle || 'Full Body',
+    target_muscle: item.target_muscle || 'Full Body',
+    equipment: item.equipment || 'Bodyweight',
+    difficulty: item.level,
+    category: 'Home',
+    instructions: item.instructions || [],
+    form_cues: item.form_cues || [],
+    isHomeWorkout: true,
+  }
+}

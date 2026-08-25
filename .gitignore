@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production build output
+dist/
+dist-ssr/
+
+# Environment Variables & Secrets (CRITICAL: NEVER COMMIT)
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS Artifacts
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# IDE & Editor Configurations
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+
+# Raw/Local Video & Archive Files (Videos belong in Supabase Storage, never Git)
+*.mp4
+*.webm
+*.mov
+*.m4v
+*.avi
+*.mkv
+*.wmv
+*.flv
+client-media/
+client-videos/
+media-pack/
+raw-videos/
+videos/
+
+# Temporary / Cache
+.eslintcache
+.stylelintcache
+*.tsbuildinfo

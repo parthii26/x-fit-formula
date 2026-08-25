@@ -1,0 +1,608 @@
+[
+  {
+    "id": "hw-beg-warm-up",
+    "exercise_name": "Warm-up",
+    "slug": "warm-up",
+    "level": "Beginner",
+    "video_id": "vid-beg-warm-up",
+    "video_title": "Beginner Full-Body Dynamic Warm-Up",
+    "video_description": "Foundational multi-joint dynamic mobility routine preparing heart rate, synovial fluid circulation, and neural readiness for home training.",
+    "storage_path": "home-workouts/warm-up/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/warm-up.jpg",
+    "target_muscle": "Full Body Mobility",
+    "equipment": "Bodyweight",
+    "instructions": [
+      "Arm circles forward and backward for 30 seconds to lubricate shoulder capsules.",
+      "Torso twists with neutral spine to mobilise thoracic rotational range.",
+      "Gentle hip openers and dynamic hamstring sweeps with controlled cadence.",
+      "Light marching in place to elevate core body temperature."
+    ],
+    "form_cues": [
+      "Breathe rhythmically throughout each dynamic movement.",
+      "Never bounce aggressively into end ranges of motion.",
+      "Keep ribs down and core lightly engaged."
+    ]
+  },
+  {
+    "id": "hw-beg-incline-push-ups",
+    "exercise_name": "Incline Push-Ups",
+    "slug": "incline-push-ups",
+    "level": "Beginner",
+    "video_id": "vid-beg-incline-push-ups",
+    "video_title": "Incline Push-Up Tutorial for Beginners",
+    "video_description": "Elevated-hands pressing progression reducing shear stress on shoulders while teaching full torso rigidity and chest contraction.",
+    "storage_path": "home-workouts/incline-push-ups/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/incline-push-ups.jpg",
+    "target_muscle": "Pectoralis Major",
+    "equipment": "Sturdy Bench / Table / Wall",
+    "instructions": [
+      "Place palms on a sturdy elevated surface slightly wider than shoulder-width.",
+      "Step feet back until torso forms a straight line from crown of head to heels.",
+      "Lower chest smoothly toward the edge while keeping elbows at a 45-degree angle.",
+      "Drive through palms to press back up without hyper-extending the lower back."
+    ],
+    "form_cues": [
+      "Squeeze glutes and brace core to prevent hip sagging.",
+      "Keep neck neutral with eyes focused slightly ahead.",
+      "Control the 2-second eccentric descent."
+    ]
+  },
+  {
+    "id": "hw-beg-free-squats",
+    "exercise_name": "Free Squats",
+    "slug": "free-squats",
+    "level": "Beginner",
+    "video_id": "vid-beg-free-squats",
+    "video_title": "Free Squats Foundational Mechanics",
+    "video_description": "Zero-equipment lower-body movement pattern developing knee flexion, glute recruitment, and bilateral stability.",
+    "storage_path": "home-workouts/free-squats/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/free-squats.jpg",
+    "target_muscle": "Quadriceps & Glutes",
+    "equipment": "Bodyweight",
+    "instructions": [
+      "Stand with feet shoulder-width apart, toes turned outward 15 to 20 degrees.",
+      "Hinge at hips and bend knees simultaneously, sitting back and down.",
+      "Descend until thighs reach parallel with the floor while keeping chest tall.",
+      "Drive through mid-foot to stand up, engaging glutes at top."
+    ],
+    "form_cues": [
+      "Keep knees tracking over second and third toes.",
+      "Maintain whole-foot ground contact (heels do not lift).",
+      "Keep chest upright and eyes forward."
+    ]
+  },
+  {
+    "id": "hw-beg-standard-crunches",
+    "exercise_name": "Standard Crunches",
+    "slug": "standard-crunches",
+    "level": "Beginner",
+    "video_id": "vid-beg-standard-crunches",
+    "video_title": "Standard Crunches Abdominal Activation",
+    "video_description": "Targeted spinal flexion tutorial isolating the rectus abdominis without cervical neck strain.",
+    "storage_path": "home-workouts/standard-crunches/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/standard-crunches.jpg",
+    "target_muscle": "Rectus Abdominis",
+    "equipment": "Mat / Floor",
+    "instructions": [
+      "Lie supine with knees bent and feet flat on the floor, hip-width apart.",
+      "Place fingertips gently behind ears without pulling on the neck.",
+      "Curl shoulder blades 2 to 3 inches off the mat by contracting abdominals.",
+      "Pause briefly at peak contraction, then lower down with control."
+    ],
+    "form_cues": [
+      "Imagine holding an apple between chin and chest to prevent neck strain.",
+      "Exhale forcefully on the upward flexion phase.",
+      "Do not yank with arms; initiate entirely from the core."
+    ]
+  },
+  {
+    "id": "hw-beg-bicycle-crunches",
+    "exercise_name": "Bicycle Crunches",
+    "slug": "bicycle-crunches",
+    "level": "Beginner",
+    "video_id": "vid-beg-bicycle-crunches",
+    "video_title": "Bicycle Crunches Oblique Protocol",
+    "video_description": "Cross-body rotational movement targeting internal and external obliques and deep anterior core stabilizers.",
+    "storage_path": "home-workouts/bicycle-crunches/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/bicycle-crunches.jpg",
+    "target_muscle": "Obliques & Rectus Abdominis",
+    "equipment": "Mat / Floor",
+    "instructions": [
+      "Lie flat on your back with knees at 90 degrees and hands supporting the head.",
+      "Rotate right elbow across to meet left knee while extending the right leg out straight.",
+      "Alternate smoothly, bringing left elbow to right knee in a controlled cycling tempo.",
+      "Maintain continuous abdominal tension throughout the set."
+    ],
+    "form_cues": [
+      "Rotate from the ribcage, not just the elbows.",
+      "Keep lower back pressed against the mat.",
+      "Move with deliberate tempo rather than speed."
+    ]
+  },
+  {
+    "id": "hw-beg-plank",
+    "exercise_name": "Plank",
+    "slug": "plank",
+    "level": "Beginner",
+    "video_id": "vid-beg-plank",
+    "video_title": "Isometric Plank Alignment & Bracing",
+    "video_description": "Anti-extension isometric core hold building endurance in the transverse abdominis, serratus anterior, and pelvic floor.",
+    "storage_path": "home-workouts/plank/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/plank.jpg",
+    "target_muscle": "Transverse Abdominis",
+    "equipment": "Mat / Floor",
+    "instructions": [
+      "Set forearms on the floor with elbows directly under shoulders.",
+      "Extend legs back with toes tucked, creating a continuous straight line.",
+      "Draw navel toward spine and squeeze glutes firmly.",
+      "Hold the position while maintaining steady diaphragmatic breathing."
+    ],
+    "form_cues": [
+      "Do not allow hips to sag or pike into an A-frame.",
+      "Actively push the floor away to prevent shoulder winging.",
+      "Keep neck neutral with gaze down between forearms."
+    ]
+  },
+  {
+    "id": "hw-beg-walking",
+    "exercise_name": "Walking",
+    "slug": "walking",
+    "level": "Beginner",
+    "video_id": "vid-beg-walking",
+    "video_title": "Brisk Walking Posture & Conditioning",
+    "video_description": "Low-impact aerobic base conditioning and active recovery promoting cardiovascular health and calorie expenditure.",
+    "storage_path": "home-workouts/walking/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/walking.jpg",
+    "target_muscle": "Cardiovascular System",
+    "equipment": "None / Walking Shoes",
+    "instructions": [
+      "Maintain tall posture with shoulders relaxed down and back.",
+      "Step with heel-to-toe roll pattern and natural arm swing.",
+      "Maintain a brisk, purposeful pace allowing deep nasal or rhythmic breathing.",
+      "Keep stride length natural without over-reaching."
+    ],
+    "form_cues": [
+      "Look forward toward the horizon.",
+      "Engage lower abdominals slightly for pelvis stability.",
+      "Land lightly with mid-heel strike."
+    ]
+  },
+  {
+    "id": "hw-int-warm-up",
+    "exercise_name": "Warm-up",
+    "slug": "warm-up",
+    "level": "Intermediate",
+    "video_id": "vid-beg-warm-up",
+    "video_title": "Intermediate Dynamic Mobility Prep",
+    "video_description": "Foundational multi-joint dynamic mobility routine preparing heart rate, synovial fluid circulation, and neural readiness for home training.",
+    "storage_path": "home-workouts/warm-up/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/warm-up.jpg",
+    "target_muscle": "Full Body Mobility",
+    "equipment": "Bodyweight",
+    "instructions": [
+      "Arm circles, torso rotations, hip openers, and active marches for 3 to 5 minutes."
+    ],
+    "form_cues": [
+      "Move with controlled cadence through full active range of motion."
+    ]
+  },
+  {
+    "id": "hw-int-push-ups",
+    "exercise_name": "Push-Ups",
+    "slug": "push-ups",
+    "level": "Intermediate",
+    "video_id": "vid-int-push-ups",
+    "video_title": "Standard Floor Push-Up Masterclass",
+    "video_description": "Full-body horizontal pushing baseline developing pectoralis major, anterior deltoids, and triceps with complete floor depth.",
+    "storage_path": "home-workouts/push-ups/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/push-ups.jpg",
+    "target_muscle": "Pectoralis Major & Triceps",
+    "equipment": "Bodyweight",
+    "instructions": [
+      "Hands slightly wider than shoulder-width, fingers spread, body in a rigid plank.",
+      "Lower chest with control until 2 inches from floor, elbows at 45 degrees.",
+      "Press through palms back to starting lockout with braced core."
+    ],
+    "form_cues": [
+      "Maintain locked glutes and braced core throughout.",
+      "No elbow flaring past 45 degrees.",
+      "Touch chest down smoothly without bouncing."
+    ]
+  },
+  {
+    "id": "hw-int-free-squats",
+    "exercise_name": "Free Squats",
+    "slug": "free-squats",
+    "level": "Intermediate",
+    "video_id": "vid-beg-free-squats",
+    "video_title": "Intermediate Free Squats Volume Protocol",
+    "video_description": "Zero-equipment lower-body movement pattern developing knee flexion, glute recruitment, and bilateral stability.",
+    "storage_path": "home-workouts/free-squats/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/free-squats.jpg",
+    "target_muscle": "Quadriceps & Glutes",
+    "equipment": "Bodyweight",
+    "instructions": [
+      "Stand shoulder-width apart, descend past parallel with upright chest, and drive up smoothly."
+    ],
+    "form_cues": [
+      "Track knees over toes, maintain heel contact throughout."
+    ]
+  },
+  {
+    "id": "hw-int-crunches",
+    "exercise_name": "Crunches",
+    "slug": "crunches",
+    "level": "Intermediate",
+    "video_id": "vid-int-crunches",
+    "video_title": "Intermediate Abdominal Crunches",
+    "video_description": "Strict abdominal flexion training emphasizing peak contraction and slow eccentric control.",
+    "storage_path": "home-workouts/crunches/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/crunches.jpg",
+    "target_muscle": "Rectus Abdominis",
+    "equipment": "Mat / Floor",
+    "instructions": [
+      "Lie supine with feet anchored or flat, flex upper spine bringing ribs toward pelvis.",
+      "Hold peak contraction for 1 second, then lower under control."
+    ],
+    "form_cues": [
+      "Breathe out all air at top contraction.",
+      "Keep hands light behind head without neck pull."
+    ]
+  },
+  {
+    "id": "hw-int-reverse-crunches",
+    "exercise_name": "Reverse Crunches",
+    "slug": "reverse-crunches",
+    "level": "Intermediate",
+    "video_id": "vid-int-reverse-crunches",
+    "video_title": "Reverse Crunches Posterior Pelvic Tilt",
+    "video_description": "Lower-abdominal focused movement initiating flexion from the pelvis toward the ribcage.",
+    "storage_path": "home-workouts/reverse-crunches/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/reverse-crunches.jpg",
+    "target_muscle": "Lower Rectus Abdominis",
+    "equipment": "Mat / Floor",
+    "instructions": [
+      "Lie on back with knees bent at 90 degrees and arms by your sides for support.",
+      "Contract lower abs to curl hips off the mat bringing knees toward chest.",
+      "Lower hips slowly back to starting position without arching lower back."
+    ],
+    "form_cues": [
+      "Initiate with abdominal pull, not leg momentum.",
+      "Control the lowering phase completely."
+    ]
+  },
+  {
+    "id": "hw-int-leg-raises",
+    "exercise_name": "Leg Raises",
+    "slug": "leg-raises",
+    "level": "Intermediate",
+    "video_id": "vid-int-leg-raises",
+    "video_title": "Straight Leg Raises Core Endurance",
+    "video_description": "Extended lever abdominal exercise strengthening hip flexors and deep lower core musculature.",
+    "storage_path": "home-workouts/leg-raises/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/leg-raises.jpg",
+    "target_muscle": "Lower Abdominals & Iliopsoas",
+    "equipment": "Mat / Floor",
+    "instructions": [
+      "Lie flat with legs extended and hands placed under glutes or beside hips.",
+      "Keep legs straight and raise them together until perpendicular to the floor.",
+      "Lower legs slowly until heels hover 2 inches above the ground, then repeat."
+    ],
+    "form_cues": [
+      "Do not allow lower back to peel off the floor at the bottom.",
+      "Keep knees as straight as mobility permits."
+    ]
+  },
+  {
+    "id": "hw-int-hanging-knee-raises",
+    "exercise_name": "Hanging Knee Raises",
+    "slug": "hanging-knee-raises",
+    "level": "Intermediate",
+    "video_id": "vid-int-hanging-knee-raises",
+    "video_title": "Hanging Knee Raises Technique",
+    "video_description": "Decompressed spinal hanging movement challenging grip strength and vertical core flexion.",
+    "storage_path": "home-workouts/hanging-knee-raises/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/hanging-knee-raises.jpg",
+    "target_muscle": "Rectus Abdominis & Grip",
+    "equipment": "Pull-Up Bar / Door Bar",
+    "instructions": [
+      "Grip a pull-up bar with overhand grip and hang with arms fully extended.",
+      "Engage lats and tuck pelvis, lifting knees up toward chest.",
+      "Lower knees with control without swinging your body back and forth."
+    ],
+    "form_cues": [
+      "Eliminate swing momentum by pausing at the bottom dead hang.",
+      "Roll pelvis up slightly at the top for full abdominal contraction."
+    ]
+  },
+  {
+    "id": "hw-int-bicycle-crunches",
+    "exercise_name": "Bicycle Crunches",
+    "slug": "bicycle-crunches",
+    "level": "Intermediate",
+    "video_id": "vid-beg-bicycle-crunches",
+    "video_title": "Intermediate Bicycle Crunches Rotational Flow",
+    "video_description": "Cross-body rotational movement targeting internal and external obliques and deep anterior core stabilizers.",
+    "storage_path": "home-workouts/bicycle-crunches/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/bicycle-crunches.jpg",
+    "target_muscle": "Obliques",
+    "equipment": "Mat / Floor",
+    "instructions": [
+      "Alternate elbow-to-opposite-knee rotations with extended contralateral leg."
+    ],
+    "form_cues": [
+      "Rotate from the torso, keep movement continuous and strict."
+    ]
+  },
+  {
+    "id": "hw-int-mountain-climbers",
+    "exercise_name": "Mountain Climbers",
+    "slug": "mountain-climbers",
+    "level": "Intermediate",
+    "video_id": "vid-int-mountain-climbers",
+    "video_title": "Mountain Climbers Dynamic Core & Conditioning",
+    "video_description": "High-cadence plank-based movement combining shoulder stability, hip flexion, and metabolic conditioning.",
+    "storage_path": "home-workouts/mountain-climbers/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/mountain-climbers.jpg",
+    "target_muscle": "Core & Cardiovascular",
+    "equipment": "Floor / Mat",
+    "instructions": [
+      "Start in a tall push-up plank position with hands beneath shoulders.",
+      "Drive right knee in toward chest without letting hips bounce up.",
+      "Quickly switch legs, driving left knee forward as right leg extends back.",
+      "Maintain a smooth, rhythmic running cadence while keeping hips level."
+    ],
+    "form_cues": [
+      "Keep shoulders stacked directly over wrists.",
+      "Do not pike hips high into the air.",
+      "Maintain neutral head position."
+    ]
+  },
+  {
+    "id": "hw-int-plank",
+    "exercise_name": "Plank",
+    "slug": "plank",
+    "level": "Intermediate",
+    "video_id": "vid-beg-plank",
+    "video_title": "Intermediate High-Tension Plank Hold",
+    "video_description": "Anti-extension isometric core hold building endurance in the transverse abdominis, serratus anterior, and pelvic floor.",
+    "storage_path": "home-workouts/plank/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/plank.jpg",
+    "target_muscle": "Core Stabilizers",
+    "equipment": "Floor / Mat",
+    "instructions": [
+      "Forearm plank with tight glutes, engaged quads, and active shoulder push."
+    ],
+    "form_cues": [
+      "Rigid body bridge, deep diaphragmatic breaths."
+    ]
+  },
+  {
+    "id": "hw-int-walking",
+    "exercise_name": "Walking",
+    "slug": "walking",
+    "level": "Intermediate",
+    "video_id": "vid-beg-walking",
+    "video_title": "Intermediate Aerobic Walking & Zone 2 Base",
+    "video_description": "Low-impact aerobic base conditioning and active recovery promoting cardiovascular health and calorie expenditure.",
+    "storage_path": "home-workouts/walking/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/walking.jpg",
+    "target_muscle": "Cardiovascular Conditioning",
+    "equipment": "None",
+    "instructions": [
+      "Brisk walking protocol with active posture and arm drive."
+    ],
+    "form_cues": [
+      "Maintain steady cadence and upright torso."
+    ]
+  },
+  {
+    "id": "hw-adv-warm-up",
+    "exercise_name": "Warm-up",
+    "slug": "warm-up",
+    "level": "Advanced",
+    "video_id": "vid-beg-warm-up",
+    "video_title": "Advanced Dynamic CNS & Mobility Primer",
+    "video_description": "Foundational multi-joint dynamic mobility routine preparing heart rate, synovial fluid circulation, and neural readiness for home training.",
+    "storage_path": "home-workouts/warm-up/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/warm-up.jpg",
+    "target_muscle": "Full Body Mobility",
+    "equipment": "Bodyweight",
+    "instructions": [
+      "Comprehensive dynamic joint mobility and CNS activation."
+    ],
+    "form_cues": [
+      "Progress from slow mobility to rapid activation."
+    ]
+  },
+  {
+    "id": "hw-adv-push-ups",
+    "exercise_name": "Push-Ups",
+    "slug": "push-ups",
+    "level": "Advanced",
+    "video_id": "vid-int-push-ups",
+    "video_title": "Advanced Strict Push-Up Protocol",
+    "video_description": "Full-body horizontal pushing baseline developing pectoralis major, anterior deltoids, and triceps with complete floor depth.",
+    "storage_path": "home-workouts/push-ups/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/push-ups.jpg",
+    "target_muscle": "Pectoralis Major & Triceps",
+    "equipment": "Bodyweight",
+    "instructions": [
+      "Explosive concentric phase, controlled 3-second eccentric tempo, strict lockout."
+    ],
+    "form_cues": [
+      "Maximum core tension, hollow-body position throughout."
+    ]
+  },
+  {
+    "id": "hw-adv-free-squats",
+    "exercise_name": "Free Squats",
+    "slug": "free-squats",
+    "level": "Advanced",
+    "video_id": "vid-beg-free-squats",
+    "video_title": "Advanced Full-Depth Free Squats",
+    "video_description": "Zero-equipment lower-body movement pattern developing knee flexion, glute recruitment, and bilateral stability.",
+    "storage_path": "home-workouts/free-squats/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/free-squats.jpg",
+    "target_muscle": "Quadriceps & Glutes",
+    "equipment": "Bodyweight",
+    "instructions": [
+      "Deep range of motion with paused bottom contraction and explosive ascent."
+    ],
+    "form_cues": [
+      "Full depth control, knees tracked firmly, chest upright."
+    ]
+  },
+  {
+    "id": "hw-adv-crunches",
+    "exercise_name": "Crunches",
+    "slug": "crunches",
+    "level": "Advanced",
+    "video_id": "vid-int-crunches",
+    "video_title": "Advanced High-Tension Abdominal Crunches",
+    "video_description": "Strict abdominal flexion training emphasizing peak contraction and slow eccentric control.",
+    "storage_path": "home-workouts/crunches/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/crunches.jpg",
+    "target_muscle": "Rectus Abdominis",
+    "equipment": "Mat / Floor",
+    "instructions": [
+      "Extended lever or paused peak contraction for maximum recruitment."
+    ],
+    "form_cues": [
+      "Strict isolation without momentum."
+    ]
+  },
+  {
+    "id": "hw-adv-reverse-crunches",
+    "exercise_name": "Reverse Crunches",
+    "slug": "reverse-crunches",
+    "level": "Advanced",
+    "video_id": "vid-int-reverse-crunches",
+    "video_title": "Advanced Reverse Crunches with Slow Descent",
+    "video_description": "Lower-abdominal focused movement initiating flexion from the pelvis toward the ribcage.",
+    "storage_path": "home-workouts/reverse-crunches/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/reverse-crunches.jpg",
+    "target_muscle": "Lower Abdominals",
+    "equipment": "Mat / Floor",
+    "instructions": [
+      "Curl pelvis off floor and descend with a 3-second negative phase."
+    ],
+    "form_cues": [
+      "Zero hip swinging; maximum pelvic tilt control."
+    ]
+  },
+  {
+    "id": "hw-adv-leg-raises",
+    "exercise_name": "Leg Raises",
+    "slug": "leg-raises",
+    "level": "Advanced",
+    "video_id": "vid-int-leg-raises",
+    "video_title": "Advanced Straight Leg Raises Strict Range",
+    "video_description": "Extended lever abdominal exercise strengthening hip flexors and deep lower core musculature.",
+    "storage_path": "home-workouts/leg-raises/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/leg-raises.jpg",
+    "target_muscle": "Anterior Core",
+    "equipment": "Mat / Floor",
+    "instructions": [
+      "Complete range with toes pointed, hovering just above floor on return."
+    ],
+    "form_cues": [
+      "Lower back firmly glued to mat throughout full lever."
+    ]
+  },
+  {
+    "id": "hw-adv-hanging-knee-raises",
+    "exercise_name": "Hanging Knee Raises",
+    "slug": "hanging-knee-raises",
+    "level": "Advanced",
+    "video_id": "vid-int-hanging-knee-raises",
+    "video_title": "Advanced Strict Hanging Knee-to-Chest Raises",
+    "video_description": "Decompressed spinal hanging movement challenging grip strength and vertical core flexion.",
+    "storage_path": "home-workouts/hanging-knee-raises/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/hanging-knee-raises.jpg",
+    "target_muscle": "Rectus Abdominis",
+    "equipment": "Pull-Up Bar",
+    "instructions": [
+      "Raise knees to chest height with a 1-second pause and strict descent."
+    ],
+    "form_cues": [
+      "Active shoulders, zero body swing."
+    ]
+  },
+  {
+    "id": "hw-adv-bicycle-crunches",
+    "exercise_name": "Bicycle Crunches",
+    "slug": "bicycle-crunches",
+    "level": "Advanced",
+    "video_id": "vid-beg-bicycle-crunches",
+    "video_title": "Advanced High-Pace Bicycle Crunches",
+    "video_description": "Cross-body rotational movement targeting internal and external obliques and deep anterior core stabilizers.",
+    "storage_path": "home-workouts/bicycle-crunches/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/bicycle-crunches.jpg",
+    "target_muscle": "Obliques & Core",
+    "equipment": "Mat / Floor",
+    "instructions": [
+      "Extended rotation with 2-second isometric holds per side."
+    ],
+    "form_cues": [
+      "Full shoulder rotation across body."
+    ]
+  },
+  {
+    "id": "hw-adv-mountain-climbers",
+    "exercise_name": "Mountain Climbers",
+    "slug": "mountain-climbers",
+    "level": "Advanced",
+    "video_id": "vid-int-mountain-climbers",
+    "video_title": "Advanced Mountain Climbers Sprint Cadence",
+    "video_description": "High-cadence plank-based movement combining shoulder stability, hip flexion, and metabolic conditioning.",
+    "storage_path": "home-workouts/mountain-climbers/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/mountain-climbers.jpg",
+    "target_muscle": "Core & Cardio Power",
+    "equipment": "Floor",
+    "instructions": [
+      "Maximum speed with flat hips and locked shoulder stability."
+    ],
+    "form_cues": [
+      "Maintain neutral spine, light foot drive."
+    ]
+  },
+  {
+    "id": "hw-adv-plank",
+    "exercise_name": "Plank",
+    "slug": "plank",
+    "level": "Advanced",
+    "video_id": "vid-beg-plank",
+    "video_title": "Advanced RKC Maximum Tension Plank",
+    "video_description": "Anti-extension isometric core hold building endurance in the transverse abdominis, serratus anterior, and pelvic floor.",
+    "storage_path": "home-workouts/plank/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/plank.jpg",
+    "target_muscle": "Total Core Complex",
+    "equipment": "Floor",
+    "instructions": [
+      "Maximal tension isometric hold pulling elbows toward toes."
+    ],
+    "form_cues": [
+      "100% total-body contraction."
+    ]
+  },
+  {
+    "id": "hw-adv-walking",
+    "exercise_name": "Walking",
+    "slug": "walking",
+    "level": "Advanced",
+    "video_id": "vid-beg-walking",
+    "video_title": "Advanced Incline / Weighted Ruck Walking",
+    "video_description": "Low-impact aerobic base conditioning and active recovery promoting cardiovascular health and calorie expenditure.",
+    "storage_path": "home-workouts/walking/tutorial.mp4",
+    "thumbnail_path": "thumbnails/home-workouts/walking.jpg",
+    "target_muscle": "Aerobic Power & Recovery",
+    "equipment": "None / Weighted Pack Optional",
+    "instructions": [
+      "High-pace aerobic walk or weighted pack carry for conditioning."
+    ],
+    "form_cues": [
+      "Brisk cadence, tall spine, rhythmic breathing."
+    ]
+  }
+]

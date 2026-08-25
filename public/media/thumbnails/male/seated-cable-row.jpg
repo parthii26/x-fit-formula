@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#121212"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0c49b"/>
+      <stop offset="50%" stop-color="#c6a87c"/>
+      <stop offset="100%" stop-color="#9a8260"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="640" fill="url(#bg)"/>
+  <rect x="20" y="20" width="600" height="600" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  
+  <!-- Subtle circular grid -->
+  <circle cx="320" cy="280" r="160" fill="none" stroke="url(#gold)" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.35"/>
+  <circle cx="320" cy="280" r="120" fill="rgba(198,168,124,0.04)"/>
+  
+  <!-- Central Emblem & Play Symbol -->
+  <circle cx="320" cy="280" r="48" fill="#050505" stroke="url(#gold)" stroke-width="2"/>
+  <polygon points="312,262 338,280 312,298" fill="#c6a87c"/>
+  
+  <!-- Tag / Category -->
+  <rect x="240" y="380" width="160" height="24" rx="12" fill="rgba(198,168,124,0.12)" stroke="rgba(198,168,124,0.3)" stroke-width="1"/>
+  <text x="320" y="396" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="700" fill="#c6a87c" letter-spacing="2">
+    GYM • BEGINNER
+  </text>
+
+  <!-- Exercise Title -->
+  <text x="320" y="450" text-anchor="middle" font-family="'Syne', 'Inter', system-ui" font-size="24" font-weight="800" fill="#f5f5f5" letter-spacing="2">
+    SEATED CABLE ROW
+  </text>
+  
+  <!-- Target Muscle -->
+  <text x="320" y="482" text-anchor="middle" font-family="'Inter', system-ui" font-size="13" font-weight="600" fill="#888888" letter-spacing="3">
+    RHOMBOIDS & MID-TRAPS • CABLE
+  </text>
+  
+  <!-- Brand Footnote -->
+  <text x="320" y="550" text-anchor="middle" font-family="'Inter', system-ui" font-size="9" font-weight="700" fill="rgba(255,255,255,0.2)" letter-spacing="4">
+    X FIT FORMULA — DEMONSTRATION
+  </text>
+</svg>
