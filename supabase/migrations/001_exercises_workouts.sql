@@ -64,6 +64,18 @@ CREATE TABLE IF NOT EXISTS public.workouts (
   updated_at       TIMESTAMPTZ DEFAULT now()
 );
 
+-- Ensure all columns exist even if the workouts table was pre-existing
+ALTER TABLE public.workouts ADD COLUMN IF NOT EXISTS created_by UUID;
+ALTER TABLE public.workouts ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT true;
+ALTER TABLE public.workouts ADD COLUMN IF NOT EXISTS duration_minutes INTEGER DEFAULT 45;
+ALTER TABLE public.workouts ADD COLUMN IF NOT EXISTS equipment TEXT;
+ALTER TABLE public.workouts ADD COLUMN IF NOT EXISTS goal TEXT;
+ALTER TABLE public.workouts ADD COLUMN IF NOT EXISTS difficulty TEXT;
+ALTER TABLE public.workouts ADD COLUMN IF NOT EXISTS category TEXT;
+ALTER TABLE public.workouts ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.workouts ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+ALTER TABLE public.workouts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+
 -- ==============================================================================
 -- WORKOUT EXERCISES (join / normalisation table)
 -- ==============================================================================

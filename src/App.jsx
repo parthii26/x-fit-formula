@@ -77,12 +77,20 @@ export default function App() {
       return
     }
 
+    const safetyTimeout = setTimeout(() => {
+      setAuthLoading(false)
+    }, 1500)
+
     // Check for an existing session on mount (e.g. browser refresh)
     supabase.auth.getSession().then(async ({ data: { session: sbSession } }) => {
       if (sbSession?.user) {
         await handleSupabaseUser(sbSession.user)
       }
       setAuthLoading(false)
+      clearTimeout(safetyTimeout)
+    }).catch(() => {
+      setAuthLoading(false)
+      clearTimeout(safetyTimeout)
     })
 
     // Listen for sign-in / sign-out events
@@ -97,7 +105,10 @@ export default function App() {
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      clearTimeout(safetyTimeout)
+      subscription?.unsubscribe()
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -272,7 +283,16 @@ export default function App() {
 
   const clientId = session.clientId || session.userId
   const client   = db.clients.find((c) => c.id === clientId)
-  if (!client) { logout(); return null }
+  if (!client) {
+    return (
+      <Landing
+        onLogin={handleLogin}
+        authError={authError}
+        authLoading={authLoading}
+        demoClients={db.clients.filter((c) => c.onboarded && !c.supabaseAuth)}
+      />
+    )
+  }
 
   if (!client.onboarded) {
     return (

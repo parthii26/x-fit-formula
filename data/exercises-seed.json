@@ -429,5 +429,474 @@
     "attribution_required": true,
     "media_usage_verified": true,
     "active": true
+  },
+  {
+    "source_id": "011-romanian-deadlift",
+    "name": "Romanian Deadlift",
+    "slug": "romanian-deadlift",
+    "body_part": "Legs",
+    "target": "Hamstrings & Glutes",
+    "secondary_muscles": ["Erector Spinae", "Latissimus Dorsi", "Core"],
+    "equipment": "Barbell",
+    "difficulty": "Intermediate",
+    "category": "Gym",
+    "compound": true,
+    "unilateral": false,
+    "short_description": "Hip-hinge movement maximizing eccentric hamstring tension and posterior chain strength without heavy spinal compression.",
+    "instructions": [
+      "Stand tall holding a barbell at hip height with an overhand shoulder-width grip.",
+      "Initiate by unlocking knees slightly and pushing hips directly backward.",
+      "Lower the bar close along your thighs and shins until you feel a full stretch in hamstrings.",
+      "Drive hips forward powerfully to return to lockout, squeezing glutes at the top."
+    ],
+    "form_cues": [
+      "Keep the barbell in contact with your legs throughout.",
+      "Maintain a flat, neutral spine with lats engaged.",
+      "Do not squat the weight down; keep knees softly fixed."
+    ],
+    "common_mistakes": [
+      "Rounding the lumbar spine under load.",
+      "Letting the bar drift away from the shins."
+    ],
+    "breathing": "Inhale at the top, brace core on the descent; exhale forcefully upon hip extension.",
+    "active": true
+  },
+  {
+    "source_id": "012-barbell-row",
+    "name": "Bent-Over Barbell Row",
+    "slug": "barbell-row",
+    "body_part": "Back",
+    "target": "Latissimus Dorsi & Rhomboids",
+    "secondary_muscles": ["Biceps Brachii", "Rear Deltoids", "Spinal Erectors"],
+    "equipment": "Barbell",
+    "difficulty": "Intermediate",
+    "category": "Gym",
+    "compound": true,
+    "unilateral": false,
+    "short_description": "Foundational compound horizontal pull building massive upper-back density, lat thickness, and spinal endurance.",
+    "instructions": [
+      "Hinge forward at hips with knees softly bent until torso is roughly 45 degrees to the floor.",
+      "Grip the barbell slightly wider than shoulder width with arms extended.",
+      "Pull the barbell smoothly toward your lower ribcage by driving elbows up and back.",
+      "Squeeze shoulder blades together for 1 second, then lower under control."
+    ],
+    "form_cues": [
+      "Keep chest proud and neck neutral in line with spine.",
+      "Do not use hip thrust momentum to bounce the bar up."
+    ],
+    "common_mistakes": [
+      "Standing too upright (reducing back activation).",
+      "Yanking with the lower back instead of pulling with lats."
+    ],
+    "breathing": "Exhale as you row the bar to your torso; inhale as you lower the weight.",
+    "active": true
+  },
+  {
+    "source_id": "013-dumbbell-bench-press",
+    "name": "Dumbbell Bench Press",
+    "slug": "dumbbell-bench-press",
+    "body_part": "Chest",
+    "target": "Pectoralis Major",
+    "secondary_muscles": ["Anterior Deltoids", "Triceps Brachii"],
+    "equipment": "Dumbbells",
+    "difficulty": "Intermediate",
+    "category": "Gym",
+    "compound": true,
+    "unilateral": false,
+    "short_description": "Free-weight pressing movement providing independent limb stabilization and a deeper stretch range for chest development.",
+    "instructions": [
+      "Lie back on a flat bench with dumbbells held over chest, palms facing forward.",
+      "Lower dumbbells with control until weights reach chest level, elbows angled at 45–60 degrees.",
+      "Press smoothly back up in a slight converging arc without banging the weights together."
+    ],
+    "form_cues": [
+      "Keep shoulder blades pinched firmly against the bench.",
+      "Maintain a stable arch and solid foot plant."
+    ],
+    "common_mistakes": [
+      "Flaring elbows excessively wide.",
+      "Losing control at the bottom stretch position."
+    ],
+    "breathing": "Inhale on the descent; exhale powerfully as you press up.",
+    "active": true
+  },
+  {
+    "source_id": "014-lateral-raise",
+    "name": "Dumbbell Lateral Raise",
+    "slug": "lateral-raise",
+    "body_part": "Shoulders",
+    "target": "Lateral Deltoids",
+    "secondary_muscles": ["Anterior Deltoids", "Trapezius"],
+    "equipment": "Dumbbells",
+    "difficulty": "Intermediate",
+    "category": "Gym",
+    "compound": false,
+    "unilateral": false,
+    "short_description": "Essential shoulder isolation exercise creating lateral delt capped width and athletic V-taper aesthetics.",
+    "instructions": [
+      "Stand tall with dumbbells held at sides, slight bend in elbows.",
+      "Raise arms out to sides leading with elbows until parallel to the floor.",
+      "Pause briefly at shoulder height, then lower smoothly over 2 seconds."
+    ],
+    "form_cues": [
+      "Pour the water pitcher at top (slight internal rotation or neutral).",
+      "Do not shrug traps up to move the weight."
+    ],
+    "common_mistakes": [
+      "Using torso swing momentum to heave the dumbbells.",
+      "Lifting hands higher than elbows."
+    ],
+    "breathing": "Exhale as you raise the dumbbells; inhale as you lower them.",
+    "active": true
+  },
+  {
+    "source_id": "015-bicep-curl",
+    "name": "Barbell Bicep Curl",
+    "slug": "bicep-curl",
+    "body_part": "Arms",
+    "target": "Biceps Brachii",
+    "secondary_muscles": ["Brachialis", "Brachioradialis"],
+    "equipment": "Barbell",
+    "difficulty": "Intermediate",
+    "category": "Gym",
+    "compound": false,
+    "unilateral": false,
+    "short_description": "High-tension arm builder directly training elbow flexion with heavy progressive overload capacity.",
+    "instructions": [
+      "Stand tall holding barbell with an underhand shoulder-width grip.",
+      "Curl bar upward keeping elbows pinned close to your sides.",
+      "Squeeze biceps hard at top contraction, then lower under full control."
+    ],
+    "form_cues": [
+      "Keep elbows stationary and do not let them drift behind the body.",
+      "Control the 2-second eccentric phase."
+    ],
+    "common_mistakes": [
+      "Swinging torso backward to launch the bar upward.",
+      "Letting the bar drop freely on the way down."
+    ],
+    "breathing": "Exhale on the curl; inhale on the descent.",
+    "active": true
+  },
+  {
+    "source_id": "016-tricep-pushdown",
+    "name": "Cable Tricep Pushdown",
+    "slug": "tricep-pushdown",
+    "body_part": "Arms",
+    "target": "Triceps Brachii",
+    "secondary_muscles": ["Anconeus"],
+    "equipment": "Cable",
+    "difficulty": "Intermediate",
+    "category": "Gym",
+    "compound": false,
+    "unilateral": false,
+    "short_description": "Continuous-tension cable isolation movement isolating the lateral and medial heads of the triceps.",
+    "instructions": [
+      "Grip the cable attachment with elbows pinned to sides at 90 degrees.",
+      "Push handle down by fully extending elbows until arms are straight.",
+      "Squeeze triceps at lockout, then return slowly to 90 degrees."
+    ],
+    "form_cues": [
+      "Keep upper arms completely vertical throughout the movement.",
+      "Do not flare elbows outward."
+    ],
+    "common_mistakes": [
+      "Leaning body over the bar to use bodyweight instead of triceps.",
+      "Letting elbows rise up and down."
+    ],
+    "breathing": "Exhale as you press down; inhale as you control the handle back up.",
+    "active": true
+  },
+  {
+    "source_id": "017-crunches",
+    "name": "Abdominal Crunches",
+    "slug": "crunches",
+    "body_part": "Core",
+    "target": "Rectus Abdominis",
+    "secondary_muscles": ["Obliques"],
+    "equipment": "Bodyweight",
+    "difficulty": "Intermediate",
+    "category": "Home",
+    "compound": false,
+    "unilateral": false,
+    "short_description": "Targeted abdominal flexion training emphasizing peak contraction and slow eccentric tempo.",
+    "instructions": [
+      "Lie on mat with knees bent at 90 degrees and feet flat.",
+      "Curl ribcage toward pelvis by contracting abdominals, lifting shoulder blades off mat.",
+      "Hold peak contraction for 1 second, then lower under control."
+    ],
+    "form_cues": [
+      "Do not pull on neck with hands.",
+      "Exhale all air at top contraction."
+    ],
+    "common_mistakes": [
+      "Yanking head forward with arms.",
+      "Using momentum instead of strict core contraction."
+    ],
+    "breathing": "Exhale forcefully at peak contraction; inhale as you lower.",
+    "active": true
+  },
+  {
+    "source_id": "018-reverse-crunches",
+    "name": "Reverse Crunches",
+    "slug": "reverse-crunches",
+    "body_part": "Core",
+    "target": "Lower Rectus Abdominis",
+    "secondary_muscles": ["Hip Flexors", "Obliques"],
+    "equipment": "Bodyweight",
+    "difficulty": "Intermediate",
+    "category": "Home",
+    "compound": false,
+    "unilateral": false,
+    "short_description": "Pelvic-initiated abdominal curl focusing on the lower abdominal wall and pelvis control.",
+    "instructions": [
+      "Lie on back with knees bent at 90 degrees and arms at sides.",
+      "Contract lower abs to curl hips up off the floor, bringing knees toward chest.",
+      "Lower hips slowly back to starting position without arching lower back."
+    ],
+    "form_cues": [
+      "Lift from the pelvis, do not swing the legs.",
+      "Control the eccentric descent."
+    ],
+    "common_mistakes": [
+      "Using leg swing momentum.",
+      "Arching lower back off the floor."
+    ],
+    "breathing": "Exhale as hips lift; inhale as hips touch down.",
+    "active": true
+  },
+  {
+    "source_id": "019-leg-raises",
+    "name": "Flat Bench Leg Raises",
+    "slug": "leg-raises",
+    "body_part": "Core",
+    "target": "Lower Abdominals & Iliopsoas",
+    "secondary_muscles": ["Quadriceps", "Transverse Abdominis"],
+    "equipment": "Bodyweight",
+    "difficulty": "Intermediate",
+    "category": "Home",
+    "compound": false,
+    "unilateral": false,
+    "short_description": "Straight-leg lever abdominal drill building deep anterior core strength and anti-extension stability.",
+    "instructions": [
+      "Lie flat with legs extended and hands beside hips.",
+      "Raise legs together under control until perpendicular to the floor.",
+      "Lower legs slowly until heels hover 2 inches above ground, then repeat."
+    ],
+    "form_cues": [
+      "Keep lower back firmly pressed into the floor.",
+      "Maintain straight legs throughout."
+    ],
+    "common_mistakes": [
+      "Arching the lumbar spine as legs lower.",
+      "Bending knees excessively."
+    ],
+    "breathing": "Exhale as legs rise; inhale as legs lower."
+  },
+  {
+    "source_id": "020-hanging-knee-raises",
+    "name": "Hanging Knee Raises",
+    "slug": "hanging-knee-raises",
+    "body_part": "Core",
+    "target": "Rectus Abdominis & Grip",
+    "secondary_muscles": ["Hip Flexors", "Forearms", "Lats"],
+    "equipment": "Bodyweight",
+    "difficulty": "Intermediate",
+    "category": "Home",
+    "compound": true,
+    "unilateral": false,
+    "short_description": "Hanging spinal flexion drill challenging grip endurance and lower abdominal compression.",
+    "instructions": [
+      "Hang from a pull-up bar with overhand grip and legs straight.",
+      "Engage lats and tuck pelvis, lifting knees up toward chest.",
+      "Lower knees with control without swinging your body."
+    ],
+    "form_cues": [
+      "Eliminate swing momentum by pausing at bottom dead hang.",
+      "Roll pelvis up slightly at top for full contraction."
+    ],
+    "common_mistakes": [
+      "Using hip swing momentum.",
+      "Not lifting knees high enough to engage abdominals."
+    ],
+    "breathing": "Exhale as knees lift; inhale as legs lower.",
+    "active": true
+  },
+  {
+    "source_id": "021-mountain-climbers",
+    "name": "Mountain Climbers",
+    "slug": "mountain-climbers",
+    "body_part": "Core",
+    "target": "Core & Cardiovascular",
+    "secondary_muscles": ["Shoulders", "Hip Flexors", "Calves"],
+    "equipment": "Bodyweight",
+    "difficulty": "Intermediate",
+    "category": "Home",
+    "compound": true,
+    "unilateral": true,
+    "short_description": "Dynamic plank-based conditioning exercise building core endurance and metabolic capacity.",
+    "instructions": [
+      "Start in a tall push-up plank position with hands under shoulders.",
+      "Drive right knee in toward chest without letting hips bounce.",
+      "Quickly alternate legs in a smooth rhythmic running cadence."
+    ],
+    "form_cues": [
+      "Keep shoulders stacked over wrists.",
+      "Maintain a flat back and level hips."
+    ],
+    "common_mistakes": [
+      "Piking hips high into the air.",
+      "Bouncing shoulders up and down."
+    ],
+    "breathing": "Maintain steady rhythmic breathing throughout.",
+    "active": true
+  },
+  {
+    "source_id": "022-bicycle-crunches",
+    "name": "Bicycle Crunches",
+    "slug": "bicycle-crunches",
+    "body_part": "Core",
+    "target": "Obliques & Rectus Abdominis",
+    "secondary_muscles": ["Hip Flexors"],
+    "equipment": "Bodyweight",
+    "difficulty": "Intermediate",
+    "category": "Home",
+    "compound": false,
+    "unilateral": true,
+    "short_description": "Cross-body rotational movement targeting internal and external obliques with continuous tension.",
+    "instructions": [
+      "Lie on back with knees bent at 90 degrees and fingertips behind ears.",
+      "Rotate right elbow to left knee while extending right leg straight out.",
+      "Alternate sides smoothly in a controlled cycling tempo."
+    ],
+    "form_cues": [
+      "Rotate from the torso, not just elbows.",
+      "Keep lower back glued to the mat."
+    ],
+    "common_mistakes": [
+      "Moving too quickly with sloppy form.",
+      "Pulling violently on the neck."
+    ],
+    "breathing": "Exhale on each cross-body rotation; inhale on transition.",
+    "active": true
+  },
+  {
+    "source_id": "023-pull-ups",
+    "name": "Strict Pull-Ups",
+    "slug": "pull-ups",
+    "body_part": "Back",
+    "target": "Latissimus Dorsi",
+    "secondary_muscles": ["Biceps Brachii", "Rhomboids", "Middle Trapezius", "Forearms"],
+    "equipment": "Bodyweight",
+    "difficulty": "Advanced",
+    "category": "Gym",
+    "compound": true,
+    "unilateral": false,
+    "short_description": "The ultimate test of relative upper-body pulling strength and lat development from a dead hang.",
+    "instructions": [
+      "Grasp pull-up bar with an overhand grip slightly wider than shoulder width.",
+      "Hang with arms fully extended and shoulders engaged (active hang).",
+      "Pull chest up toward bar by driving elbows down and back until chin clears the bar.",
+      "Lower under control over 2 seconds to a full dead hang before starting next rep."
+    ],
+    "form_cues": [
+      "Keep core braced and legs tight together.",
+      "Avoid kipping or swinging legs for momentum."
+    ],
+    "common_mistakes": [
+      "Kipping or using leg swing.",
+      "Cutting range of motion short at top or bottom."
+    ],
+    "breathing": "Exhale as you pull up; inhale as you lower.",
+    "active": true
+  },
+  {
+    "source_id": "024-barbell-squat",
+    "name": "Barbell Back Squat",
+    "slug": "barbell-squat",
+    "body_part": "Legs",
+    "target": "Quadriceps & Gluteus Maximus",
+    "secondary_muscles": ["Hamstrings", "Erector Spinae", "Core", "Adductors"],
+    "equipment": "Barbell",
+    "difficulty": "Advanced",
+    "category": "Gym",
+    "compound": true,
+    "unilateral": false,
+    "short_description": "King of lower-body movements developing total leg power, muscular hypertrophy, and systemic strength.",
+    "instructions": [
+      "Set barbell across upper traps, unrack, and step back into shoulder-width stance.",
+      "Inhale, brace core 360 degrees, and sit hips back and down.",
+      "Descend until hip crease breaks parallel with knees while keeping chest proud.",
+      "Drive out of the hole through mid-foot to standing lockout."
+    ],
+    "form_cues": [
+      "Track knees in line with toes.",
+      "Keep spine rigid and chest upright."
+    ],
+    "common_mistakes": [
+      "Knees caving inward on ascent.",
+      "Rounding lower back in the hole."
+    ],
+    "breathing": "Deep breath and brace at top; hold on descent; exhale past sticking point.",
+    "active": true
+  },
+  {
+    "source_id": "025-deadlift",
+    "name": "Barbell Deadlift",
+    "slug": "deadlift",
+    "body_part": "Back",
+    "target": "Posterior Chain & Erector Spinae",
+    "secondary_muscles": ["Gluteus Maximus", "Hamstrings", "Trapezius", "Forearms", "Core"],
+    "equipment": "Barbell",
+    "difficulty": "Advanced",
+    "category": "Gym",
+    "compound": true,
+    "unilateral": false,
+    "short_description": "Maximum total-body strength movement pulling dead weight from the floor with full posterior engagement.",
+    "instructions": [
+      "Stand with feet hip-width apart, barbell over mid-foot.",
+      "Hinge down and grip bar with arms outside knees.",
+      "Pull chest up to pull slack out of the bar, engaging lats.",
+      "Drive the floor away with legs, locking out hips and knees simultaneously."
+    ],
+    "form_cues": [
+      "Keep bar glued to body throughout the entire pull.",
+      "Lock out by squeezing glutes, not hyperextending lower back."
+    ],
+    "common_mistakes": [
+      "Rounding the lower back off the floor.",
+      "Hips rising before the chest."
+    ],
+    "breathing": "Brace at bottom; hold breath through pull; exhale at lockout.",
+    "active": true
+  },
+  {
+    "source_id": "026-overhead-press",
+    "name": "Standing Overhead Press",
+    "slug": "overhead-press",
+    "body_part": "Shoulders",
+    "target": "Anterior & Lateral Deltoids",
+    "secondary_muscles": ["Triceps Brachii", "Upper Chest", "Trapezius", "Core"],
+    "equipment": "Barbell",
+    "difficulty": "Advanced",
+    "category": "Gym",
+    "compound": true,
+    "unilateral": false,
+    "short_description": "Pure vertical pressing power demanding full-body stabilization, shoulder strength, and core rigidity.",
+    "instructions": [
+      "Hold barbell at clavicle height with hands just outside shoulders.",
+      "Brace glutes and core, press barbell straight overhead while pulling head back slightly.",
+      "As bar clears forehead, push head through window to lock bar directly over mid-foot."
+    ],
+    "form_cues": [
+      "Lock glutes and quads tight to prevent lower back arching.",
+      "Press in a vertical bar path."
+    ],
+    "common_mistakes": [
+      "Excessive lumbar extension to turn into incline press.",
+      "Bending knees to push-press instead of strict press."
+    ],
+    "breathing": "Inhale and brace at clavicle; exhale as bar locks overhead.",
+    "active": true
   }
 ]

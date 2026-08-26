@@ -16,6 +16,7 @@
 import { createClient } from '@supabase/supabase-js'
 import seedExercises from '../../data/exercises-seed.json'
 import homeWorkoutSeed from '../../data/home-workout-seed.json'
+import { getOpenSourceDemo } from './openSourceMedia.js'
 
 // ─── Client Initialisation ───────────────────────────────────────────────────
 
@@ -185,10 +186,12 @@ export async function fetchExercises({
       const { data, count, error } = await query
       if (error) throw error
 
-      return {
-        exercises:  (data || []).map(formatExerciseRecord),
-        totalCount: count || (data || []).length,
-        source:     'supabase',
+      if (data && data.length > 0) {
+        return {
+          exercises:  (data || []).map(formatExerciseRecord),
+          totalCount: count || (data || []).length,
+          source:     'supabase',
+        }
       }
     } catch (err) {
       console.warn('[Supabase] fetchExercises failed, using seed fallback:', err.message)
@@ -661,18 +664,27 @@ export async function addTrainerClientRelationship(trainerId, clientId) {
 
 /** Normalise a raw database exercise record into the standard app shape. */
 function formatExerciseRecord(item) {
+  const openSourceDemo = getOpenSourceDemo(item.slug)
+  const defaultThumb = openSourceDemo?.frames?.[0] || null
+  const resolvedVideo = item.video_url || openSourceDemo?.videoUrl || (item.male_video_path ? getMediaUrl(item.male_video_path) : null)
   return {
     ...item,
-    maleVideoUrl:       getMediaUrl(item.male_video_path     || item.maleVideoUrl),
-    femaleVideoUrl:     getMediaUrl(item.female_video_path   || item.femaleVideoUrl),
-    maleThumbnailUrl:   getMediaUrl(item.male_thumbnail_path || item.maleThumbnailUrl),
-    femaleThumbnailUrl: getMediaUrl(item.female_thumbnail_path || item.femaleThumbnailUrl),
+    maleVideoUrl:       resolvedVideo || getMediaUrl(item.male_video_path || item.maleVideoUrl),
+    femaleVideoUrl:     resolvedVideo || getMediaUrl(item.female_video_path || item.femaleVideoUrl),
+    videoUrl:           resolvedVideo,
+    video_url:          resolvedVideo,
+    maleThumbnailUrl:   item.maleThumbnailUrl || defaultThumb || getMediaUrl(item.male_thumbnail_path),
+    femaleThumbnailUrl: item.femaleThumbnailUrl || defaultThumb || getMediaUrl(item.female_thumbnail_path),
+    thumbnailUrl:       item.thumbnailUrl || defaultThumb || getMediaUrl(item.male_thumbnail_path || item.female_thumbnail_path),
   }
 }
 
 /** Normalise a raw home_workout_videos record into standard app shape. */
 function formatHomeWorkoutRecord(item) {
-  const thumbPath = item.thumbnail_url || item.thumbnail_path || `thumbnails/home-workouts/${item.slug}.jpg`
+  const openSourceDemo = getOpenSourceDemo(item.slug)
+  const defaultThumb = openSourceDemo?.frames?.[0] || null
+  const thumbPath = item.thumbnail_url || item.thumbnail_path || `thumbnails/home-workouts/${item.slug}.svg`
+  const resolvedVideo = item.video_url || openSourceDemo?.videoUrl || (item.storage_path ? getMediaUrl(item.storage_path) : null)
   return {
     ...item,
     id: item.id,
@@ -680,13 +692,14 @@ function formatHomeWorkoutRecord(item) {
     exercise_name: item.exercise_name,
     slug: item.slug,
     level: item.level,
-    videoUrl: item.video_url || (item.storage_path ? getMediaUrl(item.storage_path) : null),
+    videoUrl: resolvedVideo,
+    video_url: resolvedVideo,
     videoId: item.video_id,
     title: item.video_title || `${item.level} ${item.exercise_name} Tutorial`,
     video_title: item.video_title || `${item.level} ${item.exercise_name} Tutorial`,
     description: item.video_description || '',
     video_description: item.video_description || '',
-    thumbnailUrl: getMediaUrl(thumbPath),
+    thumbnailUrl: item.thumbnailUrl || item.thumbnail_url || defaultThumb || getMediaUrl(thumbPath),
     duration: item.duration || '02:00',
     target: item.target_muscle || 'Full Body',
     target_muscle: item.target_muscle || 'Full Body',

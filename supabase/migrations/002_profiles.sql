@@ -25,6 +25,8 @@ CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles (email);
 -- ==============================================================================
 -- Add FK from workouts.created_by → profiles (now that profiles table exists)
 -- ==============================================================================
+ALTER TABLE public.workouts ADD COLUMN IF NOT EXISTS created_by UUID;
+
 DO $$
 BEGIN
   IF NOT EXISTS (

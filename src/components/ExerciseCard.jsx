@@ -1,18 +1,35 @@
+import { useState, useEffect } from 'react'
 import { Play, Dumbbell, Clock } from 'lucide-react'
 import { DifficultyBadge, EquipmentBadge, CategoryBadge } from './badges.jsx'
+import { getOpenSourceDemo } from '../lib/openSourceMedia.js'
 
 export default function ExerciseCard({ exercise, onSelect }) {
-  const thumbnailUrl =
-    exercise.thumbnailUrl ||
-    exercise.maleThumbnailUrl ||
-    exercise.femaleThumbnailUrl ||
-    (exercise.slug ? `/media/thumbnails/home-workouts/${exercise.slug}.jpg` : '/media/thumbnails/male/push-up.jpg')
+  const isHomeWorkout = Boolean(exercise?.isHomeWorkout)
+  const openSourceDemo = getOpenSourceDemo(exercise?.slug)
 
-  const isHomeWorkout = Boolean(exercise.isHomeWorkout)
+  const localSvgFallback = isHomeWorkout
+    ? `/media/thumbnails/home-workouts/${exercise?.slug}.svg`
+    : `/media/thumbnails/${exercise?.gender || 'male'}/${exercise?.slug}.svg`
 
-  const secondaryMusclesText = Array.isArray(exercise.secondary_muscles) && exercise.secondary_muscles.length > 0
+  const initialThumb =
+    openSourceDemo?.frames?.[0] ||
+    exercise?.thumbnailUrl ||
+    exercise?.maleThumbnailUrl ||
+    exercise?.femaleThumbnailUrl ||
+    localSvgFallback ||
+    '/media/thumbnails/male/push-up.svg'
+
+  const [imgSrc, setImgSrc] = useState(initialThumb)
+  const [imgFailed, setImgFailed] = useState(false)
+
+  const secondaryMusclesText = Array.isArray(exercise?.secondary_muscles) && exercise.secondary_muscles.length > 0
     ? ` • ${exercise.secondary_muscles.slice(0, 2).join(' • ')}`
     : ''
+
+  useEffect(() => {
+    setImgSrc(initialThumb)
+    setImgFailed(false)
+  }, [exercise, initialThumb])
 
   return (
     <div
@@ -20,13 +37,31 @@ export default function ExerciseCard({ exercise, onSelect }) {
       className="group relative flex flex-col justify-between border border-white/10 bg-surface text-left transition-all duration-300 hover:border-gold/60 hover:bg-surface-2 active:bg-surface-2 cursor-pointer shadow-md"
     >
       {/* Top Image Media Block */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-obsidian border-b border-white/10">
-        <img
-          src={thumbnailUrl}
-          alt={exercise.name}
-          loading="lazy"
-          className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-        />
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-obsidian border-b border-white/10 flex items-center justify-center">
+        {!imgFailed ? (
+          <img
+            src={imgSrc}
+            alt={exercise.name || exercise.exercise_name}
+            loading="lazy"
+            onError={() => {
+              if (imgSrc !== localSvgFallback && localSvgFallback) {
+                setImgSrc(localSvgFallback)
+              } else {
+                setImgFailed(true)
+              }
+            }}
+            className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center p-6 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gold/10 border border-gold/30 text-gold mb-2">
+              <Dumbbell className="h-6 w-6" strokeWidth={1.5} />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-mute">
+              {exercise.name || exercise.exercise_name}
+            </span>
+          </div>
+        )}
 
         {/* Hover & Mobile Active Play Button Overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-obsidian/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100">

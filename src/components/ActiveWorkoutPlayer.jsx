@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { fetchExerciseById } from '../lib/supabase.js'
 import { CategoryBadge, DifficultyBadge } from './badges.jsx'
+import { getOpenSourceDemo, getYouTubeEmbedUrl } from '../lib/openSourceMedia.js'
 
 export default function ActiveWorkoutPlayer({
   plan,
@@ -21,6 +22,7 @@ export default function ActiveWorkoutPlayer({
   const [loadingMedia, setLoadingMedia] = useState(true)
   const [videoSrc, setVideoSrc] = useState(null)
   const [videoError, setVideoError] = useState(false)
+  const [activeFrameIndex, setActiveFrameIndex] = useState(0)
 
   // Timer state
   const [restTimer, setRestTimer] = useState(0)
@@ -62,6 +64,18 @@ export default function ActiveWorkoutPlayer({
 
     return () => { isMounted = false }
   }, [currentEx.name, gender])
+
+  const openSourceDemo = getOpenSourceDemo(currentEx.slug || exerciseData?.slug || currentEx.name)
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(videoSrc)
+
+  // Automated frame loop in active workout player
+  useEffect(() => {
+    if (!openSourceDemo?.frames?.length) return
+    const interval = setInterval(() => {
+      setActiveFrameIndex((prev) => (prev + 1) % openSourceDemo.frames.length)
+    }, 1250)
+    return () => clearInterval(interval)
+  }, [openSourceDemo])
 
   // Rest Timer countdown
   useEffect(() => {
@@ -271,7 +285,7 @@ export default function ActiveWorkoutPlayer({
               {currentEx.name}
             </h1>
             <p className="mt-1 text-xs uppercase tracking-wider text-mute">
-              Target: <span className="font-bold text-gold">{exerciseData?.target || 'Primary Muscle'}</span>
+                Target: <span className="font-bold text-gold">{exerciseData?.target || 'Primary Muscle'}</span>
               {exerciseData?.equipment ? ` • ${exerciseData.equipment}` : ''}
             </p>
           </div>
@@ -314,6 +328,26 @@ export default function ActiveWorkoutPlayer({
               preload="metadata"
               onError={handleVideoError}
               className="h-full w-full object-cover"
+            />
+          ) : openSourceDemo?.frames?.length ? (
+            <div className="relative h-full w-full bg-obsidian flex items-center justify-center">
+              <img
+                src={openSourceDemo.frames[activeFrameIndex] || openSourceDemo.frames[0]}
+                alt={currentEx.name}
+                className="h-full w-full object-cover transition-opacity duration-300"
+              />
+              <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-obsidian/85 px-2 py-0.5 border border-white/15 backdrop-blur-md">
+                <span className={`h-1.5 w-1.5 rounded-full ${activeFrameIndex === 0 ? 'bg-amber-400' : 'bg-gold animate-pulse'}`} />
+                <span className="text-[8px] font-bold uppercase tracking-wider text-ink font-mono">
+                  {activeFrameIndex === 0 ? 'P1: Stance' : 'P2: Peak'}
+                </span>
+              </div>
+            </div>
+          ) : normalizedThumbnail ? (
+            <img
+              src={openSourceDemo.frames[activeFrameIndex] || openSourceDemo.frames[0]}
+              alt={currentEx.name}
+              className="h-full w-full object-cover transition-opacity duration-300"
             />
           ) : normalizedThumbnail ? (
             <img
