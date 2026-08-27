@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ArrowRight, ArrowLeft, Sparkles, User, Dumbbell, ShieldCheck } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Sparkles, User, Dumbbell, ShieldCheck, Eye, EyeOff } from 'lucide-react'
 import { Label, TextInput, Btn, Divider } from '../components/ui.jsx'
 import ExerciseLibrary from './ExerciseLibrary.jsx'
 import HeroSlider from '../components/HeroSlider.jsx'
@@ -109,14 +109,17 @@ function AuthPanel({ portal, onBack, onLogin, authError, authLoading }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [resetSent, setResetSent] = useState(false)
+  const [signupNotice, setSignupNotice] = useState(null)
   const [localError, setLocalError] = useState(null)
 
   const clearErrors = () => {
     setLocalError(null)
+    setSignupNotice(null)
   }
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault()
     clearErrors()
 
@@ -125,7 +128,7 @@ function AuthPanel({ portal, onBack, onLogin, authError, authLoading }) {
         setLocalError('Please enter your registered email address.')
         return
       }
-      onLogin({ portal, mode: 'forgot', email: email.trim() })
+      await onLogin({ portal, mode: 'forgot', email: email.trim() })
       setResetSent(true)
       return
     }
@@ -140,7 +143,10 @@ function AuthPanel({ portal, onBack, onLogin, authError, authLoading }) {
       return
     }
 
-    onLogin({ portal, mode, name: name.trim(), email: email.trim(), password })
+    const res = await onLogin({ portal, mode, name: name.trim(), email: email.trim(), password })
+    if (res?.emailConfirmationRequired) {
+      setSignupNotice(`Account created! A confirmation link has been sent to ${email.trim()}. Please check your email inbox to verify your account and sign in.`)
+    }
   }
 
   const displayedError = localError || authError
@@ -238,13 +244,31 @@ function AuthPanel({ portal, onBack, onLogin, authError, authLoading }) {
                     </button>
                   )}
                 </div>
-                <TextInput
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); clearErrors() }}
-                  required
-                />
+                <div className="relative">
+                  <TextInput
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); clearErrors() }}
+                    required
+                    className="pr-9"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-mute hover:text-ink transition-colors"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {signupNotice && (
+              <div className="border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-400 leading-relaxed">
+                <p className="font-bold uppercase tracking-wider mb-1">Account Created</p>
+                <p>{signupNotice}</p>
               </div>
             )}
 

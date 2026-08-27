@@ -19,7 +19,7 @@ import {
   updatePassword,
 } from './lib/supabase.js'
 import { Label, TextInput, Btn } from './components/ui.jsx'
-import { KeyRound, ShieldCheck, CheckCircle2, X } from 'lucide-react'
+import { KeyRound, ShieldCheck, CheckCircle2, X, Eye, EyeOff } from 'lucide-react'
 
 const SESSION_KEY = 'xff-session-v1'
 
@@ -246,24 +246,49 @@ export default function App() {
       try {
         if (mode === 'signup') {
           const role = portal === 'trainer' ? 'trainer' : 'client'
-          await signUp(email, password, name?.trim() || email.split('@')[0], role)
-          return
+          const data = await signUp(email, password, name?.trim() || email.split('@')[0], role)
+          
+          if (data?.session?.user) {
+            await handleSupabaseUser(data.session.user)
+            return { success: true }
+          }
+          if (data?.user) {
+            if (data.user.identities && data.user.identities.length === 0) {
+              setAuthError('An account with this email already exists. Please switch to Log In.')
+              return { error: true }
+            }
+            return { emailConfirmationRequired: true }
+          }
+          return { success: true }
         } else {
-          await signIn(email, password)
-          return
+          const data = await signIn(email, password)
+          if (data?.user) {
+            await handleSupabaseUser(data.user)
+          }
+          return { success: true }
         }
       } catch (err) {
-        setAuthError(err.message || 'Authentication failed. Please check your credentials.')
+        const msg = err.message || ''
+        if (msg.toLowerCase().includes('email not confirmed')) {
+          setAuthError('Please verify your email via the confirmation link sent to your inbox before logging in.')
+        } else if (msg.toLowerCase().includes('invalid login credentials')) {
+          setAuthError('Invalid email or password. If you do not have an account, click Sign Up.')
+        } else {
+          setAuthError(msg || 'Authentication failed. Please check your credentials.')
+        }
+        return { error: true }
       } finally {
         setAuthLoading(false)
       }
-      return
     }
 
     setAuthError('Please enter valid login credentials.')
   }
 
   // ─── Set New Password Submit Handler (Recovery Flow) ───────────────────────
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
   const handleSetNewPassword = async (e) => {
     e.preventDefault()
     setResetError(null)
@@ -415,24 +440,46 @@ export default function App() {
             <form onSubmit={handleSetNewPassword} className="mt-6 space-y-4">
               <div>
                 <Label>New Password</Label>
-                <TextInput
-                  type="password"
-                  placeholder="At least 6 characters"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <TextInput
+                    type={showNewPassword ? 'text' : 'password'}
+                    placeholder="At least 6 characters"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    className="pr-9"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-mute hover:text-ink transition-colors"
+                    aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
 
               <div>
                 <Label>Confirm New Password</Label>
-                <TextInput
-                  type="password"
-                  placeholder="Re-type new password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <TextInput
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Re-type new password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="pr-9"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-mute hover:text-ink transition-colors"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
 
               {resetError && (
