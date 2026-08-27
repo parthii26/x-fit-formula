@@ -101,67 +101,49 @@ export default function Landing({ onLogin, authError, authLoading }) {
   )
 }
 
-// ─── Authentication Panel ──────────────────────────────────────────────────
+// ─── Authentication Panel (Production) ──────────────────────────────────────
 
-function AuthPanel({ portal, onBack, onLogin, demoClients, authError, authLoading }) {
+function AuthPanel({ portal, onBack, onLogin, authError, authLoading }) {
   const isClient = portal === 'client'
-  const [authMethod, setAuthMethod] = useState('email') // 'email' | 'phone'
   const [mode, setMode] = useState(isClient ? 'signup' : 'login') // 'login' | 'signup' | 'forgot'
-  
-  // Email fields
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [resetSent, setResetSent] = useState(false)
+  const [localError, setLocalError] = useState(null)
 
-  // Phone OTP fields
-  const [countryCode, setCountryCode] = useState('+91')
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [otpToken, setOtpToken] = useState('')
-  const [otpStep, setOtpStep] = useState('phone') // 'phone' | 'verify'
-  const [resendTimer, setResendTimer] = useState(0)
+  const clearErrors = () => {
+    setLocalError(null)
+  }
 
-  // Countdown timer for OTP resend
-  useEffect(() => {
-    let interval = null
-    if (resendTimer > 0) {
-      interval = setInterval(() => setResendTimer((t) => t - 1), 1000)
-    }
-    return () => { if (interval) clearInterval(interval) }
-  }, [resendTimer])
-
-  const fullPhone = `${countryCode}${phoneNumber.replace(/\D/g, '')}`
-
-  const handleEmailSubmit = (e) => {
+  const handleFormSubmit = (e) => {
     e.preventDefault()
+    setLocalError(null)
+
     if (mode === 'forgot') {
-      if (!email.trim()) return
+      if (!email.trim()) {
+        setLocalError('Please enter your registered email address.')
+        return
+      }
       onLogin({ portal, mode: 'forgot', email: email.trim() })
       setResetSent(true)
       return
     }
-    const canSubmit = mode === 'signup' ? name.trim() && email.trim() && password : email.trim() && password
-    if (!canSubmit) return
+
+    if (mode === 'signup' && !name.trim()) {
+      setLocalError('Please enter your full name.')
+      return
+    }
+
+    if (!email.trim() || !password) {
+      setLocalError('Please fill in all required fields.')
+      return
+    }
+
     onLogin({ portal, mode, name: name.trim(), email: email.trim(), password })
   }
 
-  const handleGoogleAuth = () => {
-    onLogin({ portal, mode: 'google' })
-  }
-
-  const handleSendOtp = (e) => {
-    e.preventDefault()
-    if (phoneNumber.replace(/\D/g, '').length < 8) return
-    onLogin({ portal, mode: 'phone-otp-send', phone: fullPhone, name: name.trim() })
-    setOtpStep('verify')
-    setResendTimer(30)
-  }
-
-  const handleVerifyOtp = (e) => {
-    e.preventDefault()
-    if (otpToken.trim().length < 6) return
-    onLogin({ portal, mode: 'phone-otp-verify', phone: fullPhone, token: otpToken.trim() })
-  }
+  const displayedError = localError || authError
 
   return (
     <main className="flex flex-1 items-center justify-center px-5 py-12 sm:px-8 lg:px-12">
@@ -199,80 +181,15 @@ function AuthPanel({ portal, onBack, onLogin, demoClients, authError, authLoadin
               : 'Sign in to access your coaching command center.'}
           </p>
 
-          {/* Social / Google OAuth Button */}
+          {/* Mode Switcher (Log In vs Sign Up) */}
           {mode !== 'forgot' && (
-            <div className="mt-8">
-              <button
-                type="button"
-                onClick={handleGoogleAuth}
-                disabled={authLoading}
-                className="flex min-h-[48px] w-full items-center justify-center gap-3 border border-white/20 bg-surface px-4 py-3 text-xs font-bold uppercase tracking-wider text-ink shadow-sm transition-all hover:border-white/40 hover:bg-surface-2 active:scale-[0.99]"
-              >
-                <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                  />
-                </svg>
-                <span>Continue with Google</span>
-              </button>
-
-              <div className="relative my-6 flex items-center justify-center">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/10" />
-                </div>
-                <span className="relative bg-obsidian px-3 text-[9px] font-bold uppercase tracking-[0.25em] text-mute">
-                  Or Continue With
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Authentication Method Selector (Email vs Mobile OTP) */}
-          {mode !== 'forgot' && (
-            <div className="mb-6 flex border border-white/10 bg-surface">
-              <button
-                type="button"
-                onClick={() => { setAuthMethod('email'); setOtpStep('phone') }}
-                className={`min-h-[42px] flex-1 text-[9px] font-bold uppercase tracking-[0.2em] transition-colors ${
-                  authMethod === 'email' ? 'bg-gold text-obsidian font-extrabold' : 'text-mute hover:text-ink'
-                }`}
-              >
-                ✉ Email & Password
-              </button>
-              <button
-                type="button"
-                onClick={() => { setAuthMethod('phone'); setOtpStep('phone') }}
-                className={`min-h-[42px] flex-1 text-[9px] font-bold uppercase tracking-[0.2em] transition-colors ${
-                  authMethod === 'phone' ? 'bg-gold text-obsidian font-extrabold' : 'text-mute hover:text-ink'
-                }`}
-              >
-                📱 Mobile OTP
-              </button>
-            </div>
-          )}
-
-          {/* Log In / Sign Up Mode Switch (For Email & Phone) */}
-          {mode !== 'forgot' && (
-            <div className="flex border border-white/10">
+            <div className="mt-8 flex border border-white/10">
               {['login', 'signup'].map((m) => (
                 <button
                   key={m}
                   type="button"
-                  onClick={() => setMode(m)}
-                  className={`min-h-[44px] flex-1 text-[10px] font-bold uppercase tracking-[0.25em] transition-colors
+                  onClick={() => { setMode(m); clearErrors() }}
+                  className={`min-h-[46px] flex-1 text-[10px] font-bold uppercase tracking-[0.25em] transition-colors
                     ${mode === m ? 'bg-ink text-obsidian font-bold' : 'text-mute hover:text-ink'}`}
                 >
                   {m === 'login' ? 'Log In' : 'Sign Up'}
@@ -281,38 +198,40 @@ function AuthPanel({ portal, onBack, onLogin, demoClients, authError, authLoadin
             </div>
           )}
 
-          {/* ─── EMAIL & PASSWORD AUTH FORM ─── */}
-          {authMethod === 'email' && mode !== 'forgot' && (
-            <form onSubmit={handleEmailSubmit} className="mt-7 space-y-5">
-              {mode === 'signup' && (
-                <div>
-                  <Label>Full Name</Label>
-                  <TextInput
-                    type="text"
-                    placeholder="Your full name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-              )}
+          {/* ─── AUTHENTICATION FORM ─── */}
+          <form onSubmit={handleFormSubmit} className="mt-7 space-y-5">
+            {mode === 'signup' && (
               <div>
-                <Label>Email Address</Label>
+                <Label>Full Name</Label>
                 <TextInput
-                  type="email"
-                  placeholder="name@domain.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  placeholder="Your full name"
+                  value={name}
+                  onChange={(e) => { setName(e.target.value); clearErrors() }}
                   required
                 />
               </div>
+            )}
+
+            <div>
+              <Label>Email Address</Label>
+              <TextInput
+                type="email"
+                placeholder="name@domain.com"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); clearErrors() }}
+                required
+              />
+            </div>
+
+            {mode !== 'forgot' && (
               <div>
                 <div className="flex items-center justify-between">
                   <Label>Password</Label>
                   {mode === 'login' && (
                     <button
                       type="button"
-                      onClick={() => { setMode('forgot'); setResetSent(false) }}
+                      onClick={() => { setMode('forgot'); setResetSent(false); clearErrors() }}
                       className="text-[9px] font-semibold uppercase tracking-wider text-gold hover:underline"
                     >
                       Forgot Password?
@@ -323,193 +242,49 @@ function AuthPanel({ portal, onBack, onLogin, demoClients, authError, authLoadin
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); clearErrors() }}
                   required
                 />
               </div>
+            )}
 
-              {authError && (
-                <p className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-[10px] font-semibold text-red-400">
-                  {authError}
-                </p>
-              )}
-
-              <Btn
-                type="submit"
-                variant="gold"
-                disabled={authLoading}
-                className="w-full min-h-[50px] text-[11px] uppercase tracking-[0.25em]"
-              >
-                {authLoading ? 'Authenticating…' : mode === 'signup' ? 'START YOUR JOURNEY' : 'ENTER PORTAL'}
-              </Btn>
-            </form>
-          )}
-
-          {/* ─── FORGOT PASSWORD FORM ─── */}
-          {mode === 'forgot' && (
-            <form onSubmit={handleEmailSubmit} className="mt-7 space-y-5">
-              <div>
-                <Label>Registered Email</Label>
-                <TextInput
-                  type="email"
-                  placeholder="name@domain.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+            {resetSent && mode === 'forgot' && (
+              <div className="border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-400">
+                ✓ Recovery instructions sent! Please check your inbox and click the reset link.
               </div>
+            )}
 
-              {resetSent && (
-                <div className="border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-400">
-                  ✓ Recovery instructions sent! Please check your inbox and click the reset link.
-                </div>
-              )}
+            {displayedError && (
+              <p className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-[10px] font-semibold text-red-400">
+                {displayedError}
+              </p>
+            )}
 
-              {authError && (
-                <p className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-[10px] font-semibold text-red-400">
-                  {authError}
-                </p>
-              )}
+            <Btn
+              type="submit"
+              variant="gold"
+              disabled={authLoading}
+              className="w-full min-h-[50px] text-[11px] uppercase tracking-[0.25em]"
+            >
+              {authLoading
+                ? 'Authenticating…'
+                : mode === 'forgot'
+                ? 'SEND RESET LINK'
+                : mode === 'signup'
+                ? 'START YOUR JOURNEY'
+                : 'ENTER PORTAL'}
+            </Btn>
 
-              <Btn
-                type="submit"
-                variant="gold"
-                disabled={authLoading || !email.trim()}
-                className="w-full min-h-[50px] text-[11px] uppercase tracking-[0.25em]"
-              >
-                {authLoading ? 'Sending Link…' : 'SEND RESET LINK'}
-              </Btn>
-
+            {mode === 'forgot' && (
               <button
                 type="button"
-                onClick={() => { setMode('login'); setResetSent(false) }}
+                onClick={() => { setMode('login'); setResetSent(false); clearErrors() }}
                 className="w-full text-center text-[10px] font-bold uppercase tracking-wider text-mute hover:text-gold transition-colors pt-2"
               >
                 ← Back to Log In
               </button>
-            </form>
-          )}
-
-          {/* ─── MOBILE PHONE OTP AUTH FORM ─── */}
-          {authMethod === 'phone' && mode !== 'forgot' && (
-            <div className="mt-7">
-              {otpStep === 'phone' ? (
-                <form onSubmit={handleSendOtp} className="space-y-5">
-                  {mode === 'signup' && (
-                    <div>
-                      <Label>Full Name</Label>
-                      <TextInput
-                        type="text"
-                        placeholder="Your full name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                      />
-                    </div>
-                  )}
-
-                  <div>
-                    <Label>Mobile Number</Label>
-                    <div className="flex gap-2">
-                      <select
-                        value={countryCode}
-                        onChange={(e) => setCountryCode(e.target.value)}
-                        className="border border-white/15 bg-surface px-3 py-2 text-xs font-mono text-ink focus:border-gold focus:outline-none"
-                      >
-                        <option value="+91">+91 (IN)</option>
-                        <option value="+1">+1 (US/CA)</option>
-                        <option value="+44">+44 (UK)</option>
-                        <option value="+971">+971 (UAE)</option>
-                        <option value="+61">+61 (AU)</option>
-                        <option value="+65">+65 (SG)</option>
-                      </select>
-                      <TextInput
-                        type="tel"
-                        placeholder="98765 43210"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        required
-                        className="flex-1 font-mono tracking-wider"
-                      />
-                    </div>
-                  </div>
-
-                  {authError && (
-                    <p className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-[10px] font-semibold text-red-400">
-                      {authError}
-                    </p>
-                  )}
-
-                  <Btn
-                    type="submit"
-                    variant="gold"
-                    disabled={authLoading || phoneNumber.length < 8}
-                    className="w-full min-h-[50px] text-[11px] uppercase tracking-[0.25em]"
-                  >
-                    {authLoading ? 'Sending OTP…' : 'SEND VERIFICATION CODE'}
-                  </Btn>
-                </form>
-              ) : (
-                <form onSubmit={handleVerifyOtp} className="space-y-5">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <Label>6-Digit Code</Label>
-                      <button
-                        type="button"
-                        onClick={() => setOtpStep('phone')}
-                        className="text-[9px] font-semibold text-gold hover:underline uppercase"
-                      >
-                        Change Number
-                      </button>
-                    </div>
-                    <TextInput
-                      type="text"
-                      maxLength={6}
-                      placeholder="• • • • • •"
-                      value={otpToken}
-                      onChange={(e) => setOtpToken(e.target.value)}
-                      required
-                      className="text-center font-mono text-lg tracking-[0.4em]"
-                    />
-                    <p className="mt-1.5 text-[10px] text-mute">
-                      Sent to <span className="font-mono text-ink">{fullPhone}</span>
-                    </p>
-                  </div>
-
-                  {authError && (
-                    <p className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-[10px] font-semibold text-red-400">
-                      {authError}
-                    </p>
-                  )}
-
-                  <Btn
-                    type="submit"
-                    variant="gold"
-                    disabled={authLoading || otpToken.length < 6}
-                    className="w-full min-h-[50px] text-[11px] uppercase tracking-[0.25em]"
-                  >
-                    {authLoading ? 'Verifying…' : 'VERIFY & ENTER PORTAL'}
-                  </Btn>
-
-                  <div className="text-center pt-2">
-                    {resendTimer > 0 ? (
-                      <span className="text-[10px] text-mute uppercase font-mono">
-                        Resend code in {resendTimer}s
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleSendOtp}
-                        className="text-[10px] font-bold uppercase tracking-wider text-gold hover:underline"
-                      >
-                        Resend Verification Code
-                      </button>
-                    )}
-                  </div>
-                </form>
-              )}
-            </div>
-          )}
+            )}
+          </form>
         </div>
       </div>
     </main>
