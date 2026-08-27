@@ -25,27 +25,28 @@ const SESSION_KEY = 'xff-session-v1'
 
 // ─── Build a ClientPortal-compatible object from a Supabase profile ──────────
 function buildSupabaseClient(user, profile) {
+  const isProfileComplete = Boolean(profile?.gender && profile?.age && profile?.weight)
   return {
     id:           user.id,
     role:         'client',
-    onboarded:    Boolean(profile?.full_name), // onboarding complete when name is set
+    onboarded:    isProfileComplete, // Only considered onboarded once biometrics are entered
     supabaseAuth: true,
     profile: {
       name:        profile?.full_name    || user.user_metadata?.full_name || user.email?.split('@')[0] || user.phone || '',
       email:       profile?.email        || user.email || '',
       phone:       profile?.phone        || user.phone || '',
-      age:         '',
-      height:      '',
-      heightUnit:  'cm',
-      weight:      '',
-      weightUnit:  'kg',
-      gender:      '',
-      lifestyle:   '',
-      injuries:    '',
-      goal:        'general',
-      equipment:   'gym',
-      experience:  'beginner',
-      daysPerWeek: 3,
+      age:         profile?.age          || '',
+      height:      profile?.height       || '',
+      heightUnit:  profile?.height_unit  || 'cm',
+      weight:      profile?.weight       || '',
+      weightUnit:  profile?.weight_unit  || 'kg',
+      gender:      profile?.gender       || '',
+      lifestyle:   profile?.lifestyle    || '',
+      injuries:    profile?.injuries     || '',
+      goal:        profile?.goal         || 'general',
+      equipment:   profile?.equipment    || 'gym',
+      experience:  profile?.experience   || 'beginner',
+      daysPerWeek: profile?.days_per_week || 3,
     },
     plan:        null,
     planStatus:  'pending',
@@ -64,8 +65,9 @@ export default function App() {
   const [session, setSession] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)) } catch { return null }
   })
-  const [authLoading, setAuthLoading] = useState(isSupabaseConfigured)
-  const [authError,   setAuthError]   = useState(null)
+  const [initialAuthLoading, setInitialAuthLoading] = useState(isSupabaseConfigured)
+  const [authSubmitting,    setAuthSubmitting]    = useState(false)
+  const [authError,         setAuthError]         = useState(null)
 
   // Password Recovery state
   const [isResettingPassword, setIsResettingPassword] = useState(false)
@@ -89,12 +91,12 @@ export default function App() {
   // ── Supabase Auth state listener ──────────────────────────────────────────
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
-      setAuthLoading(false)
+      setInitialAuthLoading(false)
       return
     }
 
     const safetyTimeout = setTimeout(() => {
-      setAuthLoading(false)
+      setInitialAuthLoading(false)
     }, 1500)
 
     // Check for an existing session on mount (e.g. browser refresh)
@@ -102,10 +104,10 @@ export default function App() {
       if (sbSession?.user) {
         await handleSupabaseUser(sbSession.user)
       }
-      setAuthLoading(false)
+      setInitialAuthLoading(false)
       clearTimeout(safetyTimeout)
     }).catch(() => {
-      setAuthLoading(false)
+      setInitialAuthLoading(false)
       clearTimeout(safetyTimeout)
     })
 
@@ -142,7 +144,12 @@ export default function App() {
 
         setDb((prev) => {
           const exists = prev.clients.some((c) => c.id === user.id)
-          if (exists) return prev
+          if (exists) {
+            return {
+              ...prev,
+              clients: prev.clients.map((c) => (c.id === user.id ? { ...c, ...clientObj, profile: { ...c.profile, ...clientObj.profile } } : c)),
+            }
+          }
           return { ...prev, clients: [...prev.clients, clientObj] }
         })
 
@@ -160,89 +167,12 @@ export default function App() {
   }
 
   // ─── Login handler (100% Production Supabase Authentication) ────────────────
-  const handleLogin = async ({ portal, mode, name, email, password, phone, token }) => {
+  const handleLogin = async ({ portal, mode, name, email, password }) => {
     setAuthError(null)
-
-    // ── Google OAuth Login ──────────────────────────────────────────────────
-    if (mode === 'google') {
-      if (!isSupabaseConfigured) {
-        setAuthError('Supabase is not configured. Please check environment variables.')
-        return
-      }
-      setAuthLoading(true)
-      try {
-        await signInWithGoogle(portal)
-      } catch (err) {
-        const msg = err.message || ''
-        if (msg.includes('Unsupported provider') || msg.includes('not enabled')) {
-          setAuthError('Google OAuth is not enabled in your Supabase project (Authentication > Providers > Google). Please log in with Email & Password.')
-        } else {
-          setAuthError(msg || 'Google sign-in could not be initiated.')
-        }
-        setAuthLoading(false)
-      }
-      return
-    }
-
-    // ── Mobile OTP Send ─────────────────────────────────────────────────────
-    if (mode === 'phone-otp-send') {
-      if (!isSupabaseConfigured) {
-        setAuthError('Supabase is not configured.')
-        return
-      }
-      setAuthLoading(true)
-      try {
-        await sendMobileOtp(phone, portal)
-      } catch (err) {
-        const msg = err.message || ''
-        if (msg.includes('Unsupported phone provider') || msg.includes('not enabled')) {
-          setAuthError('SMS/Phone login is not enabled in your Supabase project (Authentication > Providers > Phone). Please log in with Email & Password.')
-        } else {
-          setAuthError(msg || 'Could not send SMS verification code.')
-        }
-      } finally {
-        setAuthLoading(false)
-      }
-      return
-    }
-
-    // ── Mobile OTP Verify ───────────────────────────────────────────────────
-    if (mode === 'phone-otp-verify') {
-      if (!isSupabaseConfigured) {
-        setAuthError('Supabase is not configured.')
-        return
-      }
-      setAuthLoading(true)
-      try {
-        await verifyMobileOtp(phone, token)
-      } catch (err) {
-        setAuthError(err.message || 'Invalid or expired OTP code.')
-      } finally {
-        setAuthLoading(false)
-      }
-      return
-    }
-
-    // ── Forgot Password Request ─────────────────────────────────────────────
-    if (mode === 'forgot') {
-      if (!isSupabaseConfigured) {
-        setAuthError('Supabase is not configured.')
-        return
-      }
-      setAuthLoading(true)
-      try {
-        await resetPassword(email)
-      } catch (err) {
-        setAuthError(err.message || 'Could not send reset instructions.')
-      } finally {
-        setAuthLoading(false)
-      }
-      return
-    }
 
     // ── Production Supabase Email + Password Auth ───────────────────────────
     if (isSupabaseConfigured && email && password) {
-      setAuthLoading(true)
+      setAuthSubmitting(true)
       try {
         if (mode === 'signup') {
           const role = portal === 'trainer' ? 'trainer' : 'client'
@@ -278,8 +208,21 @@ export default function App() {
         }
         return { error: true }
       } finally {
-        setAuthLoading(false)
+        setAuthSubmitting(false)
       }
+    }
+
+    if (mode === 'forgot') {
+      if (!isSupabaseConfigured) return
+      setAuthSubmitting(true)
+      try {
+        await resetPassword(email)
+      } catch (err) {
+        setAuthError(err.message || 'Could not send reset instructions.')
+      } finally {
+        setAuthSubmitting(false)
+      }
+      return
     }
 
     setAuthError('Please enter valid login credentials.')
@@ -344,7 +287,7 @@ export default function App() {
   }
 
   // ─── Routing ───────────────────────────────────────────────────────────────
-  if (authLoading) {
+  if (initialAuthLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-obsidian">
         <div className="flex flex-col items-center gap-4">
@@ -363,7 +306,7 @@ export default function App() {
         <Landing
           onLogin={handleLogin}
           authError={authError}
-          authLoading={authLoading}
+          authLoading={authSubmitting}
         />
       )
     }
