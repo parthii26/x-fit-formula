@@ -199,7 +199,9 @@ export default function App() {
         }
       } catch (err) {
         const msg = err.message || ''
-        if (msg.toLowerCase().includes('email not confirmed')) {
+        if (msg.toLowerCase().includes('rate limit')) {
+          setAuthError('Email rate limit reached on Supabase. To enable instant sign-up without email limits, disable "Confirm email" in Supabase (Authentication > Providers > Email).')
+        } else if (msg.toLowerCase().includes('email not confirmed')) {
           setAuthError('Please verify your email via the confirmation link sent to your inbox before logging in.')
         } else if (msg.toLowerCase().includes('invalid login credentials')) {
           setAuthError('Invalid email or password. If you do not have an account, click Sign Up.')
