@@ -159,50 +159,26 @@ export default function App() {
     setDb((d) => ({ ...d, clients: d.clients.map((c) => (c.id === updated.id ? updated : c)) }))
   }
 
-  // ─── Login handler (Handles Email, Password, Google OAuth, Mobile OTP, Reset) ─
-  const handleLogin = async ({ portal, mode, name, clientId, email, password, phone, token }) => {
+  // ─── Login handler (100% Production Supabase Authentication) ────────────────
+  const handleLogin = async ({ portal, mode, name, email, password, phone, token }) => {
     setAuthError(null)
-
-    // ── Demo quick-access (always available regardless of Supabase) ──
-    if (portal === 'trainer' && mode === 'login' && !email && !phone) {
-      setSession({ role: 'trainer' })
-      return
-    }
-    if (mode === 'demo' && clientId) {
-      setSession({ role: 'client', clientId })
-      return
-    }
-    if (mode === 'demo-new') {
-      const id    = slugId(name || 'new-client')
-      const fresh = {
-        id, role: 'client', onboarded: false,
-        profile: { ...initialProfile, name: name || '' },
-        plan: null, planStatus: 'pending', planMeta: null,
-        completed: {}, weightLog: [], checkIns: [], messages: [],
-        joined:     new Date().toLocaleDateString('en-IN', { year: 'numeric', month: '2-digit', day: '2-digit' }),
-        lastActive: 'Today',
-      }
-      setDb((d) => ({ ...d, clients: [...d.clients, fresh] }))
-      setSession({ role: 'client', clientId: id })
-      return
-    }
 
     // ── Google OAuth Login ──────────────────────────────────────────────────
     if (mode === 'google') {
       if (!isSupabaseConfigured) {
-        // Fallback demo for Google if no Supabase configured
-        if (portal === 'trainer') {
-          setSession({ role: 'trainer' })
-        } else {
-          setSession({ role: 'client', clientId: 'google-client-demo' })
-        }
+        setAuthError('Supabase is not configured. Please check environment variables.')
         return
       }
       setAuthLoading(true)
       try {
         await signInWithGoogle(portal)
       } catch (err) {
-        setAuthError(err.message || 'Google sign-in could not be initiated.')
+        const msg = err.message || ''
+        if (msg.includes('Unsupported provider') || msg.includes('not enabled')) {
+          setAuthError('Google OAuth is not enabled in your Supabase project (Authentication > Providers > Google). Please log in with Email & Password.')
+        } else {
+          setAuthError(msg || 'Google sign-in could not be initiated.')
+        }
         setAuthLoading(false)
       }
       return
@@ -211,14 +187,19 @@ export default function App() {
     // ── Mobile OTP Send ─────────────────────────────────────────────────────
     if (mode === 'phone-otp-send') {
       if (!isSupabaseConfigured) {
-        // Demo mode: OTP simulation
+        setAuthError('Supabase is not configured.')
         return
       }
       setAuthLoading(true)
       try {
         await sendMobileOtp(phone, portal)
       } catch (err) {
-        setAuthError(err.message || 'Could not send SMS verification code.')
+        const msg = err.message || ''
+        if (msg.includes('Unsupported phone provider') || msg.includes('not enabled')) {
+          setAuthError('SMS/Phone login is not enabled in your Supabase project (Authentication > Providers > Phone). Please log in with Email & Password.')
+        } else {
+          setAuthError(msg || 'Could not send SMS verification code.')
+        }
       } finally {
         setAuthLoading(false)
       }
@@ -228,18 +209,7 @@ export default function App() {
     // ── Mobile OTP Verify ───────────────────────────────────────────────────
     if (mode === 'phone-otp-verify') {
       if (!isSupabaseConfigured) {
-        // Demo mode: accept any 6-digit code
-        const id = slugId('mobile-client')
-        const fresh = {
-          id, role: 'client', onboarded: false,
-          profile: { ...initialProfile, name: 'Mobile Client', phone },
-          plan: null, planStatus: 'pending', planMeta: null,
-          completed: {}, weightLog: [], checkIns: [], messages: [],
-          joined: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: '2-digit', day: '2-digit' }),
-          lastActive: 'Today',
-        }
-        setDb((d) => ({ ...d, clients: [...d.clients, fresh] }))
-        setSession({ role: portal === 'trainer' ? 'trainer' : 'client', clientId: id })
+        setAuthError('Supabase is not configured.')
         return
       }
       setAuthLoading(true)
@@ -256,6 +226,7 @@ export default function App() {
     // ── Forgot Password Request ─────────────────────────────────────────────
     if (mode === 'forgot') {
       if (!isSupabaseConfigured) {
+        setAuthError('Supabase is not configured.')
         return
       }
       setAuthLoading(true)
@@ -269,7 +240,7 @@ export default function App() {
       return
     }
 
-    // ── Real Supabase Email + Password Auth ──────────────────────────────────
+    // ── Production Supabase Email + Password Auth ───────────────────────────
     if (isSupabaseConfigured && email && password) {
       setAuthLoading(true)
       try {
@@ -282,34 +253,14 @@ export default function App() {
           return
         }
       } catch (err) {
-        setAuthError(err.message || 'Authentication failed. Please try again.')
+        setAuthError(err.message || 'Authentication failed. Please check your credentials.')
       } finally {
         setAuthLoading(false)
       }
       return
     }
 
-    // ── Fallback mock auth (no Supabase configured) ──────────────────────────
-    if (portal === 'trainer') {
-      setSession({ role: 'trainer' })
-      return
-    }
-    if (mode === 'login') {
-      const firstClient = db.clients.find((c) => c.onboarded)
-      if (firstClient) setSession({ role: 'client', clientId: firstClient.id })
-      return
-    }
-    const id    = slugId(name || 'new-client')
-    const fresh = {
-      id, role: 'client', onboarded: false,
-      profile: { ...initialProfile, name: name || '' },
-      plan: null, planStatus: 'pending', planMeta: null,
-      completed: {}, weightLog: [], checkIns: [], messages: [],
-      joined:     new Date().toLocaleDateString('en-IN', { year: 'numeric', month: '2-digit', day: '2-digit' }),
-      lastActive: 'Today',
-    }
-    setDb((d) => ({ ...d, clients: [...d.clients, fresh] }))
-    setSession({ role: 'client', clientId: id })
+    setAuthError('Please enter valid login credentials.')
   }
 
   // ─── Set New Password Submit Handler (Recovery Flow) ───────────────────────
@@ -388,7 +339,6 @@ export default function App() {
           onLogin={handleLogin}
           authError={authError}
           authLoading={authLoading}
-          demoClients={db.clients.filter((c) => c.onboarded && !c.supabaseAuth)}
         />
       )
     }
@@ -413,7 +363,6 @@ export default function App() {
           onLogin={handleLogin}
           authError={authError}
           authLoading={authLoading}
-          demoClients={db.clients.filter((c) => c.onboarded && !c.supabaseAuth)}
         />
       )
     }

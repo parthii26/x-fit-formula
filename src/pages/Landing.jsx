@@ -4,7 +4,7 @@ import { Label, TextInput, Btn, Divider } from '../components/ui.jsx'
 import ExerciseLibrary from './ExerciseLibrary.jsx'
 import HeroSlider from '../components/HeroSlider.jsx'
 
-export default function Landing({ onLogin, demoClients, authError, authLoading }) {
+export default function Landing({ onLogin, authError, authLoading }) {
   const [portal, setPortal] = useState(null) // null | 'client' | 'trainer' | 'library'
 
   return (
@@ -88,7 +88,7 @@ export default function Landing({ onLogin, demoClients, authError, authLoading }
       ) : portal === 'library' ? (
         <ExerciseLibrary onBack={() => setPortal(null)} embedded={false} />
       ) : (
-        <AuthPanel portal={portal} onBack={() => setPortal(null)} onLogin={onLogin} demoClients={demoClients} authError={authError} authLoading={authLoading} />
+        <AuthPanel portal={portal} onBack={() => setPortal(null)} onLogin={onLogin} authError={authError} authLoading={authLoading} />
       )}
 
       {/* Footer */}
@@ -510,44 +510,6 @@ function AuthPanel({ portal, onBack, onLogin, demoClients, authError, authLoadin
               )}
             </div>
           )}
-
-          {/* Quick Demo Logins */}
-          <div className="mt-10 border-t border-white/10 pt-6">
-            <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-mute">
-              Instant Demo Access
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {isClient ? (
-                <>
-                  {(demoClients || []).slice(0, 2).map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => onLogin({ portal: 'client', mode: 'demo', clientId: c.id })}
-                      className="border border-white/15 bg-surface-2 px-3 py-2 text-[9px] font-semibold uppercase tracking-wider text-ink transition-colors hover:border-gold hover:text-gold"
-                    >
-                      Demo: {c.profile.name}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => onLogin({ portal: 'client', mode: 'demo-new', name: 'Devon Vance' })}
-                    className="border border-gold/30 bg-gold/10 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-gold transition-colors hover:bg-gold hover:text-obsidian"
-                  >
-                    + New Assessment Demo
-                  </button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => onLogin({ portal: 'trainer', mode: 'login' })}
-                  className="border border-gold/40 bg-gold/10 px-4 py-2 text-[9px] font-bold uppercase tracking-wider text-gold transition-colors hover:bg-gold hover:text-obsidian"
-                >
-                  Trainer Demo (Coach Vance)
-                </button>
-              )}
-            </div>
-          </div>
         </div>
       </div>
     </main>
