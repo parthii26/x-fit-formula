@@ -12,7 +12,14 @@ import {
   signOut,
   getProfile,
   upsertProfile,
+  signInWithGoogle,
+  sendMobileOtp,
+  verifyMobileOtp,
+  resetPassword,
+  updatePassword,
 } from './lib/supabase.js'
+import { Label, TextInput, Btn } from './components/ui.jsx'
+import { KeyRound, ShieldCheck, CheckCircle2, X } from 'lucide-react'
 
 const SESSION_KEY = 'xff-session-v1'
 
@@ -24,8 +31,9 @@ function buildSupabaseClient(user, profile) {
     onboarded:    Boolean(profile?.full_name), // onboarding complete when name is set
     supabaseAuth: true,
     profile: {
-      name:        profile?.full_name    || user.email?.split('@')[0] || '',
+      name:        profile?.full_name    || user.user_metadata?.full_name || user.email?.split('@')[0] || user.phone || '',
       email:       profile?.email        || user.email || '',
+      phone:       profile?.phone        || user.phone || '',
       age:         '',
       height:      '',
       heightUnit:  'cm',
@@ -58,6 +66,14 @@ export default function App() {
   })
   const [authLoading, setAuthLoading] = useState(isSupabaseConfigured)
   const [authError,   setAuthError]   = useState(null)
+
+  // Password Recovery state
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [resetError, setResetError] = useState(null)
+  const [resetSuccess, setResetSuccess] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
 
   // Persist localStorage DB on every change
   useEffect(() => { saveDB(db) }, [db])
@@ -93,13 +109,14 @@ export default function App() {
       clearTimeout(safetyTimeout)
     })
 
-    // Listen for sign-in / sign-out events
+    // Listen for sign-in / sign-out / recovery events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, sbSession) => {
-        if (event === 'SIGNED_IN' && sbSession?.user) {
+        if (event === 'PASSWORD_RECOVERY') {
+          setIsResettingPassword(true)
+        } else if (event === 'SIGNED_IN' && sbSession?.user) {
           await handleSupabaseUser(sbSession.user)
         } else if (event === 'SIGNED_OUT') {
-          // Only clear if it was a Supabase session (not a demo session)
           setSession((prev) => prev?.supabaseAuth ? null : prev)
         }
       }
@@ -116,15 +133,13 @@ export default function App() {
   async function handleSupabaseUser(user) {
     try {
       const profile = await getProfile(user.id)
-      const role    = profile?.role || 'client'
+      const role    = profile?.role || user.user_metadata?.role || 'client'
 
       if (role === 'trainer' || role === 'admin') {
         setSession({ role: 'trainer', supabaseAuth: true, userId: user.id })
       } else {
-        // Build a ClientPortal-compatible client object and store it
         const clientObj = buildSupabaseClient(user, profile)
 
-        // If this Supabase client isn't in the local DB yet, add them
         setDb((prev) => {
           const exists = prev.clients.some((c) => c.id === user.id)
           if (exists) return prev
@@ -144,12 +159,12 @@ export default function App() {
     setDb((d) => ({ ...d, clients: d.clients.map((c) => (c.id === updated.id ? updated : c)) }))
   }
 
-  // ─── Login handler ──────────────────────────────────────────────────────────
-  const handleLogin = async ({ portal, mode, name, clientId, email, password }) => {
+  // ─── Login handler (Handles Email, Password, Google OAuth, Mobile OTP, Reset) ─
+  const handleLogin = async ({ portal, mode, name, clientId, email, password, phone, token }) => {
     setAuthError(null)
 
     // ── Demo quick-access (always available regardless of Supabase) ──
-    if (portal === 'trainer' && mode === 'login' && !email) {
+    if (portal === 'trainer' && mode === 'login' && !email && !phone) {
       setSession({ role: 'trainer' })
       return
     }
@@ -172,19 +187,98 @@ export default function App() {
       return
     }
 
-    // ── Real Supabase Auth ──────────────────────────────────────────────────
+    // ── Google OAuth Login ──────────────────────────────────────────────────
+    if (mode === 'google') {
+      if (!isSupabaseConfigured) {
+        // Fallback demo for Google if no Supabase configured
+        if (portal === 'trainer') {
+          setSession({ role: 'trainer' })
+        } else {
+          setSession({ role: 'client', clientId: 'google-client-demo' })
+        }
+        return
+      }
+      setAuthLoading(true)
+      try {
+        await signInWithGoogle(portal)
+      } catch (err) {
+        setAuthError(err.message || 'Google sign-in could not be initiated.')
+        setAuthLoading(false)
+      }
+      return
+    }
+
+    // ── Mobile OTP Send ─────────────────────────────────────────────────────
+    if (mode === 'phone-otp-send') {
+      if (!isSupabaseConfigured) {
+        // Demo mode: OTP simulation
+        return
+      }
+      setAuthLoading(true)
+      try {
+        await sendMobileOtp(phone, portal)
+      } catch (err) {
+        setAuthError(err.message || 'Could not send SMS verification code.')
+      } finally {
+        setAuthLoading(false)
+      }
+      return
+    }
+
+    // ── Mobile OTP Verify ───────────────────────────────────────────────────
+    if (mode === 'phone-otp-verify') {
+      if (!isSupabaseConfigured) {
+        // Demo mode: accept any 6-digit code
+        const id = slugId('mobile-client')
+        const fresh = {
+          id, role: 'client', onboarded: false,
+          profile: { ...initialProfile, name: 'Mobile Client', phone },
+          plan: null, planStatus: 'pending', planMeta: null,
+          completed: {}, weightLog: [], checkIns: [], messages: [],
+          joined: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+          lastActive: 'Today',
+        }
+        setDb((d) => ({ ...d, clients: [...d.clients, fresh] }))
+        setSession({ role: portal === 'trainer' ? 'trainer' : 'client', clientId: id })
+        return
+      }
+      setAuthLoading(true)
+      try {
+        await verifyMobileOtp(phone, token)
+      } catch (err) {
+        setAuthError(err.message || 'Invalid or expired OTP code.')
+      } finally {
+        setAuthLoading(false)
+      }
+      return
+    }
+
+    // ── Forgot Password Request ─────────────────────────────────────────────
+    if (mode === 'forgot') {
+      if (!isSupabaseConfigured) {
+        return
+      }
+      setAuthLoading(true)
+      try {
+        await resetPassword(email)
+      } catch (err) {
+        setAuthError(err.message || 'Could not send reset instructions.')
+      } finally {
+        setAuthLoading(false)
+      }
+      return
+    }
+
+    // ── Real Supabase Email + Password Auth ──────────────────────────────────
     if (isSupabaseConfigured && email && password) {
       setAuthLoading(true)
       try {
         if (mode === 'signup') {
           const role = portal === 'trainer' ? 'trainer' : 'client'
           await signUp(email, password, name?.trim() || email.split('@')[0], role)
-          // onAuthStateChange will handle the session after email confirmation
-          // If email confirmation is disabled in Supabase settings, login happens immediately
           return
         } else {
           await signIn(email, password)
-          // onAuthStateChange → handleSupabaseUser handles the rest
           return
         }
       } catch (err) {
@@ -216,6 +310,35 @@ export default function App() {
     }
     setDb((d) => ({ ...d, clients: [...d.clients, fresh] }))
     setSession({ role: 'client', clientId: id })
+  }
+
+  // ─── Set New Password Submit Handler (Recovery Flow) ───────────────────────
+  const handleSetNewPassword = async (e) => {
+    e.preventDefault()
+    setResetError(null)
+    if (newPassword.length < 6) {
+      setResetError('Password must be at least 6 characters.')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setResetError('Passwords do not match.')
+      return
+    }
+    setResetLoading(true)
+    try {
+      await updatePassword(newPassword)
+      setResetSuccess(true)
+      setTimeout(() => {
+        setIsResettingPassword(false)
+        setResetSuccess(false)
+        setNewPassword('')
+        setConfirmPassword('')
+      }, 2000)
+    } catch (err) {
+      setResetError(err.message || 'Failed to update password.')
+    } finally {
+      setResetLoading(false)
+    }
   }
 
   const handleOnboardingComplete = async (clientId, profile) => {
@@ -258,58 +381,138 @@ export default function App() {
     )
   }
 
-  if (!session) {
-    return (
-      <Landing
-        onLogin={handleLogin}
-        authError={authError}
-        authLoading={authLoading}
-        demoClients={db.clients.filter((c) => c.onboarded && !c.supabaseAuth)}
-      />
-    )
-  }
+  const renderCurrentPage = () => {
+    if (!session) {
+      return (
+        <Landing
+          onLogin={handleLogin}
+          authError={authError}
+          authLoading={authLoading}
+          demoClients={db.clients.filter((c) => c.onboarded && !c.supabaseAuth)}
+        />
+      )
+    }
 
-  if (session.role === 'trainer') {
-    return (
-      <TrainerPortal
-        trainer={db.trainer}
-        clients={db.clients.filter((c) => c.onboarded)}
-        onUpdateClient={updateClient}
-        onLogout={logout}
-        trainerUserId={session.userId || null}
-      />
-    )
-  }
+    if (session.role === 'trainer') {
+      return (
+        <TrainerPortal
+          trainer={db.trainer}
+          clients={db.clients.filter((c) => c.onboarded)}
+          onUpdateClient={updateClient}
+          onLogout={logout}
+          trainerUserId={session.userId || null}
+        />
+      )
+    }
 
-  const clientId = session.clientId || session.userId
-  const client   = db.clients.find((c) => c.id === clientId)
-  if (!client) {
-    return (
-      <Landing
-        onLogin={handleLogin}
-        authError={authError}
-        authLoading={authLoading}
-        demoClients={db.clients.filter((c) => c.onboarded && !c.supabaseAuth)}
-      />
-    )
-  }
+    const clientId = session.clientId || session.userId
+    const client   = db.clients.find((c) => c.id === clientId)
+    if (!client) {
+      return (
+        <Landing
+          onLogin={handleLogin}
+          authError={authError}
+          authLoading={authLoading}
+          demoClients={db.clients.filter((c) => c.onboarded && !c.supabaseAuth)}
+        />
+      )
+    }
 
-  if (!client.onboarded) {
+    if (!client.onboarded) {
+      return (
+        <Onboarding
+          initialName={client.profile.name}
+          onComplete={(profile) => handleOnboardingComplete(client.id, profile)}
+          onLogout={logout}
+        />
+      )
+    }
+
     return (
-      <Onboarding
-        initialName={client.profile.name}
-        onComplete={(profile) => handleOnboardingComplete(client.id, profile)}
+      <ClientPortal
+        client={client}
+        trainerName={db.trainer.name}
+        onUpdate={updateClient}
         onLogout={logout}
       />
     )
   }
 
   return (
-    <ClientPortal
-      client={client}
-      trainerName={db.trainer.name}
-      onUpdate={updateClient}
-      onLogout={logout}
-    />
+    <>
+      {isResettingPassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/90 p-4 backdrop-blur-md animate-fade-up">
+          <div className="w-full max-w-md border border-white/15 bg-surface p-6 sm:p-8 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-8 w-8 items-center justify-center bg-gold/10 text-gold border border-gold/30">
+                  <KeyRound className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-gold">Security Recovery</p>
+                  <h3 className="text-base font-bold uppercase text-ink">Set New Password</h3>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsResettingPassword(false)}
+                className="text-mute hover:text-ink transition-colors p-1"
+                aria-label="Close dialog"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSetNewPassword} className="mt-6 space-y-4">
+              <div>
+                <Label>New Password</Label>
+                <TextInput
+                  type="password"
+                  placeholder="At least 6 characters"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label>Confirm New Password</Label>
+                <TextInput
+                  type="password"
+                  placeholder="Re-type new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              {resetError && (
+                <p className="border border-red-500/30 bg-red-500/10 px-3 py-2 text-[10px] text-red-400">
+                  {resetError}
+                </p>
+              )}
+
+              {resetSuccess && (
+                <div className="border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-400 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span>Password updated successfully!</span>
+                </div>
+              )}
+
+              <Btn
+                type="submit"
+                variant="gold"
+                disabled={resetLoading || resetSuccess}
+                className="w-full min-h-[46px] text-xs uppercase tracking-wider"
+              >
+                {resetLoading ? 'Updating...' : 'SAVE NEW PASSWORD'}
+              </Btn>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {renderCurrentPage()}
+    </>
   )
 }

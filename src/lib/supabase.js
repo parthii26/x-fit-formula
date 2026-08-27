@@ -87,6 +87,70 @@ export async function signIn(email, password) {
   return data
 }
 
+/** Sign in with Google OAuth. */
+export async function signInWithGoogle(role = 'client') {
+  if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured')
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+      data: { role },
+    },
+  })
+  if (error) throw error
+  return data
+}
+
+/** Send SMS OTP to phone number. */
+export async function sendMobileOtp(phone, role = 'client') {
+  if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured')
+  const { data, error } = await supabase.auth.signInWithOtp({
+    phone,
+    options: {
+      channel: 'sms',
+      data: { role },
+    },
+  })
+  if (error) throw error
+  return data
+}
+
+/** Verify SMS OTP token for phone number. */
+export async function verifyMobileOtp(phone, token) {
+  if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured')
+  const { data, error } = await supabase.auth.verifyOtp({
+    phone,
+    token,
+    type: 'sms',
+  })
+  if (error) throw error
+  return data
+}
+
+/** Request password reset email. */
+export async function resetPassword(email) {
+  if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured')
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}`,
+  })
+  if (error) throw error
+  return data
+}
+
+/** Update user password (when in recovery session). */
+export async function updatePassword(newPassword) {
+  if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured')
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword,
+  })
+  if (error) throw error
+  return data
+}
+
 /** Sign out the current session. */
 export async function signOut() {
   if (!isSupabaseConfigured || !supabase) return
