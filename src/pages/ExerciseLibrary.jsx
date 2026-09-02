@@ -221,7 +221,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
             }`}
           >
             <Dumbbell className="h-3.5 w-3.5" />
-            Gym Workouts (Client Collection)
+            Gym Workouts (108 Entries • 78 Movements)
           </button>
 
           <button
@@ -237,7 +237,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
             }`}
           >
             <Home className="h-3.5 w-3.5" />
-            Home Workouts (Client Collection)
+            Home Workouts (29 Tutorials)
           </button>
 
           <button
@@ -253,7 +253,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
             }`}
           >
             <Layers className="h-3.5 w-3.5" />
-            Full Movement Library
+            Full Movement Library (100+ Exercises)
           </button>
         </div>
 
@@ -262,21 +262,26 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
           <div className="mt-4 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-mute mr-2">
-                Level:
+                Program Tier:
               </span>
-              {['Beginner', 'Intermediate', 'Advanced', 'All'].map((lvl) => {
-                const active = gymLevel === lvl
+              {[
+                { key: 'Beginner', label: 'Beginner (21)' },
+                { key: 'Intermediate', label: 'Intermediate (33)' },
+                { key: 'Advanced', label: 'Advanced (54)' },
+                { key: 'All', label: 'All Programs (108)' },
+              ].map(({ key, label }) => {
+                const active = gymLevel === key
                 return (
                   <button
-                    key={lvl}
-                    onClick={() => setGymLevel(lvl)}
+                    key={key}
+                    onClick={() => setGymLevel(key)}
                     className={`min-h-[38px] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
                       active
                         ? 'bg-gold text-obsidian shadow-sm font-extrabold'
                         : 'border border-white/10 bg-surface text-mute hover:border-gold/50 hover:text-ink'
                     }`}
                   >
-                    {lvl === 'All' ? 'All Levels' : lvl}
+                    {label}
                   </button>
                 )
               })}

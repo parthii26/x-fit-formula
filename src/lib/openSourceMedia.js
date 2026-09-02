@@ -541,6 +541,56 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
     frames: [`${BASE_URL}/Reverse_Crunch/0.jpg`, `${BASE_URL}/Reverse_Crunch/1.jpg`],
     videoUrl: 'https://www.youtube.com/watch?v=gAyxnl_qH_g',
   },
+  'cardio-treadmill': {
+    path: 'Walking_Treadmill',
+    frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=b4bM5G2i68w',
+  },
+  'forearm-wrist-curl': {
+    path: 'Palms-Down_Wrist_Curl_Over_A_Bench',
+    frames: [`${BASE_URL}/Palms-Down_Wrist_Curl_Over_A_Bench/0.jpg`, `${BASE_URL}/Palms-Down_Wrist_Curl_Over_A_Bench/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=uK7hLgA2Q5A',
+  },
+  'bench-press-power': {
+    path: 'Barbell_Bench_Press_-_Medium_Grip',
+    frames: [`${BASE_URL}/Barbell_Bench_Press_-_Medium_Grip/0.jpg`, `${BASE_URL}/Barbell_Bench_Press_-_Medium_Grip/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=rT7DgCr-3pg',
+  },
+  'dumbbell-triceps-extension': {
+    path: 'Standing_Dumbbell_Triceps_Extension',
+    frames: [`${BASE_URL}/Standing_Dumbbell_Triceps_Extension/0.jpg`, `${BASE_URL}/Standing_Dumbbell_Triceps_Extension/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=-Vyt2QdsR7E',
+  },
+  't-bar-heavy': {
+    path: 'T-Bar_Row_with_Handle',
+    frames: [`${BASE_URL}/T-Bar_Row_with_Handle/0.jpg`, `${BASE_URL}/T-Bar_Row_with_Handle/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=j3Igk5nyZE4',
+  },
+  'bent-over-row-advanced': {
+    path: 'Bent_Over_Barbell_Row',
+    frames: [`${BASE_URL}/Bent_Over_Barbell_Row/0.jpg`, `${BASE_URL}/Bent_Over_Barbell_Row/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=FWJR5Ve8gkQ',
+  },
+  'cable-machine-pulldown': {
+    path: 'Wide-Grip_Lat_Pulldown',
+    frames: [`${BASE_URL}/Wide-Grip_Lat_Pulldown/0.jpg`, `${BASE_URL}/Wide-Grip_Lat_Pulldown/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=CAwf7n6Luuc',
+  },
+  'reverse-grip-bent-over-row': {
+    path: 'Bent_Over_Barbell_Row',
+    frames: [`${BASE_URL}/Bent_Over_Barbell_Row/0.jpg`, `${BASE_URL}/Bent_Over_Barbell_Row/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=FWJR5Ve8gkQ',
+  },
+  'standing-calf-raises': {
+    path: 'Standing_Calf_Raises',
+    frames: [`${BASE_URL}/Standing_Calf_Raises/0.jpg`, `${BASE_URL}/Standing_Calf_Raises/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=YMmgqO8Jo-k',
+  },
+  'overhead-press-front-back': {
+    path: 'Standing_Military_Press',
+    frames: [`${BASE_URL}/Standing_Military_Press/0.jpg`, `${BASE_URL}/Standing_Military_Press/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=2yjwXTZQDDI',
+  },
 }
 
 /**
