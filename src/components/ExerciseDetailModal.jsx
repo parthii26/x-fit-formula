@@ -147,7 +147,11 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
             </span>
             <div className="min-w-0">
               <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.25em] text-gold">
-                {isHomeWorkout ? `Home Workout • ${levelOrDifficulty}` : 'Movement Protocol'}
+                {exercise.isGymWorkout
+                  ? `Gym Workout • ${levelOrDifficulty} • ${exercise.day || ''}${exercise.split_name ? ` (${exercise.split_name})` : ''}`
+                  : isHomeWorkout
+                  ? `Home Workout • ${levelOrDifficulty}`
+                  : 'Movement Protocol'}
               </span>
               <h3 className="truncate font-display text-base font-extrabold uppercase tracking-wide text-ink sm:text-xl">
                 {exerciseName}
@@ -393,15 +397,27 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
             {/* Right Column: Execution Protocol & Biomechanics Details */}
             <div className="flex flex-col gap-5 lg:col-span-7">
               {/* Target & Equipment Row */}
-              <div className="grid grid-cols-2 gap-3 border border-white/10 bg-surface-2 p-3.5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border border-white/10 bg-surface-2 p-3.5">
                 <div>
                   <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-gold">Target Anatomy</p>
-                  <p className="mt-0.5 text-xs font-bold text-ink uppercase">{targetMuscle}</p>
+                  <p className="mt-0.5 text-xs font-bold text-ink uppercase truncate">{targetMuscle}</p>
                 </div>
                 <div>
-                  <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-gold">Required Equipment</p>
-                  <p className="mt-0.5 text-xs font-bold text-ink uppercase">{exercise.equipment || 'Bodyweight'}</p>
+                  <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-gold">Equipment</p>
+                  <p className="mt-0.5 text-xs font-bold text-ink uppercase truncate">{exercise.equipment || 'Gym'}</p>
                 </div>
+                {exercise.sets && (
+                  <div>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-gold">Prescription</p>
+                    <p className="mt-0.5 text-xs font-bold text-gold uppercase">{exercise.sets} {exercise.reps ? `• ${exercise.reps}` : ''}</p>
+                  </div>
+                )}
+                {exercise.day && (
+                  <div>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-gold">Day & Split</p>
+                    <p className="mt-0.5 text-xs font-bold text-ink uppercase truncate">{exercise.day} — {exercise.split_name || 'Standard'}</p>
+                  </div>
+                )}
               </div>
 
               {/* Tutorial Title & Description */}

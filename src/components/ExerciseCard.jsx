@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Play, Dumbbell, Clock } from 'lucide-react'
+import { Play, Dumbbell, Clock, Calendar, Repeat } from 'lucide-react'
 import { DifficultyBadge, EquipmentBadge, CategoryBadge } from './badges.jsx'
 import { getOpenSourceDemo } from '../lib/openSourceMedia.js'
 
 export default function ExerciseCard({ exercise, onSelect }) {
   const isHomeWorkout = Boolean(exercise?.isHomeWorkout)
+  const isGymWorkout = Boolean(exercise?.isGymWorkout)
   const openSourceDemo = getOpenSourceDemo(exercise?.slug)
 
   const localSvgFallback = isHomeWorkout
@@ -71,8 +72,13 @@ export default function ExerciseCard({ exercise, onSelect }) {
         </div>
 
         {/* Category / Level Badge top left */}
-        <div className="absolute left-2.5 top-2.5 pointer-events-none">
+        <div className="absolute left-2.5 top-2.5 pointer-events-none flex items-center gap-1.5">
           <CategoryBadge category={exercise.category || (isHomeWorkout ? 'Home' : 'Gym')} />
+          {exercise.day && (
+            <span className="bg-obsidian/90 border border-gold/40 px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-gold">
+              {exercise.day}
+            </span>
+          )}
         </div>
 
         {/* Difficulty / Level Badge top right */}
@@ -80,8 +86,16 @@ export default function ExerciseCard({ exercise, onSelect }) {
           <DifficultyBadge difficulty={exercise.level || exercise.difficulty || 'Beginner'} />
         </div>
 
-        {/* Duration tag for tutorials if available */}
-        {exercise.duration && (
+        {/* Sets & Reps Pill bottom left if Gym Workout */}
+        {exercise.sets && (
+          <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 bg-obsidian/90 px-2 py-0.5 text-[9px] font-bold text-gold backdrop-blur-xs border border-gold/30 pointer-events-none">
+            <Repeat className="h-2.5 w-2.5 text-gold" />
+            <span>{exercise.sets} {exercise.reps ? `• ${exercise.reps}` : ''}</span>
+          </div>
+        )}
+
+        {/* Duration tag for home tutorials if available */}
+        {exercise.duration && !exercise.sets && (
           <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1 bg-obsidian/80 px-2 py-0.5 text-[9px] font-bold text-ink backdrop-blur-xs border border-white/10 pointer-events-none">
             <Clock className="h-2.5 w-2.5 text-gold" />
             <span>{exercise.duration}</span>
@@ -92,6 +106,12 @@ export default function ExerciseCard({ exercise, onSelect }) {
       {/* Card Content Information */}
       <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
         <div>
+          {exercise.split_name && (
+            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gold/80 mb-1">
+              {exercise.day ? `${exercise.day} — ` : ''}{exercise.split_name}{exercise.section ? ` (${exercise.section})` : ''}
+            </p>
+          )}
+
           <h3 className="font-display text-base font-bold uppercase tracking-[0.06em] text-ink transition-colors group-hover:text-gold sm:text-lg">
             {exercise.name || exercise.exercise_name}
           </h3>
@@ -104,7 +124,7 @@ export default function ExerciseCard({ exercise, onSelect }) {
 
         {/* Footer Meta Strip */}
         <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
-          <EquipmentBadge equipment={exercise.equipment || 'Bodyweight'} />
+          <EquipmentBadge equipment={exercise.equipment || 'Gym'} />
 
           <span className="inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-gold group-hover:translate-x-0.5 transition-transform">
             ▶ Watch Tutorial

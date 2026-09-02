@@ -16,6 +16,7 @@
 import { createClient } from '@supabase/supabase-js'
 import seedExercises from '../../data/exercises-seed.json'
 import homeWorkoutSeed from '../../data/home-workout-seed.json'
+import gymWorkoutSeed from '../../data/gym-workout-seed.json'
 import { getOpenSourceDemo } from './openSourceMedia.js'
 
 // ─── Client Initialisation ───────────────────────────────────────────────────
@@ -398,6 +399,96 @@ export async function fetchHomeWorkoutVideoById(id) {
   return found ? formatHomeWorkoutRecord(found) : null
 }
 
+// ─── Gym Workout Videos (Read) ────────────────────────────────────────────────
+
+/**
+ * Fetch official Gym Workout videos.
+ * Supports filtering by level ('Beginner', 'Intermediate', 'Advanced', or 'All'),
+ * day ('Monday', 'Tuesday', etc. or 'All'), and search.
+ */
+export async function fetchGymWorkoutVideos({ level = 'All', day = 'All', search = '' } = {}) {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      let query = supabase.from('gym_workout_videos').select('*')
+      if (level && level !== 'All') {
+        query = query.eq('level', level)
+      }
+      if (day && day !== 'All') {
+        query = query.eq('day', day)
+      }
+      if (search && search.trim()) {
+        const term = `%${search.trim()}%`
+        query = query.or(`exercise_name.ilike.${term},video_title.ilike.${term},target_muscle.ilike.${term},split_name.ilike.${term}`)
+      }
+      query = query.order('id', { ascending: true })
+
+      const { data, error } = await query
+      if (error) throw error
+      if (data && data.length > 0) {
+        return {
+          videos: data.map(formatGymWorkoutRecord),
+          totalCount: data.length,
+          source: 'supabase',
+        }
+      }
+    } catch (err) {
+      console.warn('[Supabase] fetchGymWorkoutVideos failed, using seed fallback:', err.message)
+    }
+  }
+
+  // Fallback to official seed dataset
+  let list = [...gymWorkoutSeed]
+  if (level && level !== 'All') {
+    list = list.filter((v) => v.level.toLowerCase() === level.toLowerCase())
+  }
+  if (day && day !== 'All') {
+    list = list.filter((v) => (v.day || '').toLowerCase() === day.toLowerCase())
+  }
+  if (search && search.trim()) {
+    const q = search.trim().toLowerCase()
+    list = list.filter(
+      (v) =>
+        v.exercise_name.toLowerCase().includes(q) ||
+        (v.video_title && v.video_title.toLowerCase().includes(q)) ||
+        (v.target_muscle && v.target_muscle.toLowerCase().includes(q)) ||
+        (v.split_name && v.split_name.toLowerCase().includes(q)) ||
+        (v.section && v.section.toLowerCase().includes(q))
+    )
+  }
+
+  return {
+    videos: list.map(formatGymWorkoutRecord),
+    totalCount: list.length,
+    source: 'seed_fallback',
+  }
+}
+
+/** Fetch a single gym workout video by id or slug */
+export async function fetchGymWorkoutVideoById(id) {
+  if (!id) return null
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('gym_workout_videos')
+        .select('*')
+        .or(`id.eq.${id},slug.eq.${id},video_id.eq.${id}`)
+        .maybeSingle()
+      if (error) throw error
+      if (data) return formatGymWorkoutRecord(data)
+    } catch (err) {
+      console.warn('[Supabase] fetchGymWorkoutVideoById failed:', err.message)
+    }
+  }
+  const found = gymWorkoutSeed.find(
+    (v) =>
+      v.id === id ||
+      v.slug === id ||
+      v.video_id === id ||
+      v.exercise_name.toLowerCase() === String(id).toLowerCase()
+  )
+  return found ? formatGymWorkoutRecord(found) : null
+}
+
 // ─── Workouts (Read) ──────────────────────────────────────────────────────────
 
 /** Fetch all active workouts with their exercises. */
@@ -773,5 +864,43 @@ function formatHomeWorkoutRecord(item) {
     instructions: item.instructions || [],
     form_cues: item.form_cues || [],
     isHomeWorkout: true,
+  }
+}
+
+/** Normalise a raw gym_workout_videos record into standard app shape. */
+function formatGymWorkoutRecord(item) {
+  const openSourceDemo = getOpenSourceDemo(item.slug)
+  const defaultThumb = openSourceDemo?.frames?.[0] || null
+  const thumbPath = item.thumbnail_url || item.thumbnail_path || `thumbnails/gym-workouts/${item.slug}.jpg`
+  const resolvedVideo = item.video_url || openSourceDemo?.videoUrl || (item.storage_path ? getMediaUrl(item.storage_path) : null)
+  return {
+    ...item,
+    id: item.id,
+    name: item.exercise_name,
+    exercise_name: item.exercise_name,
+    slug: item.slug,
+    level: item.level,
+    day: item.day || '',
+    split_name: item.split_name || '',
+    section: item.section || '',
+    sets: item.sets || '3 sets',
+    reps: item.reps || '8-12 reps',
+    videoUrl: resolvedVideo,
+    video_url: resolvedVideo,
+    videoId: item.video_id,
+    title: item.video_title || `${item.level} ${item.exercise_name}`,
+    video_title: item.video_title || `${item.level} ${item.exercise_name}`,
+    description: item.video_description || '',
+    video_description: item.video_description || '',
+    thumbnailUrl: item.thumbnailUrl || item.thumbnail_url || defaultThumb || getMediaUrl(thumbPath),
+    duration: item.duration || '02:00',
+    target: item.target_muscle || 'Full Body',
+    target_muscle: item.target_muscle || 'Full Body',
+    equipment: item.equipment || 'Gym',
+    difficulty: item.level,
+    category: 'Gym',
+    instructions: item.instructions || [],
+    form_cues: item.form_cues || [],
+    isGymWorkout: true,
   }
 }

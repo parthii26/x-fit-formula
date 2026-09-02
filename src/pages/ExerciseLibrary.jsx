@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Dumbbell, ArrowLeft, RotateCcw, AlertCircle, Sparkles, Flame, CheckCircle, Home, Layers } from 'lucide-react'
-import { fetchExercises, fetchHomeWorkoutVideos } from '../lib/supabase.js'
+import { Dumbbell, ArrowLeft, RotateCcw, AlertCircle, Sparkles, Flame, CheckCircle, Home, Layers, Calendar } from 'lucide-react'
+import { fetchExercises, fetchHomeWorkoutVideos, fetchGymWorkoutVideos } from '../lib/supabase.js'
 import ExerciseCard from '../components/ExerciseCard.jsx'
 import ExerciseSearch from '../components/ExerciseSearch.jsx'
 import ExerciseFilters from '../components/ExerciseFilters.jsx'
 import ExerciseDetailModal from '../components/ExerciseDetailModal.jsx'
 
-export default function ExerciseLibrary({ onBack, embedded = false, initialCollection = 'home' }) {
-  // 'home' (Official Home Workout Video Library) | 'all' (Movement Database)
+export default function ExerciseLibrary({ onBack, embedded = false, initialCollection = 'gym' }) {
+  // 'gym' (Official Gym Workout Library) | 'home' (Official Home Workout Library) | 'all' (Full Movement Database)
   const [collection, setCollection] = useState(initialCollection)
+  const [gymLevel, setGymLevel] = useState('All') // 'All' | 'Beginner' | 'Intermediate' | 'Advanced'
+  const [gymDay, setGymDay] = useState('All') // 'All' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'
   const [homeLevel, setHomeLevel] = useState('All') // 'All' | 'Beginner' | 'Intermediate' | 'Advanced'
 
   const [search, setSearch] = useState('')
@@ -36,7 +38,27 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
     setLoading(true)
     setError(null)
 
-    if (collection === 'home') {
+    if (collection === 'gym') {
+      fetchGymWorkoutVideos({
+        level: gymLevel,
+        day: gymDay,
+        search: debouncedSearch,
+      })
+        .then((res) => {
+          if (active) {
+            setExercises(res.videos || [])
+            setTotalCount(res.totalCount || 0)
+            setLoading(false)
+          }
+        })
+        .catch((err) => {
+          if (active) {
+            console.error('Failed to load gym workout library:', err)
+            setError("We couldn't load the gym workout library. Please try again.")
+            setLoading(false)
+          }
+        })
+    } else if (collection === 'home') {
       fetchHomeWorkoutVideos({
         level: homeLevel,
         search: debouncedSearch,
@@ -62,7 +84,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
         category,
         bodyPart,
         equipment,
-        limit: 60,
+        limit: 80,
         offset: 0,
       })
         .then((res) => {
@@ -84,11 +106,13 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
     return () => {
       active = false
     }
-  }, [collection, homeLevel, debouncedSearch, difficulty, category, bodyPart, equipment])
+  }, [collection, gymLevel, gymDay, homeLevel, debouncedSearch, difficulty, category, bodyPart, equipment])
 
   const resetFilters = () => {
     setSearch('')
     setDebouncedSearch('')
+    setGymLevel('All')
+    setGymDay('All')
     setHomeLevel('All')
     setDifficulty('All')
     setCategory('All')
@@ -98,6 +122,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
 
   const hasActiveFilters =
     search.trim() !== '' ||
+    (collection === 'gym' && (gymLevel !== 'All' || gymDay !== 'All')) ||
     (collection === 'home' && homeLevel !== 'All') ||
     (collection === 'all' &&
       (difficulty !== 'All' || category !== 'All' || bodyPart !== 'All' || equipment !== 'All'))
@@ -135,13 +160,23 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
         {/* Page Header */}
         <div className="animate-fade-up">
           <p className="text-[10px] font-semibold uppercase tracking-[0.4em] text-gold">
-            {collection === 'home' ? 'Official Home Workout Collection' : 'Biomechanics & Movement Database'}
+            {collection === 'gym'
+              ? 'Official Gym Workout Collection'
+              : collection === 'home'
+              ? 'Official Home Workout Collection'
+              : 'Biomechanics & Movement Database'}
           </p>
           <h1 className="mt-2 font-display text-3xl font-extrabold uppercase tracking-[0.08em] sm:text-4xl lg:text-5xl">
-            {collection === 'home' ? 'Home Workout Library' : 'Movement Database'}
+            {collection === 'gym'
+              ? 'Gym Workout Library'
+              : collection === 'home'
+              ? 'Home Workout Library'
+              : 'Movement Database'}
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed tracking-wide text-mute">
-            {collection === 'home'
+            {collection === 'gym'
+              ? 'Official structured gym resistance protocols categorized by level (Beginner, Intermediate, Advanced) and day-by-day training splits with motion demonstrators and form cues.'
+              : collection === 'home'
               ? 'Official structured home training series categorized by level: Beginner (7), Intermediate (11), and Advanced (11).'
               : 'Explore comprehensive resistance movements, biomechanics instructions, and execution technique.'}
           </p>
@@ -149,6 +184,22 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
 
         {/* Collection Switcher Tabs */}
         <div className="mt-6 flex flex-wrap items-center gap-2 border-b border-white/10 pb-4">
+          <button
+            type="button"
+            onClick={() => {
+              setCollection('gym')
+              setSearch('')
+            }}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all ${
+              collection === 'gym'
+                ? 'border-b-2 border-gold bg-gold/10 text-gold'
+                : 'border border-white/10 text-mute hover:text-ink hover:border-white/20'
+            }`}
+          >
+            <Dumbbell className="h-3.5 w-3.5" />
+            Gym Workouts (Client Collection)
+          </button>
+
           <button
             type="button"
             onClick={() => {
@@ -182,6 +233,55 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
           </button>
         </div>
 
+        {/* Filters for Gym Workout Collection */}
+        {collection === 'gym' && (
+          <div className="mt-4 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-mute mr-2">
+                Level:
+              </span>
+              {['All', 'Beginner', 'Intermediate', 'Advanced'].map((lvl) => {
+                const active = gymLevel === lvl
+                return (
+                  <button
+                    key={lvl}
+                    onClick={() => setGymLevel(lvl)}
+                    className={`min-h-[38px] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                      active
+                        ? 'bg-gold text-obsidian shadow-sm font-extrabold'
+                        : 'border border-white/10 bg-surface text-mute hover:border-gold/50 hover:text-ink'
+                    }`}
+                  >
+                    {lvl === 'All' ? 'All Levels' : lvl}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-mute mr-2">
+                Day Split:
+              </span>
+              {['All', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((d) => {
+                const active = gymDay === d
+                return (
+                  <button
+                    key={d}
+                    onClick={() => setGymDay(d)}
+                    className={`min-h-[34px] px-3 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                      active
+                        ? 'border border-gold bg-gold/20 text-gold font-bold'
+                        : 'border border-white/10 bg-surface/60 text-mute hover:text-ink hover:border-white/20'
+                    }`}
+                  >
+                    {d}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Level Filters for Home Workout Collection */}
         {collection === 'home' && (
           <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -212,7 +312,13 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
           <ExerciseSearch
             value={search}
             onChange={setSearch}
-            placeholder={collection === 'home' ? 'Search home workout tutorials (e.g. Incline Push-Ups, Free Squats)...' : 'Search all movements by name, muscle, equipment...'}
+            placeholder={
+              collection === 'gym'
+                ? 'Search gym exercises (e.g. Barbell Bench Press, T-Bar, Skullcrusher, Face Pull)...'
+                : collection === 'home'
+                ? 'Search home workout tutorials (e.g. Incline Push-Ups, Free Squats)...'
+                : 'Search all movements by name, muscle, equipment...'
+            }
           />
 
           {collection === 'all' && (
@@ -234,7 +340,12 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
         {/* Results Counter / Filter Status */}
         <div className="mt-6 flex items-center justify-between border-b border-white/10 pb-3">
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-mute">
-            Showing <span className="text-gold">{loading ? '...' : exercises.length}</span> {collection === 'home' ? 'home workout tutorials' : 'movements'}
+            Showing <span className="text-gold">{loading ? '...' : exercises.length}</span>{' '}
+            {collection === 'gym'
+              ? 'gym resistance exercises'
+              : collection === 'home'
+              ? 'home workout tutorials'
+              : 'movements'}
           </p>
           {hasActiveFilters && (
             <span className="text-[9px] font-semibold uppercase tracking-wider text-gold/80">
@@ -281,10 +392,10 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
           <div className="mt-12 flex flex-col items-center justify-center border border-white/10 bg-surface p-12 text-center sm:p-16">
             <Dumbbell className="h-12 w-12 text-white/20" strokeWidth={1} />
             <h3 className="mt-4 font-display text-xl font-bold uppercase tracking-wider text-ink">
-              No tutorials found.
+              No exercises found.
             </h3>
             <p className="mt-2 text-sm text-mute">
-              Try adjusting your search or selected level.
+              Try adjusting your search query, level, or day split filter.
             </p>
             <button
               type="button"
@@ -301,7 +412,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {exercises.map((ex) => (
               <ExerciseCard
-                key={ex.id || ex.slug}
+                key={ex.id || `${ex.slug}-${ex.day}-${ex.level}`}
                 exercise={ex}
                 onSelect={(selected) => setSelectedExercise(selected)}
               />
