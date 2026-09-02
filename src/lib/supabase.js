@@ -209,17 +209,113 @@ export async function upsertProfile(userId, patch) {
   }
 }
 
-// Helper to derive body_part and equipment from gym/home workout seed items
+// Helper to derive accurate body_part and equipment from gym/home workout seed items
 function inferBodyPart(item) {
-  if (item.body_part) return item.body_part
-  const text = `${item.split_name || ''} ${item.target_muscle || ''} ${item.exercise_name || ''} ${item.name || ''} ${item.target || ''}`.toLowerCase()
-  if (text.includes('chest') || text.includes('pec') || text.includes('bench press') || text.includes('push-up') || text.includes('flye') || text.includes('fly') || text.includes('butterfly') || text.includes('pullover')) return 'Chest'
-  if (text.includes('lat') || text.includes('back') || text.includes('pull-up') || text.includes('pulldown') || text.includes('row') || text.includes('t-bar')) return 'Back'
-  if (text.includes('shoulder') || text.includes('delt') || text.includes('overhead press') || text.includes('military') || text.includes('front raise') || text.includes('side raise') || text.includes('lateral raise') || text.includes('face pull') || text.includes('upright row') || text.includes('shrug')) return 'Shoulders'
-  if (text.includes('bicep') || text.includes('tricep') || text.includes('curl') || text.includes('skullcrusher') || text.includes('dip') || text.includes('push-down') || text.includes('pushdown') || text.includes('forearm') || text.includes('arm')) return 'Arms'
-  if (text.includes('squat') || text.includes('leg') || text.includes('calf') || text.includes('calves') || text.includes('quad') || text.includes('hamstring') || text.includes('glute') || text.includes('lunge')) return 'Legs'
-  if (text.includes('core') || text.includes('abs') || text.includes('plank') || text.includes('crunch') || text.includes('knee raise') || text.includes('air bike')) return 'Core'
-  if (text.includes('cardio') || text.includes('walk') || text.includes('treadmill')) return 'Cardio'
+  if (item.body_part && item.body_part !== 'Full Body') return item.body_part
+  const name = (item.exercise_name || item.name || item.slug || '').toLowerCase()
+  const target = (item.target_muscle || item.target || '').toLowerCase()
+
+  // 1. Primary Arms (Biceps, Triceps, Forearms)
+  if (
+    name.includes('curl') ||
+    name.includes('skullcrusher') ||
+    name.includes('push-down') ||
+    name.includes('pushdown') ||
+    name.includes('triceps dip') ||
+    name.includes('tricep') ||
+    name.includes('forearm') ||
+    name.includes('wrist') ||
+    name.includes('biceps') ||
+    target.includes('biceps') ||
+    target.includes('triceps') ||
+    target.includes('brachii')
+  ) {
+    return 'Arms'
+  }
+
+  // 2. Primary Chest (Presses, Flyes, Pushups, Pullovers, Crossover)
+  if (
+    name.includes('bench press') ||
+    name.includes('chest') ||
+    name.includes('push-up') ||
+    name.includes('pushups') ||
+    name.includes('fly') ||
+    name.includes('flye') ||
+    name.includes('butterfly') ||
+    name.includes('pullover') ||
+    name.includes('crossover') ||
+    (name.includes('dumbbell press') && !name.includes('shoulder') && !name.includes('standing') && !name.includes('biceps')) ||
+    target.includes('pectoral')
+  ) {
+    return 'Chest'
+  }
+
+  // 3. Primary Legs & Glutes (Squats, Presses, Extensions, Curls, Calves, Lunges)
+  if (
+    name.includes('squat') ||
+    name.includes('leg extension') ||
+    name.includes('leg press') ||
+    name.includes('leg curl') ||
+    name.includes('calf') ||
+    name.includes('calves') ||
+    name.includes('lunge') ||
+    name.includes('deadlift') ||
+    target.includes('quad') ||
+    target.includes('hamstring') ||
+    target.includes('glute') ||
+    target.includes('soleus') ||
+    target.includes('gastrocnemius')
+  ) {
+    return 'Legs'
+  }
+
+  // 4. Primary Back & Lats (Pulldowns, Rows, Pullups, T-Bar, Cable Pulldown)
+  if (
+    name.includes('pulldown') ||
+    name.includes('pull-up') ||
+    name.includes('pullups') ||
+    name.includes('t-bar') ||
+    (name.includes('row') && !name.includes('upright')) ||
+    name.includes('cable machine') ||
+    target.includes('latissimus') ||
+    target.includes('rhomboid')
+  ) {
+    return 'Back'
+  }
+
+  // 5. Primary Shoulders & Traps (Overhead Press, Raises, Face Pull, Upright Row, Shrugs)
+  if (
+    name.includes('shoulder') ||
+    name.includes('overhead press') ||
+    name.includes('military press') ||
+    name.includes('face pull') ||
+    name.includes('upright row') ||
+    name.includes('raise') ||
+    name.includes('shrug') ||
+    target.includes('deltoid') ||
+    target.includes('trapezius')
+  ) {
+    return 'Shoulders'
+  }
+
+  // 6. Primary Core
+  if (
+    name.includes('plank') ||
+    name.includes('crunch') ||
+    name.includes('knee raise') ||
+    name.includes('leg raise') ||
+    name.includes('bike') ||
+    target.includes('abdominis') ||
+    target.includes('core')
+  ) {
+    return 'Core'
+  }
+
+  // 7. Cardio
+  if (name.includes('cardio') || name.includes('walk') || name.includes('treadmill') || name.includes('cycle')) {
+    return 'Cardio'
+  }
+
   return 'Chest'
 }
 
@@ -320,7 +416,7 @@ function getUnifiedExercises() {
 
 /**
  * Fetch exercises with optional filters.
- * Falls back to unified local seed data when Supabase is not available.
+ * Returns unified master library merging local verified movements with any Supabase custom exercises.
  */
 export async function fetchExercises({
   search     = '',
@@ -329,70 +425,85 @@ export async function fetchExercises({
   equipment  = 'All',
   difficulty = 'All',
   category   = 'All',
-  limit      = 60,
+  limit      = 100,
   offset     = 0,
 } = {}) {
+  let masterList = getUnifiedExercises()
+
   if (isSupabaseConfigured && supabase) {
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('exercises')
-        .select('*', { count: 'exact' })
+        .select('*')
         .eq('active', true)
 
-      if (search && search.trim()) {
-        const term = `%${search.trim()}%`
-        query = query.or(
-          `name.ilike.${term},target.ilike.${term},equipment.ilike.${term},body_part.ilike.${term}`
-        )
-      }
-      if (bodyPart   && bodyPart   !== 'All') query = query.eq('body_part',  bodyPart)
-      if (target     && target     !== 'All') query = query.eq('target',     target)
-      if (equipment  && equipment  !== 'All') query = query.eq('equipment',  equipment)
-      if (difficulty && difficulty !== 'All') query = query.eq('difficulty', difficulty)
-      if (category   && category   !== 'All') {
-        query = query.or(`category.eq.${category},category.eq.Both`)
-      }
-
-      query = query.order('name', { ascending: true }).range(offset, offset + limit - 1)
-
-      const { data, count, error } = await query
-      if (error) throw error
-
-      if (data && data.length > 0) {
-        return {
-          exercises:  (data || []).map(formatExerciseRecord),
-          totalCount: count || (data || []).length,
-          source:     'supabase',
-        }
+      if (!error && data && data.length > 0) {
+        const map = new Map()
+        masterList.forEach((item) => {
+          map.set((item.slug || item.name).toLowerCase(), item)
+        })
+        data.forEach((item) => {
+          const key = (item.slug || item.name).toLowerCase()
+          if (!map.has(key)) {
+            map.set(key, formatExerciseRecord(item))
+          }
+        })
+        masterList = Array.from(map.values())
       }
     } catch (err) {
-      console.warn('[Supabase] fetchExercises failed, using seed fallback:', err.message)
+      console.warn('[Supabase] fetchExercises live query failed, using master list:', err.message)
     }
   }
 
-  // ── Local / unified fallback ────────────────────────────────────────────────
-  let list = getUnifiedExercises()
+  let list = [...masterList]
 
   if (search && search.trim()) {
     const q = search.trim().toLowerCase()
     list = list.filter(
       (ex) =>
-        ex.name.toLowerCase().includes(q) ||
+        (ex.name && ex.name.toLowerCase().includes(q)) ||
+        (ex.exercise_name && ex.exercise_name.toLowerCase().includes(q)) ||
         (ex.target && ex.target.toLowerCase().includes(q)) ||
+        (ex.target_muscle && ex.target_muscle.toLowerCase().includes(q)) ||
         (ex.equipment && ex.equipment.toLowerCase().includes(q)) ||
         (ex.body_part && ex.body_part.toLowerCase().includes(q)) ||
+        (ex.split_name && ex.split_name.toLowerCase().includes(q)) ||
         (ex.secondary_muscles || []).some((m) => m.toLowerCase().includes(q))
     )
   }
-  if (bodyPart   && bodyPart   !== 'All') list = list.filter((ex) => (ex.body_part || '').toLowerCase()  === bodyPart.toLowerCase())
-  if (target     && target     !== 'All') list = list.filter((ex) => (ex.target || '').toLowerCase()     === target.toLowerCase())
-  if (equipment  && equipment  !== 'All') list = list.filter((ex) => (ex.equipment || '').toLowerCase()  === equipment.toLowerCase())
-  if (difficulty && difficulty !== 'All') list = list.filter((ex) => (ex.difficulty || '').toLowerCase() === difficulty.toLowerCase())
-  if (category   && category   !== 'All') list = list.filter((ex) => (ex.category || '').toLowerCase() === category.toLowerCase() || ex.category === 'Both')
+
+  if (bodyPart && bodyPart !== 'All') {
+    list = list.filter((ex) => (ex.body_part || inferBodyPart(ex)).toLowerCase() === bodyPart.toLowerCase())
+  }
+  if (target && target !== 'All') {
+    list = list.filter((ex) => (ex.target || ex.target_muscle || '').toLowerCase().includes(target.toLowerCase()))
+  }
+  if (equipment && equipment !== 'All') {
+    list = list.filter((ex) => {
+      const eq = (ex.equipment || '').toLowerCase()
+      const filterEq = equipment.toLowerCase()
+      if (filterEq === 'dumbbells' || filterEq === 'dumbbell') return eq.includes('dumbbell')
+      if (filterEq === 'barbell') return eq.includes('barbell')
+      if (filterEq === 'cable') return eq.includes('cable')
+      if (filterEq === 'machine') return eq.includes('machine') || eq.includes('leverage') || eq.includes('bench')
+      if (filterEq === 'bodyweight') return eq.includes('bodyweight')
+      return eq.includes(filterEq)
+    })
+  }
+  if (difficulty && difficulty !== 'All') {
+    list = list.filter((ex) => (ex.difficulty || ex.level || '').toLowerCase() === difficulty.toLowerCase())
+  }
+  if (category && category !== 'All') {
+    list = list.filter((ex) => {
+      const cat = (ex.category || '').toLowerCase()
+      const filterCat = category.toLowerCase()
+      return cat === filterCat || cat === 'both'
+    })
+  }
 
   const totalCount = list.length
   const paginated  = list.slice(offset, offset + limit).map(formatExerciseRecord)
-  return { exercises: paginated, totalCount, source: 'seed_fallback' }
+  return { exercises: paginated, totalCount, source: isSupabaseConfigured ? 'supabase_unified' : 'seed_fallback' }
 }
 
 /** Fetch a single exercise by UUID, slug, source_id, or name. */
