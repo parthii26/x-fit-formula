@@ -43,19 +43,19 @@ const intermediate = [
   { id: 'gym-int-mon-5', exercise_name: 'Incline Dumbbell Press', slug: 'incline-dumbbell-press', level: 'Intermediate', day: 'Monday', split_name: 'Chest Hypertrophy', sets: '3-4 sets', reps: '10-12 reps', target_muscle: 'Upper Chest & Anterior Delts', equipment: 'Dumbbells & Incline Bench' },
   { id: 'gym-int-mon-6', exercise_name: 'Chest Butterfly', slug: 'chest-butterfly', level: 'Intermediate', day: 'Monday', split_name: 'Chest Hypertrophy', sets: '3-4 sets', reps: '12-15 reps', target_muscle: 'Pectoralis Major Peak Contraction', equipment: 'Pec Deck / Butterfly Machine' },
 
-  // Tuesday (Back / Lats - 5)
+  // Tuesday (Back / Lats - 4)
   { id: 'gym-int-tue-1', exercise_name: 'Cable Lat Pulldown', slug: 'cable-lat-pulldown', level: 'Intermediate', day: 'Tuesday', split_name: 'Back & Lats', sets: '3-4 sets', reps: '8-12 reps', target_muscle: 'Latissimus Dorsi & Teres Major', equipment: 'Lat Pulldown Machine' },
   { id: 'gym-int-tue-2', exercise_name: 'T-Bar', slug: 't-bar', level: 'Intermediate', day: 'Tuesday', split_name: 'Back & Lats', sets: '3-4 sets', reps: '8-10 reps', target_muscle: 'Mid-Back, Rhomboids & Lats', equipment: 'T-Bar Platform' },
   { id: 'gym-int-tue-3', exercise_name: 'Barbell Row', slug: 'barbell-row', level: 'Intermediate', day: 'Tuesday', split_name: 'Back & Lats', sets: '3-4 sets', reps: '8-10 reps', target_muscle: 'Latissimus Dorsi, Traps & Rhomboids', equipment: 'Barbell' },
   { id: 'gym-int-tue-4', exercise_name: 'Dumbbell Rowing', slug: 'dumbbell-rowing', level: 'Intermediate', day: 'Tuesday', split_name: 'Back & Lats', sets: '3-4 sets', reps: '10-12 reps each arm', target_muscle: 'Latissimus Dorsi & Unilateral Core', equipment: 'Dumbbells & Flat Bench' },
-  { id: 'gym-int-tue-5', exercise_name: 'Seated Cable Row', slug: 'seated-cable-row', level: 'Intermediate', day: 'Tuesday', split_name: 'Back & Lats', sets: '3-4 sets', reps: '10-12 reps', target_muscle: 'Middle Trapezius & Rhomboids', equipment: 'Seated Cable Row Machine' },
 
-  // Wednesday (Biceps / Forearm - 5)
+  // Wednesday (Biceps / Forearm - 6)
   { id: 'gym-int-wed-1', exercise_name: 'Barbell Curl', slug: 'barbell-curl', level: 'Intermediate', day: 'Wednesday', split_name: 'Biceps & Forearms', sets: '3-4 sets', reps: '8-10 reps', target_muscle: 'Biceps Brachii (Short & Long Head)', equipment: 'Barbell or EZ-Bar' },
   { id: 'gym-int-wed-2', exercise_name: 'Dumbbell Curl', slug: 'dumbbell-curl', level: 'Intermediate', day: 'Wednesday', split_name: 'Biceps & Forearms', sets: '3-4 sets', reps: '10-12 reps', target_muscle: 'Biceps Brachii & Supinators', equipment: 'Dumbbells' },
   { id: 'gym-int-wed-3', exercise_name: 'Cable Hammer Curl', slug: 'cable-hammer-curl', level: 'Intermediate', day: 'Wednesday', split_name: 'Biceps & Forearms', sets: '3-4 sets', reps: '10-12 reps', target_muscle: 'Brachioradialis & Brachialis', equipment: 'Cable Machine & Rope' },
   { id: 'gym-int-wed-4', exercise_name: 'Barbell Hammer Curl', slug: 'barbell-hammer-curl', level: 'Intermediate', day: 'Wednesday', split_name: 'Biceps & Forearms', sets: '3-4 sets', reps: '10-12 reps', target_muscle: 'Brachialis & Forearms', equipment: 'Swiss Bar / Dumbbells' },
-  { id: 'gym-int-wed-5', exercise_name: 'Forearm', slug: 'forearm-wrist-curl', level: 'Intermediate', day: 'Wednesday', split_name: 'Biceps & Forearms', sets: '3-4 sets', reps: '15-20 reps', target_muscle: 'Wrist Flexors & Extensors', equipment: 'Barbell & Bench' },
+  { id: 'gym-int-wed-5', exercise_name: 'Cable Hammer Curl', slug: 'cable-hammer-curl', level: 'Intermediate', day: 'Wednesday', split_name: 'Biceps & Forearms', sets: '3-4 sets', reps: '10-12 reps', target_muscle: 'Brachioradialis & Brachialis', equipment: 'Cable Machine & Rope' },
+  { id: 'gym-int-wed-6', exercise_name: 'Forearm', slug: 'forearm-wrist-curl', level: 'Intermediate', day: 'Wednesday', split_name: 'Biceps & Forearms', sets: '3-4 sets', reps: '15-20 reps', target_muscle: 'Wrist Flexors & Extensors', equipment: 'Barbell & Bench' },
 
   // Thursday (Shoulders - 7)
   { id: 'gym-int-thu-1', exercise_name: 'Overhead Press', slug: 'overhead-press', level: 'Intermediate', day: 'Thursday', split_name: 'Shoulders & Trapezius', sets: '3-4 sets', reps: '6-8 reps', target_muscle: 'Anterior & Lateral Deltoids', equipment: 'Barbell & Squat Rack' },

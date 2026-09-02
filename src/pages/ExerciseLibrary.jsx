@@ -12,7 +12,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
   // 'gym' (Official Gym Workout Library) | 'home' (Official Home Workout Library) | 'all' (Full Movement Database)
   const [collection, setCollection] = useState(initialCollection)
   const [gymLevel, setGymLevel] = useState('Beginner') // 'Beginner' | 'Intermediate' | 'Advanced' | 'All'
-  const [gymDay, setGymDay] = useState('Monday') // 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'All'
+  const [gymDay, setGymDay] = useState('All') // 'All' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'
   const [homeLevel, setHomeLevel] = useState('All') // 'All' | 'Beginner' | 'Intermediate' | 'Advanced'
 
   const [search, setSearch] = useState('')

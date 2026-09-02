@@ -372,18 +372,6 @@
     "equipment": "Dumbbells & Flat Bench"
   },
   {
-    "id": "gym-int-tue-5",
-    "exercise_name": "Seated Cable Row",
-    "slug": "seated-cable-row",
-    "level": "Intermediate",
-    "day": "Tuesday",
-    "split_name": "Back & Lats",
-    "sets": "3-4 sets",
-    "reps": "10-12 reps",
-    "target_muscle": "Middle Trapezius & Rhomboids",
-    "equipment": "Seated Cable Row Machine"
-  },
-  {
     "id": "gym-int-wed-1",
     "exercise_name": "Barbell Curl",
     "slug": "barbell-curl",
@@ -433,6 +421,18 @@
   },
   {
     "id": "gym-int-wed-5",
+    "exercise_name": "Cable Hammer Curl",
+    "slug": "cable-hammer-curl",
+    "level": "Intermediate",
+    "day": "Wednesday",
+    "split_name": "Biceps & Forearms",
+    "sets": "3-4 sets",
+    "reps": "10-12 reps",
+    "target_muscle": "Brachioradialis & Brachialis",
+    "equipment": "Cable Machine & Rope"
+  },
+  {
+    "id": "gym-int-wed-6",
     "exercise_name": "Forearm",
     "slug": "forearm-wrist-curl",
     "level": "Intermediate",
