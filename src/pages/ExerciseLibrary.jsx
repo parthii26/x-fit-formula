@@ -9,9 +9,9 @@ import ExerciseDetailModal from '../components/ExerciseDetailModal.jsx'
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 export default function ExerciseLibrary({ onBack, embedded = false, initialCollection = 'gym' }) {
-  // 'gym' (Official Gym Workout Library) | 'home' (Official Home Workout Library) | 'all' (Full Movement Database)
+  // 'gym' (Official Gym Workout Collection) | 'home' (Official Home Workout Collection) | 'all' (Full Movement Library)
   const [collection, setCollection] = useState(initialCollection)
-  const [gymLevel, setGymLevel] = useState('Beginner') // 'Beginner' | 'Intermediate' | 'Advanced' | 'All'
+  const [gymLevel, setGymLevel] = useState('All') // 'All' | 'Beginner' | 'Intermediate' | 'Advanced'
   const [gymDay, setGymDay] = useState('All') // 'All' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'
   const [homeLevel, setHomeLevel] = useState('All') // 'All' | 'Beginner' | 'Intermediate' | 'Advanced'
 
@@ -199,7 +199,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed tracking-wide text-mute">
             {collection === 'gym'
-              ? 'Official structured gym resistance protocols categorized by level (Beginner, Intermediate, Advanced) and day-by-day training splits with motion demonstrators and form cues.'
+              ? 'Official structured gym training series categorized by level: Beginner (21), Intermediate (33), and Advanced (54) with day-by-day training splits and motion demonstrators.'
               : collection === 'home'
               ? 'Official structured home training series categorized by level: Beginner (7), Intermediate (11), and Advanced (11).'
               : 'Explore comprehensive resistance movements, biomechanics instructions, and execution technique.'}
@@ -221,7 +221,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
             }`}
           >
             <Dumbbell className="h-3.5 w-3.5" />
-            Gym Workouts (108 Entries • 78 Movements)
+            Gym Workouts (Client Collection)
           </button>
 
           <button
@@ -237,7 +237,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
             }`}
           >
             <Home className="h-3.5 w-3.5" />
-            Home Workouts (29 Tutorials)
+            Home Workouts (Client Collection)
           </button>
 
           <button
@@ -253,28 +253,31 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
             }`}
           >
             <Layers className="h-3.5 w-3.5" />
-            Full Movement Library (100+ Exercises)
+            Full Movement Library
           </button>
         </div>
 
-        {/* Filters for Gym Workout Collection */}
+        {/* Level Filters for Gym Workout Collection */}
         {collection === 'gym' && (
           <div className="mt-4 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-mute mr-2">
-                Program Tier:
+                Filter By Level:
               </span>
               {[
+                { key: 'All', label: 'All Levels (108)' },
                 { key: 'Beginner', label: 'Beginner (21)' },
                 { key: 'Intermediate', label: 'Intermediate (33)' },
                 { key: 'Advanced', label: 'Advanced (54)' },
-                { key: 'All', label: 'All Programs (108)' },
               ].map(({ key, label }) => {
                 const active = gymLevel === key
                 return (
                   <button
                     key={key}
-                    onClick={() => setGymLevel(key)}
+                    onClick={() => {
+                      setGymLevel(key)
+                      setGymDay('All')
+                    }}
                     className={`min-h-[38px] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
                       active
                         ? 'bg-gold text-obsidian shadow-sm font-extrabold'
@@ -287,23 +290,23 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
               })}
             </div>
 
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
               <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-mute mr-2">
                 Day Split:
               </span>
-              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'All'].map((d) => {
+              {['All', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((d) => {
                 const active = gymDay === d
                 return (
                   <button
                     key={d}
                     onClick={() => setGymDay(d)}
-                    className={`min-h-[34px] px-3.5 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                    className={`min-h-[32px] px-3 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors ${
                       active
-                        ? 'border border-gold bg-gold text-obsidian font-extrabold shadow-sm'
+                        ? 'border border-gold bg-gold/20 text-gold font-bold'
                         : 'border border-white/10 bg-surface/60 text-mute hover:text-ink hover:border-white/20'
                     }`}
                   >
-                    {d === 'All' ? 'All Days View' : d}
+                    {d === 'All' ? 'All Days' : d}
                   </button>
                 )
               })}
@@ -343,7 +346,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
             onChange={setSearch}
             placeholder={
               collection === 'gym'
-                ? 'Search gym exercises (e.g. Barbell Flat Bench Press, T-Bar, Skullcrusher, Face Pull)...'
+                ? 'Search gym workout exercises (e.g. Barbell Flat Bench Press, Incline Dumbbell Press, T-Bar, Skullcrusher)...'
                 : collection === 'home'
                 ? 'Search home workout tutorials (e.g. Incline Push-Ups, Free Squats)...'
                 : 'Search all movements by name, muscle, equipment...'
@@ -371,7 +374,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-mute">
             Showing <span className="text-gold">{loading ? '...' : exercises.length}</span>{' '}
             {collection === 'gym'
-              ? 'gym resistance exercises'
+              ? 'gym workouts'
               : collection === 'home'
               ? 'home workout tutorials'
               : 'movements'}
