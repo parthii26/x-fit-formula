@@ -339,7 +339,7 @@ function getUnifiedExercises() {
   // 1. Base seed exercises
   seedExercises.forEach((ex) => {
     const key = (ex.slug || ex.name).toLowerCase()
-    map.set(key, { ...ex })
+    map.set(key, { ...ex, levels: [ex.difficulty || 'Beginner'] })
   })
 
   // 2. Gym workouts converted to exercises
@@ -359,6 +359,7 @@ function getUnifiedExercises() {
         secondary_muscles: [],
         equipment: eq,
         difficulty: item.level || 'Beginner',
+        levels: [item.level || 'Beginner'],
         category: 'Gym',
         compound: true,
         instructions: item.instructions || [],
@@ -370,6 +371,7 @@ function getUnifiedExercises() {
         isGymWorkout: true,
       })
     } else {
+      const levels = Array.from(new Set([...(existing.levels || [existing.difficulty || 'Beginner']), item.level || 'Beginner']))
       map.set(key, {
         ...existing,
         body_part: existing.body_part || bp,
@@ -378,6 +380,8 @@ function getUnifiedExercises() {
         split_name: item.split_name,
         sets: item.sets,
         reps: item.reps,
+        levels,
+        difficulty: levels.length > 1 ? 'All Levels' : levels[0],
         isGymWorkout: true,
       })
     }
@@ -399,10 +403,20 @@ function getUnifiedExercises() {
         secondary_muscles: [],
         equipment: 'Bodyweight',
         difficulty: item.level || 'Beginner',
+        levels: [item.level || 'Beginner'],
         category: 'Home',
         compound: true,
         instructions: item.instructions || [],
         form_cues: item.form_cues || [],
+        isHomeWorkout: true,
+      })
+    } else {
+      const levels = Array.from(new Set([...(existing.levels || [existing.difficulty || 'Beginner']), item.level || 'Beginner']))
+      map.set(key, {
+        ...existing,
+        body_part: existing.body_part || bp,
+        levels,
+        difficulty: levels.length > 1 ? 'All Levels' : levels[0],
         isHomeWorkout: true,
       })
     }
@@ -491,7 +505,15 @@ export async function fetchExercises({
     })
   }
   if (difficulty && difficulty !== 'All') {
-    list = list.filter((ex) => (ex.difficulty || ex.level || '').toLowerCase() === difficulty.toLowerCase())
+    const filterD = difficulty.toLowerCase()
+    list = list.filter((ex) => {
+      const d = (ex.difficulty || ex.level || '').toLowerCase()
+      if (d === 'all' || d === 'all levels' || d === 'both') return true
+      if (Array.isArray(ex.levels) && ex.levels.some((l) => l.toLowerCase() === filterD)) {
+        return true
+      }
+      return d === filterD
+    })
   }
   if (category && category !== 'All') {
     list = list.filter((ex) => {
