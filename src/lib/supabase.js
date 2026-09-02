@@ -375,7 +375,7 @@ function getUnifiedExercises() {
       map.set(key, {
         ...existing,
         body_part: existing.body_part || bp,
-        category: 'Gym',
+        category: existing.category === 'Home' ? 'Both' : (existing.category || 'Gym'),
         day: item.day,
         split_name: item.split_name,
         sets: item.sets,
@@ -415,6 +415,7 @@ function getUnifiedExercises() {
       map.set(key, {
         ...existing,
         body_part: existing.body_part || bp,
+        category: existing.category === 'Gym' ? 'Both' : (existing.category || 'Home'),
         levels,
         difficulty: levels.length > 1 ? 'All Levels' : levels[0],
         isHomeWorkout: true,
@@ -516,10 +517,13 @@ export async function fetchExercises({
     })
   }
   if (category && category !== 'All') {
+    const filterCat = category.toLowerCase()
     list = list.filter((ex) => {
       const cat = (ex.category || '').toLowerCase()
-      const filterCat = category.toLowerCase()
-      return cat === filterCat || cat === 'both'
+      if (cat === 'both') return true
+      if (filterCat === 'gym' && (ex.isGymWorkout || cat === 'gym')) return true
+      if (filterCat === 'home' && (ex.isHomeWorkout || cat === 'home')) return true
+      return cat === filterCat
     })
   }
 
