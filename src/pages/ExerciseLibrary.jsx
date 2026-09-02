@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react'
-import { Dumbbell, ArrowLeft, RotateCcw, AlertCircle, Sparkles, Flame, CheckCircle, Home, Layers, Calendar } from 'lucide-react'
+import { useEffect, useState, useMemo } from 'react'
+import { Dumbbell, ArrowLeft, RotateCcw, AlertCircle, Sparkles, Flame, CheckCircle, Home, Layers, Calendar, ChevronRight } from 'lucide-react'
 import { fetchExercises, fetchHomeWorkoutVideos, fetchGymWorkoutVideos } from '../lib/supabase.js'
 import ExerciseCard from '../components/ExerciseCard.jsx'
 import ExerciseSearch from '../components/ExerciseSearch.jsx'
 import ExerciseFilters from '../components/ExerciseFilters.jsx'
 import ExerciseDetailModal from '../components/ExerciseDetailModal.jsx'
 
+const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
 export default function ExerciseLibrary({ onBack, embedded = false, initialCollection = 'gym' }) {
   // 'gym' (Official Gym Workout Library) | 'home' (Official Home Workout Library) | 'all' (Full Movement Database)
   const [collection, setCollection] = useState(initialCollection)
-  const [gymLevel, setGymLevel] = useState('All') // 'All' | 'Beginner' | 'Intermediate' | 'Advanced'
-  const [gymDay, setGymDay] = useState('All') // 'All' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'
+  const [gymLevel, setGymLevel] = useState('Beginner') // 'Beginner' | 'Intermediate' | 'Advanced' | 'All'
+  const [gymDay, setGymDay] = useState('Monday') // 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'All'
   const [homeLevel, setHomeLevel] = useState('All') // 'All' | 'Beginner' | 'Intermediate' | 'Advanced'
 
   const [search, setSearch] = useState('')
@@ -84,7 +86,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
         category,
         bodyPart,
         equipment,
-        limit: 80,
+        limit: 100,
         offset: 0,
       })
         .then((res) => {
@@ -107,6 +109,28 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
       active = false
     }
   }, [collection, gymLevel, gymDay, homeLevel, debouncedSearch, difficulty, category, bodyPart, equipment])
+
+  // Group gym exercises by day for structured view when 'All' is selected
+  const groupedDays = useMemo(() => {
+    if (collection !== 'gym' || debouncedSearch) return []
+    const groups = []
+    const daysToInclude = gymDay === 'All' ? DAYS_OF_WEEK : [gymDay]
+
+    daysToInclude.forEach((dayName) => {
+      const dayExercises = exercises.filter(
+        (ex) => (ex.day || '').toLowerCase() === dayName.toLowerCase()
+      )
+      if (dayExercises.length > 0) {
+        const splitName = dayExercises[0]?.split_name || 'Workout Routine'
+        groups.push({
+          dayName,
+          splitName,
+          dayExercises,
+        })
+      }
+    })
+    return groups
+  }, [collection, exercises, gymDay, debouncedSearch])
 
   const resetFilters = () => {
     setSearch('')
@@ -240,7 +264,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
               <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-mute mr-2">
                 Level:
               </span>
-              {['All', 'Beginner', 'Intermediate', 'Advanced'].map((lvl) => {
+              {['Beginner', 'Intermediate', 'Advanced', 'All'].map((lvl) => {
                 const active = gymLevel === lvl
                 return (
                   <button
@@ -262,19 +286,19 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
               <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-mute mr-2">
                 Day Split:
               </span>
-              {['All', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((d) => {
+              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'All'].map((d) => {
                 const active = gymDay === d
                 return (
                   <button
                     key={d}
                     onClick={() => setGymDay(d)}
-                    className={`min-h-[34px] px-3 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                    className={`min-h-[34px] px-3.5 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors ${
                       active
-                        ? 'border border-gold bg-gold/20 text-gold font-bold'
+                        ? 'border border-gold bg-gold text-obsidian font-extrabold shadow-sm'
                         : 'border border-white/10 bg-surface/60 text-mute hover:text-ink hover:border-white/20'
                     }`}
                   >
-                    {d}
+                    {d === 'All' ? 'All Days View' : d}
                   </button>
                 )
               })}
@@ -296,7 +320,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
                   onClick={() => setHomeLevel(lvl)}
                   className={`min-h-[38px] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
                     active
-                      ? 'bg-gold text-obsidian shadow-sm'
+                      ? 'bg-gold text-obsidian shadow-sm font-bold'
                       : 'border border-white/10 bg-surface text-mute hover:border-gold/50 hover:text-ink'
                   }`}
                 >
@@ -314,7 +338,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
             onChange={setSearch}
             placeholder={
               collection === 'gym'
-                ? 'Search gym exercises (e.g. Barbell Bench Press, T-Bar, Skullcrusher, Face Pull)...'
+                ? 'Search gym exercises (e.g. Barbell Flat Bench Press, T-Bar, Skullcrusher, Face Pull)...'
                 : collection === 'home'
                 ? 'Search home workout tutorials (e.g. Incline Push-Ups, Free Squats)...'
                 : 'Search all movements by name, muscle, equipment...'
@@ -407,13 +431,50 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
           </div>
         )}
 
-        {/* Exercises Grid */}
-        {!loading && !error && exercises.length > 0 && (
+        {/* Gym Structured Daily Split View (Grouped by Day) */}
+        {!loading && !error && collection === 'gym' && groupedDays.length > 0 && (
+          <div className="mt-8 space-y-12">
+            {groupedDays.map(({ dayName, splitName, dayExercises }) => (
+              <div key={dayName} className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border border-gold/40 bg-gold/5 px-5 py-4 border-l-4 border-l-gold">
+                  <div>
+                    <span className="text-[9px] font-extrabold uppercase tracking-[0.3em] text-gold">
+                      {gymLevel === 'All' ? 'Gym Split Protocol' : `${gymLevel} Curriculum`}
+                    </span>
+                    <h2 className="font-display text-xl sm:text-2xl font-black uppercase tracking-wide text-ink">
+                      {dayName} — <span className="text-gold">{splitName}</span>
+                    </h2>
+                  </div>
+                  <div className="mt-2 sm:mt-0 flex items-center gap-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-mute bg-surface px-3 py-1 border border-white/10">
+                      {dayExercises.length} Movements
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {dayExercises.map((ex, idx) => (
+                    <ExerciseCard
+                      key={ex.id || `${ex.slug}-${ex.day}-${ex.level}-${idx}`}
+                      exercise={ex}
+                      index={idx + 1}
+                      onSelect={(selected) => setSelectedExercise(selected)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Standard Exercise Grid (Home Workouts, Movement DB, or Search Results) */}
+        {!loading && !error && (collection !== 'gym' || (collection === 'gym' && groupedDays.length === 0)) && exercises.length > 0 && (
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {exercises.map((ex) => (
+            {exercises.map((ex, idx) => (
               <ExerciseCard
-                key={ex.id || `${ex.slug}-${ex.day}-${ex.level}`}
+                key={ex.id || `${ex.slug}-${ex.day}-${ex.level}-${idx}`}
                 exercise={ex}
+                index={collection === 'gym' ? idx + 1 : undefined}
                 onSelect={(selected) => setSelectedExercise(selected)}
               />
             ))}

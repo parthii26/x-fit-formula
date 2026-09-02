@@ -209,11 +209,118 @@ export async function upsertProfile(userId, patch) {
   }
 }
 
+// Helper to derive body_part and equipment from gym/home workout seed items
+function inferBodyPart(item) {
+  if (item.body_part) return item.body_part
+  const text = `${item.split_name || ''} ${item.target_muscle || ''} ${item.exercise_name || ''} ${item.name || ''} ${item.target || ''}`.toLowerCase()
+  if (text.includes('chest') || text.includes('pec') || text.includes('bench press') || text.includes('push-up') || text.includes('flye') || text.includes('fly') || text.includes('butterfly') || text.includes('pullover')) return 'Chest'
+  if (text.includes('lat') || text.includes('back') || text.includes('pull-up') || text.includes('pulldown') || text.includes('row') || text.includes('t-bar')) return 'Back'
+  if (text.includes('shoulder') || text.includes('delt') || text.includes('overhead press') || text.includes('military') || text.includes('front raise') || text.includes('side raise') || text.includes('lateral raise') || text.includes('face pull') || text.includes('upright row') || text.includes('shrug')) return 'Shoulders'
+  if (text.includes('bicep') || text.includes('tricep') || text.includes('curl') || text.includes('skullcrusher') || text.includes('dip') || text.includes('push-down') || text.includes('pushdown') || text.includes('forearm') || text.includes('arm')) return 'Arms'
+  if (text.includes('squat') || text.includes('leg') || text.includes('calf') || text.includes('calves') || text.includes('quad') || text.includes('hamstring') || text.includes('glute') || text.includes('lunge')) return 'Legs'
+  if (text.includes('core') || text.includes('abs') || text.includes('plank') || text.includes('crunch') || text.includes('knee raise') || text.includes('air bike')) return 'Core'
+  if (text.includes('cardio') || text.includes('walk') || text.includes('treadmill')) return 'Cardio'
+  return 'Chest'
+}
+
+function inferEquipment(item) {
+  if (!item.equipment) return 'Gym'
+  const eq = item.equipment.toLowerCase()
+  if (eq.includes('barbell')) return 'Barbell'
+  if (eq.includes('dumbbell')) return 'Dumbbells'
+  if (eq.includes('cable')) return 'Cable'
+  if (eq.includes('machine') || eq.includes('leverage') || eq.includes('bench')) return 'Machine'
+  if (eq.includes('bodyweight')) return 'Bodyweight'
+  return item.equipment
+}
+
+let _cachedUnifiedExercises = null
+function getUnifiedExercises() {
+  if (_cachedUnifiedExercises) return _cachedUnifiedExercises
+
+  const map = new Map()
+
+  // 1. Base seed exercises
+  seedExercises.forEach((ex) => {
+    const key = (ex.slug || ex.name).toLowerCase()
+    map.set(key, { ...ex })
+  })
+
+  // 2. Gym workouts converted to exercises
+  gymWorkoutSeed.forEach((item) => {
+    const key = (item.slug || item.exercise_name).toLowerCase()
+    const bp = inferBodyPart(item)
+    const eq = inferEquipment(item)
+    const existing = map.get(key)
+    if (!existing) {
+      map.set(key, {
+        id: item.id,
+        source_id: `gym-${item.slug}`,
+        name: item.exercise_name,
+        slug: item.slug,
+        body_part: bp,
+        target: item.target_muscle || 'Full Body',
+        secondary_muscles: [],
+        equipment: eq,
+        difficulty: item.level || 'Beginner',
+        category: 'Gym',
+        compound: true,
+        instructions: item.instructions || [],
+        form_cues: item.form_cues || [],
+        day: item.day,
+        split_name: item.split_name,
+        sets: item.sets,
+        reps: item.reps,
+        isGymWorkout: true,
+      })
+    } else {
+      map.set(key, {
+        ...existing,
+        body_part: existing.body_part || bp,
+        category: 'Gym',
+        day: item.day,
+        split_name: item.split_name,
+        sets: item.sets,
+        reps: item.reps,
+        isGymWorkout: true,
+      })
+    }
+  })
+
+  // 3. Home workouts converted to exercises
+  homeWorkoutSeed.forEach((item) => {
+    const key = (item.slug || item.exercise_name).toLowerCase()
+    const bp = inferBodyPart(item)
+    const existing = map.get(key)
+    if (!existing) {
+      map.set(key, {
+        id: item.id,
+        source_id: `home-${item.slug}`,
+        name: item.exercise_name,
+        slug: item.slug,
+        body_part: bp,
+        target: item.target_muscle || 'Full Body',
+        secondary_muscles: [],
+        equipment: 'Bodyweight',
+        difficulty: item.level || 'Beginner',
+        category: 'Home',
+        compound: true,
+        instructions: item.instructions || [],
+        form_cues: item.form_cues || [],
+        isHomeWorkout: true,
+      })
+    }
+  })
+
+  _cachedUnifiedExercises = Array.from(map.values())
+  return _cachedUnifiedExercises
+}
+
 // ─── Exercises (Read) ─────────────────────────────────────────────────────────
 
 /**
  * Fetch exercises with optional filters.
- * Falls back to local seed data when Supabase is not available.
+ * Falls back to unified local seed data when Supabase is not available.
  */
 export async function fetchExercises({
   search     = '',
@@ -222,7 +329,7 @@ export async function fetchExercises({
   equipment  = 'All',
   difficulty = 'All',
   category   = 'All',
-  limit      = 20,
+  limit      = 60,
   offset     = 0,
 } = {}) {
   if (isSupabaseConfigured && supabase) {
@@ -263,25 +370,25 @@ export async function fetchExercises({
     }
   }
 
-  // ── Local / demo fallback ──────────────────────────────────────────────────
-  let list = [...seedExercises]
+  // ── Local / unified fallback ────────────────────────────────────────────────
+  let list = getUnifiedExercises()
 
   if (search && search.trim()) {
     const q = search.trim().toLowerCase()
     list = list.filter(
       (ex) =>
         ex.name.toLowerCase().includes(q) ||
-        ex.target.toLowerCase().includes(q) ||
-        ex.equipment.toLowerCase().includes(q) ||
-        ex.body_part.toLowerCase().includes(q) ||
+        (ex.target && ex.target.toLowerCase().includes(q)) ||
+        (ex.equipment && ex.equipment.toLowerCase().includes(q)) ||
+        (ex.body_part && ex.body_part.toLowerCase().includes(q)) ||
         (ex.secondary_muscles || []).some((m) => m.toLowerCase().includes(q))
     )
   }
-  if (bodyPart   && bodyPart   !== 'All') list = list.filter((ex) => ex.body_part.toLowerCase()  === bodyPart.toLowerCase())
-  if (target     && target     !== 'All') list = list.filter((ex) => ex.target.toLowerCase()     === target.toLowerCase())
-  if (equipment  && equipment  !== 'All') list = list.filter((ex) => ex.equipment.toLowerCase()  === equipment.toLowerCase())
-  if (difficulty && difficulty !== 'All') list = list.filter((ex) => ex.difficulty.toLowerCase() === difficulty.toLowerCase())
-  if (category   && category   !== 'All') list = list.filter((ex) => ex.category === category || ex.category === 'Both')
+  if (bodyPart   && bodyPart   !== 'All') list = list.filter((ex) => (ex.body_part || '').toLowerCase()  === bodyPart.toLowerCase())
+  if (target     && target     !== 'All') list = list.filter((ex) => (ex.target || '').toLowerCase()     === target.toLowerCase())
+  if (equipment  && equipment  !== 'All') list = list.filter((ex) => (ex.equipment || '').toLowerCase()  === equipment.toLowerCase())
+  if (difficulty && difficulty !== 'All') list = list.filter((ex) => (ex.difficulty || '').toLowerCase() === difficulty.toLowerCase())
+  if (category   && category   !== 'All') list = list.filter((ex) => (ex.category || '').toLowerCase() === category.toLowerCase() || ex.category === 'Both')
 
   const totalCount = list.length
   const paginated  = list.slice(offset, offset + limit).map(formatExerciseRecord)
@@ -304,7 +411,8 @@ export async function fetchExerciseById(id) {
       console.warn('[Supabase] fetchExerciseById failed:', err.message)
     }
   }
-  const found = seedExercises.find(
+  const all = getUnifiedExercises()
+  const found = all.find(
     (ex) =>
       ex.id === id ||
       ex.slug === id ||

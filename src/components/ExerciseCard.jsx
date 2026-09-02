@@ -3,7 +3,7 @@ import { Play, Dumbbell, Clock, Calendar, Repeat } from 'lucide-react'
 import { DifficultyBadge, EquipmentBadge, CategoryBadge } from './badges.jsx'
 import { getOpenSourceDemo } from '../lib/openSourceMedia.js'
 
-export default function ExerciseCard({ exercise, onSelect }) {
+export default function ExerciseCard({ exercise, onSelect, index }) {
   const isHomeWorkout = Boolean(exercise?.isHomeWorkout)
   const isGymWorkout = Boolean(exercise?.isGymWorkout)
   const openSourceDemo = getOpenSourceDemo(exercise?.slug)
@@ -71,8 +71,13 @@ export default function ExerciseCard({ exercise, onSelect }) {
           </div>
         </div>
 
-        {/* Category / Level Badge top left */}
+        {/* Category / Level / Step Badge top left */}
         <div className="absolute left-2.5 top-2.5 pointer-events-none flex items-center gap-1.5">
+          {typeof index === 'number' && (
+            <span className="flex h-5 w-5 items-center justify-center bg-gold text-obsidian text-[10px] font-extrabold shadow-md">
+              {index}
+            </span>
+          )}
           <CategoryBadge category={exercise.category || (isHomeWorkout ? 'Home' : 'Gym')} />
           {exercise.day && (
             <span className="bg-obsidian/90 border border-gold/40 px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-gold">
@@ -113,7 +118,7 @@ export default function ExerciseCard({ exercise, onSelect }) {
           )}
 
           <h3 className="font-display text-base font-bold uppercase tracking-[0.06em] text-ink transition-colors group-hover:text-gold sm:text-lg">
-            {exercise.name || exercise.exercise_name}
+            {typeof index === 'number' ? `${index}. ` : ''}{exercise.name || exercise.exercise_name}
           </h3>
 
           <p className="mt-1 text-[11px] font-medium tracking-wide text-white/70 truncate">
