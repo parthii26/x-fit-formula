@@ -136,7 +136,7 @@ function Overview({ trainer, clients, pendingCount, onOpenClient }) {
           )}
           {pending.map((c) => (
             <QueueRow key={c.id} client={c} tag="Program Pending" tagTone="amber"
-              sub={`${c.profile.daysPerWeek} D/WK — ${LABELS.goal[c.profile.goal]} — ${LABELS.equipment[c.profile.equipment]}`}
+              sub={`${c.profile.daysPerWeek || 3} D/WK — ${LABELS.goal[c.profile.goal] || 'General'} — ${LABELS.equipment[c.profile.equipment] || 'Full Gym'}`}
               onClick={() => onOpenClient(c.id)} />
           ))}
           {reportClients.map((c) => {
@@ -149,7 +149,7 @@ function Overview({ trainer, clients, pendingCount, onOpenClient }) {
           })}
           {unreadThreads.map((c) => (
             <QueueRow key={`m-${c.id}`} client={c} tag="Reply Due" tagTone="mute"
-              sub={c.messages.at(-1).text} onClick={() => onOpenClient(c.id)} />
+              sub={c.messages.at(-1)?.text || ''} onClick={() => onOpenClient(c.id)} />
           ))}
         </div>
       </div>
@@ -176,7 +176,7 @@ function QueueRow({ client, tag, tagTone, sub, onClick }) {
 
 function Roster({ clients, onOpen }) {
   const [q, setQ] = useState('')
-  const filtered = clients.filter((c) => c.profile.name.toLowerCase().includes(q.toLowerCase()))
+  const filtered = clients.filter((c) => (c.profile?.name || '').toLowerCase().includes(q.toLowerCase()))
 
   return (
     <div className="animate-fade-up">
@@ -200,10 +200,10 @@ function Roster({ clients, onOpen }) {
               <ArrowRight className="h-4 w-4 shrink-0 text-mute" strokeWidth={1.5} />
             </div>
             <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-mute">
-              {LABELS.experience[c.profile.experience]} — {c.profile.daysPerWeek} D/WK — {LABELS.goal[c.profile.goal]}
+              {LABELS.experience[c.profile.experience] || 'Beginner'} — {c.profile.daysPerWeek || 3} D/WK — {LABELS.goal[c.profile.goal] || 'General'}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Badge tone="mute">{LABELS.equipment[c.profile.equipment]}</Badge>
+              <Badge tone="mute">{LABELS.equipment[c.profile.equipment] || 'Full Gym'}</Badge>
               {c.planStatus === 'assigned' ? <Badge tone="gold">Active</Badge> : <Badge tone="amber">Pending</Badge>}
               {c.profile.injuries?.trim() && <Badge tone="red">Injury Noted</Badge>}
               {newCheckIns(c).length > 0 && <Badge tone="gold">{newCheckIns(c).length} Report{newCheckIns(c).length > 1 ? 's' : ''}</Badge>}
@@ -238,9 +238,9 @@ function Roster({ clients, onOpen }) {
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-5 text-[13px] text-ink/80">{LABELS.goal[c.profile.goal]}</td>
-                <td className="px-4 py-5 text-[13px] text-ink/80">{LABELS.equipment[c.profile.equipment]}</td>
-                <td className="px-4 py-5 text-[13px] text-ink/80">{LABELS.experience[c.profile.experience]} — {c.profile.daysPerWeek}D</td>
+                <td className="px-4 py-5 text-[13px] text-ink/80">{LABELS.goal[c.profile.goal] || c.profile.goal || 'General'}</td>
+                <td className="px-4 py-5 text-[13px] text-ink/80">{LABELS.equipment[c.profile.equipment] || c.profile.equipment || 'Full Gym'}</td>
+                <td className="px-4 py-5 text-[13px] text-ink/80">{LABELS.experience[c.profile.experience] || 'Beginner'} — {c.profile.daysPerWeek || 3}D</td>
                 <td className="px-4 py-5">
                   <div className="flex flex-wrap gap-1.5">
                     {c.profile.injuries?.trim() && <Badge tone="red">Injury</Badge>}
@@ -353,14 +353,14 @@ function ClientDetail({ client, onBack, onBuild, onUpdate }) {
         <SectionTitle kicker="Intake">Client Data</SectionTitle>
         <div className="mt-6 grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-4">
           {[
-            ['Age', p.age],
-            ['Gender', p.gender === 'men' ? 'Male' : 'Female'],
-            ['Height', `${p.height} ${p.heightUnit}`],
-            ['Weight', `${p.weight} ${p.weightUnit}`],
-            ['Lifestyle', LABELS.lifestyle[p.lifestyle]],
-            ['Goal', LABELS.goal[p.goal]],
-            ['Equipment', LABELS.equipment[p.equipment], true],
-            ['Frequency', `${p.daysPerWeek} Days / Week`, true],
+            ['Age', p.age && p.age !== '—' ? p.age : 'Pending'],
+            ['Gender', p.gender === 'men' ? 'Male' : p.gender === 'women' ? 'Female' : p.gender || 'Pending'],
+            ['Height', p.height && p.height !== '—' ? `${p.height} ${p.heightUnit || 'cm'}` : 'Pending'],
+            ['Weight', p.weight && p.weight !== '—' ? `${p.weight} ${p.weightUnit || 'kg'}` : 'Pending'],
+            ['Lifestyle', LABELS.lifestyle[p.lifestyle] || p.lifestyle || 'Pending'],
+            ['Goal', LABELS.goal[p.goal] || p.goal || 'General Fitness'],
+            ['Equipment', LABELS.equipment[p.equipment] || p.equipment || 'Full Gym', true],
+            ['Frequency', p.daysPerWeek ? `${p.daysPerWeek} Days / Week` : '3 Days / Week', true],
           ].map(([k, v, gold]) => (
             <div key={k} className="bg-surface p-5 sm:p-6">
               <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-mute">{k}</p>

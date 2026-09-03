@@ -26,32 +26,32 @@ const SESSION_KEY = 'xff-session-v1'
 
 // ─── Build a ClientPortal-compatible object from a Supabase profile ──────────
 function buildSupabaseClient(user, profile) {
-  const isProfileComplete = Boolean(profile?.gender && profile?.age && profile?.weight)
+  const isProfileComplete = Boolean(profile?.gender || profile?.age || profile?.weight || profile?.goal)
   return {
     id:           user.id,
     role:         'client',
-    onboarded:    isProfileComplete, // Only considered onboarded once biometrics are entered
+    onboarded:    isProfileComplete,
     supabaseAuth: true,
     profile: {
       name:        profile?.full_name    || user.user_metadata?.full_name || user.email?.split('@')[0] || user.phone || '',
       email:       profile?.email        || user.email || '',
       phone:       profile?.phone        || user.phone || '',
-      age:         profile?.age          || '',
-      height:      profile?.height       || '',
+      age:         profile?.age          || '—',
+      height:      profile?.height       || '—',
       heightUnit:  profile?.height_unit  || 'cm',
-      weight:      profile?.weight       || '',
+      weight:      profile?.weight       || '—',
       weightUnit:  profile?.weight_unit  || 'kg',
-      gender:      profile?.gender       || '',
-      lifestyle:   profile?.lifestyle    || '',
+      gender:      profile?.gender       || '—',
+      lifestyle:   profile?.lifestyle    || 'active',
       injuries:    profile?.injuries     || '',
       goal:        profile?.goal         || 'general',
       equipment:   profile?.equipment    || 'gym',
       experience:  profile?.experience   || 'beginner',
-      daysPerWeek: profile?.days_per_week || 3,
+      daysPerWeek: Number(profile?.days_per_week) || 3,
     },
-    plan:        null,
-    planStatus:  'pending',
-    planMeta:    null,
+    plan:        profile?.plan || null,
+    planStatus:  profile?.plan_status || (profile?.plan ? 'assigned' : 'pending'),
+    planMeta:    profile?.plan_meta || null,
     completed:   {},
     weightLog:   [],
     checkIns:    [],
@@ -325,13 +325,25 @@ export default function App() {
       ),
     }))
 
-    // If this is a real Supabase user, persist their profile
+    // If this is a real Supabase user, persist their complete profile & biometrics
     if (session?.supabaseAuth && session?.userId === clientId) {
       await upsertProfile(clientId, {
-        full_name: profile.name,
-        email:     profile.email || undefined,
-        phone:     profile.phone || undefined,
-        role:      'client',
+        full_name:     profile.name,
+        email:         profile.email || undefined,
+        phone:         profile.phone || undefined,
+        role:          'client',
+        age:           String(profile.age || ''),
+        height:        String(profile.height || ''),
+        height_unit:   profile.heightUnit || 'cm',
+        weight:        String(profile.weight || ''),
+        weight_unit:   profile.weightUnit || 'kg',
+        gender:        profile.gender || '',
+        lifestyle:     profile.lifestyle || '',
+        injuries:      profile.injuries || '',
+        goal:          profile.goal || 'general',
+        equipment:     profile.equipment || 'gym',
+        experience:    profile.experience || 'beginner',
+        days_per_week: Number(profile.daysPerWeek) || 3,
       }).catch((err) => console.warn('[Auth] profile sync failed:', err.message))
     }
   }
@@ -378,7 +390,7 @@ export default function App() {
       return (
         <TrainerPortal
           trainer={activeTrainer}
-          clients={db.clients.filter((c) => c.onboarded)}
+          clients={db.clients}
           onUpdateClient={updateClient}
           onLogout={logout}
           trainerUserId={session.userId || null}

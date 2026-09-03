@@ -199,36 +199,36 @@ export async function fetchAllClients() {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('role', 'client')
+      .neq('role', 'trainer')
       .order('created_at', { ascending: false })
     if (error) throw error
     return (data || []).map((p) => {
-      const isComplete = Boolean(p.gender && p.age && p.weight)
+      const hasBiometrics = Boolean(p.gender || p.age || p.weight || p.goal)
       return {
         id: p.id,
         role: 'client',
-        onboarded: isComplete,
+        onboarded: hasBiometrics,
         supabaseAuth: true,
         profile: {
-          name: p.full_name || p.email?.split('@')[0] || p.phone || 'Client',
+          name: p.full_name || p.email?.split('@')[0] || p.phone || 'Athlete',
           email: p.email || '',
           phone: p.phone || '',
-          age: p.age || '',
-          height: p.height || '',
+          age: p.age || '—',
+          height: p.height || '—',
           heightUnit: p.height_unit || 'cm',
-          weight: p.weight || '',
+          weight: p.weight || '—',
           weightUnit: p.weight_unit || 'kg',
-          gender: p.gender || '',
-          lifestyle: p.lifestyle || '',
+          gender: p.gender || '—',
+          lifestyle: p.lifestyle || 'active',
           injuries: p.injuries || '',
           goal: p.goal || 'general',
           equipment: p.equipment || 'gym',
           experience: p.experience || 'beginner',
-          daysPerWeek: p.days_per_week || 3,
+          daysPerWeek: Number(p.days_per_week) || 3,
         },
-        plan: null,
-        planStatus: 'pending',
-        planMeta: null,
+        plan: p.plan || null,
+        planStatus: p.plan_status || (p.plan ? 'assigned' : 'pending'),
+        planMeta: p.plan_meta || null,
         completed: {},
         weightLog: [],
         checkIns: [],
