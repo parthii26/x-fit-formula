@@ -135,8 +135,24 @@ export default function App() {
   // ── Supabase user → session mapping ──────────────────────────────────────
   async function handleSupabaseUser(user) {
     try {
-      const profile = await getProfile(user.id)
-      const role    = profile?.role || user.user_metadata?.role || 'client'
+      const intendedRole = sessionStorage.getItem('xff_intended_role')
+      if (intendedRole) {
+        sessionStorage.removeItem('xff_intended_role')
+      }
+
+      let profile = await getProfile(user.id)
+      let role    = profile?.role || user.user_metadata?.role || intendedRole || 'client'
+
+      // If user came in through Trainer Access, ensure profile is saved as trainer
+      if (intendedRole === 'trainer' && role !== 'trainer') {
+        role = 'trainer'
+        await upsertProfile(user.id, {
+          role: 'trainer',
+          full_name: profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0],
+          email: user.email,
+        })
+        profile = await getProfile(user.id)
+      }
 
       if (role === 'trainer' || role === 'admin') {
         const rawName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Trainer'
@@ -200,6 +216,7 @@ export default function App() {
     if (provider === 'google') {
       try {
         const role = portal === 'trainer' ? 'trainer' : 'client'
+        sessionStorage.setItem('xff_intended_role', role)
         await signInWithGoogle(role)
         return { success: true }
       } catch (err) {
