@@ -1,9 +1,9 @@
 -- ==============================================================================
--- X FIT FORMULA — Migration 007: Profiles Biometrics & Trainer RLS Policy
+-- X FIT FORMULA — Migration 007: Profiles Biometrics, Interaction State & RLS Policy
 -- Run in Supabase SQL Editor
 -- ==============================================================================
 
--- 1. Add Biometrics & Onboarding Columns to profiles table if not present
+-- 1. Add Biometrics & Onboarding Columns to profiles table
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS age TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS height TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS height_unit TEXT DEFAULT 'cm';
@@ -19,6 +19,11 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS days_per_week INTEGER DEFAU
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS plan_status TEXT DEFAULT 'pending';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS plan JSONB;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS plan_meta JSONB;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS completed JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS exercise_done JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS weight_log JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS check_ins JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS messages JSONB DEFAULT '[]'::jsonb;
 
 -- 2. Ensure RLS Policy allows authenticated users (trainers & clients) to read profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;

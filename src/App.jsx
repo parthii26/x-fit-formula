@@ -52,10 +52,11 @@ function buildSupabaseClient(user, profile) {
     plan:        profile?.plan || null,
     planStatus:  profile?.plan_status || (profile?.plan ? 'assigned' : 'pending'),
     planMeta:    profile?.plan_meta || null,
-    completed:   {},
-    weightLog:   [],
-    checkIns:    [],
-    messages:    [],
+    completed:   profile?.completed || {},
+    exerciseDone: profile?.exercise_done || {},
+    weightLog:   profile?.weight_log || [],
+    checkIns:    profile?.check_ins || [],
+    messages:    profile?.messages || [],
     joined:      profile?.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
     lastActive:  'Today',
   }
@@ -206,6 +207,18 @@ export default function App() {
   // ─── Client helpers ─────────────────────────────────────────────────────────
   const updateClient = (updated) => {
     setDb((d) => ({ ...d, clients: d.clients.map((c) => (c.id === updated.id ? updated : c)) }))
+    if (isSupabaseConfigured && updated?.id) {
+      upsertProfile(updated.id, {
+        plan: updated.plan || null,
+        plan_status: updated.planStatus || 'pending',
+        plan_meta: updated.planMeta || null,
+        completed: updated.completed || {},
+        exercise_done: updated.exerciseDone || {},
+        weight_log: updated.weightLog || [],
+        check_ins: updated.checkIns || [],
+        messages: updated.messages || [],
+      }).catch((err) => console.warn('[Supabase] updateClient sync warning:', err.message))
+    }
   }
 
   // ─── Login handler (100% Production Supabase Authentication) ────────────────
