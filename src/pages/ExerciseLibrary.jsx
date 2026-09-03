@@ -8,12 +8,23 @@ import ExerciseDetailModal from '../components/ExerciseDetailModal.jsx'
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
+// Home bodyweight routines are performed as a full-body circuit repeated on
+// training days. This is the conventional weekly schedule used to give the Home
+// tab the same day-by-day split view as the Gym tab. Edit to change the split.
+const HOME_SCHEDULE = {
+  Beginner: ['Monday', 'Wednesday', 'Friday'],
+  Intermediate: ['Monday', 'Tuesday', 'Thursday', 'Friday'],
+  Advanced: ['Monday', 'Tuesday', 'Thursday', 'Friday'],
+}
+const HOME_LEVELS = ['Beginner', 'Intermediate', 'Advanced']
+
 export default function ExerciseLibrary({ onBack, embedded = false, initialCollection = 'gym' }) {
   // 'gym' (Official Gym Workout Collection) | 'home' (Official Home Workout Collection) | 'all' (Full Movement Library)
   const [collection, setCollection] = useState(initialCollection)
   const [gymLevel, setGymLevel] = useState('All') // 'All' | 'Beginner' | 'Intermediate' | 'Advanced'
   const [gymDay, setGymDay] = useState('All') // 'All' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'
   const [homeLevel, setHomeLevel] = useState('All') // 'All' | 'Beginner' | 'Intermediate' | 'Advanced'
+  const [homeDay, setHomeDay] = useState('All') // 'All' | 'Monday' | ... (training days for the selected level)
 
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -110,27 +121,55 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
     }
   }, [collection, gymLevel, gymDay, homeLevel, debouncedSearch, difficulty, category, bodyPart, equipment])
 
-  // Group gym exercises by day for structured view when 'All' is selected
+  // Group exercises by day for a structured split view.
+  //  - Gym: each record carries a real `day`.
+  //  - Home: bodyweight circuits repeat on training days (see HOME_SCHEDULE).
   const groupedDays = useMemo(() => {
-    if (collection !== 'gym' || debouncedSearch) return []
-    const groups = []
-    const daysToInclude = gymDay === 'All' ? DAYS_OF_WEEK : [gymDay]
+    if (debouncedSearch) return []
 
-    daysToInclude.forEach((dayName) => {
-      const dayExercises = exercises.filter(
-        (ex) => (ex.day || '').toLowerCase() === dayName.toLowerCase()
-      )
-      if (dayExercises.length > 0) {
-        const splitName = dayExercises[0]?.split_name || 'Workout Routine'
-        groups.push({
-          dayName,
-          splitName,
-          dayExercises,
+    // ── GYM ──
+    if (collection === 'gym') {
+      const groups = []
+      const daysToInclude = gymDay === 'All' ? DAYS_OF_WEEK : [gymDay]
+      daysToInclude.forEach((dayName) => {
+        const dayExercises = exercises.filter(
+          (ex) => (ex.day || '').toLowerCase() === dayName.toLowerCase()
+        )
+        if (dayExercises.length > 0) {
+          const splitName = dayExercises[0]?.split_name || 'Workout Routine'
+          groups.push({ dayName, splitName, kind: 'gym', dayExercises })
+        }
+      })
+      return groups
+    }
+
+    // ── HOME ──
+    if (collection === 'home') {
+      const groups = []
+      const levels = homeLevel === 'All' ? HOME_LEVELS : [homeLevel]
+      levels.forEach((level) => {
+        const levelExercises = exercises.filter(
+          (ex) => (ex.level || '').toLowerCase() === level.toLowerCase()
+        )
+        if (levelExercises.length === 0) return
+        const schedule = HOME_SCHEDULE[level] || []
+        const daysToInclude =
+          homeDay === 'All' ? schedule : schedule.includes(homeDay) ? [homeDay] : []
+        daysToInclude.forEach((dayName) => {
+          groups.push({
+            dayName,
+            level,
+            splitName: 'Full-Body Circuit',
+            kind: 'home',
+            dayExercises: levelExercises,
+          })
         })
-      }
-    })
-    return groups
-  }, [collection, exercises, gymDay, debouncedSearch])
+      })
+      return groups
+    }
+
+    return []
+  }, [collection, exercises, gymLevel, gymDay, homeLevel, homeDay, debouncedSearch])
 
   const resetFilters = () => {
     setSearch('')
@@ -138,6 +177,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
     setGymLevel('All')
     setGymDay('All')
     setHomeLevel('All')
+    setHomeDay('All')
     setDifficulty('All')
     setCategory('All')
     setBodyPart('All')
@@ -147,7 +187,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
   const hasActiveFilters =
     search.trim() !== '' ||
     (collection === 'gym' && (gymLevel !== 'All' || gymDay !== 'All')) ||
-    (collection === 'home' && homeLevel !== 'All') ||
+    (collection === 'home' && (homeLevel !== 'All' || homeDay !== 'All')) ||
     (collection === 'all' &&
       (difficulty !== 'All' || category !== 'All' || bodyPart !== 'All' || equipment !== 'All'))
 
@@ -201,7 +241,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
             {collection === 'gym'
               ? 'Official structured gym training series categorized by level: Beginner (21), Intermediate (33), and Advanced (54) with day-by-day training splits and motion demonstrators.'
               : collection === 'home'
-              ? 'Official structured home training series categorized by level: Beginner (7), Intermediate (11), and Advanced (11).'
+              ? 'Official structured home training series categorized by level: Beginner (7), Intermediate (11), and Advanced (11), organised into a weekly bodyweight split with full-body circuit days and motion demonstrators.'
               : 'Explore comprehensive resistance movements, biomechanics instructions, and execution technique.'}
           </p>
         </div>
@@ -316,26 +356,53 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
 
         {/* Level Filters for Home Workout Collection */}
         {collection === 'home' && (
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-mute mr-2">
-              Filter By Level:
-            </span>
-            {['All', 'Beginner', 'Intermediate', 'Advanced'].map((lvl) => {
-              const active = homeLevel === lvl
-              return (
-                <button
-                  key={lvl}
-                  onClick={() => setHomeLevel(lvl)}
-                  className={`min-h-[38px] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                    active
-                      ? 'bg-gold text-obsidian shadow-sm font-bold'
-                      : 'border border-white/10 bg-surface text-mute hover:border-gold/50 hover:text-ink'
-                  }`}
-                >
-                  {lvl === 'All' ? 'All Levels (29)' : lvl === 'Beginner' ? 'Beginner (7)' : lvl === 'Intermediate' ? 'Intermediate (11)' : 'Advanced (11)'}
-                </button>
-              )
-            })}
+          <div className="mt-4 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-mute mr-2">
+                Filter By Level:
+              </span>
+              {['All', 'Beginner', 'Intermediate', 'Advanced'].map((lvl) => {
+                const active = homeLevel === lvl
+                return (
+                  <button
+                    key={lvl}
+                    onClick={() => {
+                      setHomeLevel(lvl)
+                      setHomeDay('All')
+                    }}
+                    className={`min-h-[38px] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                      active
+                        ? 'bg-gold text-obsidian shadow-sm font-bold'
+                        : 'border border-white/10 bg-surface text-mute hover:border-gold/50 hover:text-ink'
+                    }`}
+                  >
+                    {lvl === 'All' ? 'All Levels (29)' : lvl === 'Beginner' ? 'Beginner (7)' : lvl === 'Intermediate' ? 'Intermediate (11)' : 'Advanced (11)'}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-mute mr-2">
+                Day Split:
+              </span>
+              {['All', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((d) => {
+                const active = homeDay === d
+                return (
+                  <button
+                    key={d}
+                    onClick={() => setHomeDay(d)}
+                    className={`min-h-[32px] px-3 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                      active
+                        ? 'border border-gold bg-gold/20 text-gold font-bold'
+                        : 'border border-white/10 bg-surface/60 text-mute hover:text-ink hover:border-white/20'
+                    }`}
+                  >
+                    {d === 'All' ? 'All Days' : d}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         )}
 
@@ -439,50 +506,57 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
           </div>
         )}
 
-        {/* Gym Structured Daily Split View (Grouped by Day) */}
-        {!loading && !error && collection === 'gym' && groupedDays.length > 0 && (
+        {/* Structured Daily Split View (Grouped by Day) */}
+        {!loading && !error && groupedDays.length > 0 && (
           <div className="mt-8 space-y-12">
-            {groupedDays.map(({ dayName, splitName, dayExercises }) => (
-              <div key={dayName} className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border border-gold/40 bg-gold/5 px-5 py-4 border-l-4 border-l-gold">
-                  <div>
-                    <span className="text-[9px] font-extrabold uppercase tracking-[0.3em] text-gold">
-                      {gymLevel === 'All' ? 'Gym Split Protocol' : `${gymLevel} Curriculum`}
-                    </span>
-                    <h2 className="font-display text-xl sm:text-2xl font-black uppercase tracking-wide text-ink">
-                      {dayName} — <span className="text-gold">{splitName}</span>
-                    </h2>
+            {groupedDays.map(({ dayName, splitName, kind, level, dayExercises }) => {
+              const isGym = kind === 'gym'
+              return (
+                <div key={`${dayName}-${level || 'gym'}-${splitName}`} className="space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border border-gold/40 bg-gold/5 px-5 py-4 border-l-4 border-l-gold">
+                    <div>
+                      <span className="text-[9px] font-extrabold uppercase tracking-[0.3em] text-gold">
+                        {isGym
+                          ? gymLevel === 'All'
+                            ? 'Gym Split Protocol'
+                            : `${gymLevel} Curriculum`
+                          : `${level || homeLevel || ''} Home Routine`.trim()}
+                      </span>
+                      <h2 className="font-display text-xl sm:text-2xl font-black uppercase tracking-wide text-ink">
+                        {dayName} — <span className="text-gold">{splitName}</span>
+                      </h2>
+                    </div>
+                    <div className="mt-2 sm:mt-0 flex items-center gap-3">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-mute bg-surface px-3 py-1 border border-white/10">
+                        {dayExercises.length} Movements
+                      </span>
+                    </div>
                   </div>
-                  <div className="mt-2 sm:mt-0 flex items-center gap-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-mute bg-surface px-3 py-1 border border-white/10">
-                      {dayExercises.length} Movements
-                    </span>
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {dayExercises.map((ex, idx) => (
-                    <ExerciseCard
-                      key={ex.id || `${ex.slug}-${ex.day}-${ex.level}-${idx}`}
-                      exercise={ex}
-                      index={idx + 1}
-                      onSelect={(selected) => setSelectedExercise(selected)}
-                    />
-                  ))}
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {dayExercises.map((ex, idx) => (
+                      <ExerciseCard
+                        key={ex.id || `${ex.slug}-${ex.day}-${ex.level}-${dayName}-${idx}`}
+                        exercise={ex}
+                        index={idx + 1}
+                        onSelect={(selected) => setSelectedExercise(selected)}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
-        {/* Standard Exercise Grid (Home Workouts, Movement DB, or Search Results) */}
-        {!loading && !error && (collection !== 'gym' || (collection === 'gym' && groupedDays.length === 0)) && exercises.length > 0 && (
+        {/* Standard Exercise Grid (Search Results or no split grouping) */}
+        {!loading && !error && groupedDays.length === 0 && exercises.length > 0 && (
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {exercises.map((ex, idx) => (
               <ExerciseCard
                 key={ex.id || `${ex.slug}-${ex.day}-${ex.level}-${idx}`}
                 exercise={ex}
-                index={collection === 'gym' ? idx + 1 : undefined}
+                index={undefined}
                 onSelect={(selected) => setSelectedExercise(selected)}
               />
             ))}

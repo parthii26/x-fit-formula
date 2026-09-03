@@ -647,41 +647,11 @@ export async function fetchHomeWorkoutVideoById(id) {
 // ─── Gym Workout Videos (Read) ────────────────────────────────────────────────
 
 /**
- * Fetch official Gym Workout videos.
- * Supports filtering by level ('Beginner', 'Intermediate', 'Advanced', or 'All'),
- * day ('Monday', 'Tuesday', etc. or 'All'), and search.
+ * Apply the level / day / search filters against the authoritative gym seed
+ * curriculum. This is the single source of truth for what the official Gym
+ * Workout Library is expected to contain for any given filter.
  */
-export async function fetchGymWorkoutVideos({ level = 'All', day = 'All', search = '' } = {}) {
-  if (isSupabaseConfigured && supabase) {
-    try {
-      let query = supabase.from('gym_workout_videos').select('*')
-      if (level && level !== 'All') {
-        query = query.eq('level', level)
-      }
-      if (day && day !== 'All') {
-        query = query.eq('day', day)
-      }
-      if (search && search.trim()) {
-        const term = `%${search.trim()}%`
-        query = query.or(`exercise_name.ilike.${term},video_title.ilike.${term},target_muscle.ilike.${term},split_name.ilike.${term}`)
-      }
-      query = query.order('id', { ascending: true })
-
-      const { data, error } = await query
-      if (error) throw error
-      if (data && data.length > 0) {
-        return {
-          videos: data.map(formatGymWorkoutRecord),
-          totalCount: data.length,
-          source: 'supabase',
-        }
-      }
-    } catch (err) {
-      console.warn('[Supabase] fetchGymWorkoutVideos failed, using seed fallback:', err.message)
-    }
-  }
-
-  // Fallback to official seed dataset
+function filterGymSeed({ level = 'All', day = 'All', search = '' } = {}) {
   let list = [...gymWorkoutSeed]
   if (level && level !== 'All') {
     list = list.filter((v) => v.level.toLowerCase() === level.toLowerCase())
@@ -700,6 +670,60 @@ export async function fetchGymWorkoutVideos({ level = 'All', day = 'All', search
         (v.section && v.section.toLowerCase().includes(q))
     )
   }
+  return list
+}
+
+/**
+ * Fetch official Gym Workout videos.
+ * Supports filtering by level ('Beginner', 'Intermediate', 'Advanced', or 'All'),
+ * day ('Monday', 'Tuesday', etc. or 'All'), and search.
+ *
+ * When Supabase is configured the `gym_workout_videos` table is preferred, but it
+ * is only trusted when it fully covers the official curriculum for the current
+ * (level/day) filter. If the table is missing, empty, or only partially seeded,
+ * the returned set can otherwise be incomplete — which made filtered views appear
+ * empty even though "All levels" populated. We reconcile against the authoritative
+ * seed so a level/day that officially has workouts always shows them.
+ */
+export async function fetchGymWorkoutVideos({ level = 'All', day = 'All', search = '' } = {}) {
+  // Official expected count for this non-search filter (used to validate a DB hit).
+  const expectedCount = filterGymSeed({ level, day }).length
+  const hasSearch = Boolean(search && search.trim())
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      let query = supabase.from('gym_workout_videos').select('*')
+      if (level && level !== 'All') {
+        query = query.eq('level', level)
+      }
+      if (day && day !== 'All') {
+        query = query.eq('day', day)
+      }
+      if (hasSearch) {
+        const term = `%${search.trim()}%`
+        query = query.or(`exercise_name.ilike.${term},video_title.ilike.${term},target_muscle.ilike.${term},split_name.ilike.${term}`)
+      }
+      query = query.order('id', { ascending: true })
+
+      const { data, error } = await query
+      if (error) throw error
+      // Only trust the DB hit when it is non-empty AND — for pure level/day
+      // browsing — it covers the full official curriculum. Otherwise fall back
+      // to the seed so filtered views are never spuriously empty.
+      if (data && data.length > 0 && (hasSearch || data.length >= expectedCount)) {
+        return {
+          videos: data.map(formatGymWorkoutRecord),
+          totalCount: data.length,
+          source: 'supabase',
+        }
+      }
+    } catch (err) {
+      console.warn('[Supabase] fetchGymWorkoutVideos failed, using seed fallback:', err.message)
+    }
+  }
+
+  // Fallback to official seed dataset (also used for demo/offline mode)
+  const list = filterGymSeed({ level, day, search })
 
   return {
     videos: list.map(formatGymWorkoutRecord),
