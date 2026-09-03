@@ -34,7 +34,7 @@ function seedClient(id, profile, opts = {}) {
     const gen = generatePlan(profile)
     c.plan = gen.week
     c.planStatus = 'assigned'
-    c.planMeta = { rx: gen.rx, volumeNote: gen.volumeNote, split: gen.split, assignedBy: 'Coach Vikram' }
+    c.planMeta = { rx: gen.rx, volumeNote: gen.volumeNote, split: gen.split, assignedBy: 'Head Coach' }
   }
   return c
 }
@@ -58,65 +58,79 @@ function seed() {
             id: 'ci-1', date: isoDate(-2), session: 'Completed as programmed', energy: 'high',
             meals: 'Breakfast: oats + whey. Lunch: dal, rice, paneer. Dinner: grilled chicken salad. Snacks: almonds, one filter coffee.',
             protein: '110', calories: '1650', water: '3', sleep: '7.5', weight: '61.2',
-            workoutNotes: 'Hip thrusts felt strong. Added 2.5 kg on the final set.',
-            status: 'reviewed',
-            trainerNote: 'Good execution. Keep the hip thrust load — one more week before we push again.',
-          },
-          {
-            id: 'ci-2', date: isoDate(-1), session: 'Completed with modifications', energy: 'medium',
-            meals: 'Breakfast: poha. Lunch: office canteen thali. Dinner: soup + toast. Ate out at lunch, portions were large.',
-            protein: '85', calories: '1900', water: '2.5', sleep: '6',
-            workoutNotes: 'Cut cardio finisher short — lower back felt tight after rows.',
+            notes: 'Felt strong on bench press. Energy consistent through the afternoon.',
             status: 'new',
           },
         ],
         messages: [
-          { from: 'client', text: 'Hi Coach! Lower back felt a bit tight after Monday\u2019s session.', ts: 'Aug 14, 9:12 AM' },
-          { from: 'trainer', text: 'Noted, Ananya. Swap Romanian deadlifts for hip thrusts this week and keep the core work strict. How\u2019s the tightness on a 1\u201310 scale?', ts: 'Aug 14, 11:40 AM' },
-          { from: 'client', text: 'Around a 3 now, much better after stretching. Thanks!', ts: 'Aug 15, 8:05 AM' },
+          { id: 'm-1', from: 'client', text: 'Hey coach, finished week 1. Feeling good, shoulder feels fine.', time: '2 days ago' },
+          { id: 'm-2', from: 'trainer', text: 'Great work Ananya. Keep that water intake up. Increasing dumbbell bench weight next week.', time: 'Yesterday' },
         ],
       },
     }),
-    seedClient('c-rohan', {
-      name: 'Rohan Mehta', age: '34', height: '178', heightUnit: 'cm', weight: '84', weightUnit: 'kg',
-      gender: 'men', lifestyle: 'desk', injuries: 'Right shoulder impingement (avoid overhead pressing)',
-      goal: 'muscle', equipment: 'dumbbells', experience: 'beginner', daysPerWeek: 3,
+    seedClient('c-rohit', {
+      name: 'Rohit Sharma', age: '34', height: '178', heightUnit: 'cm', weight: '84', weightUnit: 'kg',
+      gender: 'men', lifestyle: 'active', injuries: 'Right knee stiffness on deep squats',
+      goal: 'recomp', equipment: 'gym', experience: 'advanced', daysPerWeek: 5,
     }, {
-      joined: '2026-08-09', lastActive: 'Yesterday',
-      overrides: {
-        messages: [
-          { from: 'client', text: 'Just finished onboarding \u2014 excited to start! FYI my shoulder acts up on overhead work.', ts: 'Aug 12, 6:30 PM' },
-        ],
-      },
-    }),
-    seedClient('c-priya', {
-      name: 'Priya Nair', age: '22', height: '158', heightUnit: 'cm', weight: '52', weightUnit: 'kg',
-      gender: 'women', lifestyle: 'studying', injuries: '',
-      goal: 'general', equipment: 'bodyweight', experience: 'beginner', daysPerWeek: 3,
-    }, {
-      autoPlan: true, joined: '2026-06-28', lastActive: '3 days ago',
-      overrides: { completed: { Monday: true } },
-    }),
-    seedClient('c-karan', {
-      name: 'Karan Singh', age: '41', height: '183', heightUnit: 'cm', weight: '92', weightUnit: 'kg',
-      gender: 'men', lifestyle: 'active', injuries: 'Old ACL reconstruction (left knee) \u2014 no deep pistol squats',
-      goal: 'strength', equipment: 'gym', experience: 'advanced', daysPerWeek: 5,
-    }, {
-      autoPlan: true, joined: '2026-03-02', lastActive: 'Today',
+      autoPlan: true, joined: '2026-06-01', lastActive: 'Today',
       overrides: {
         completed: { Monday: true, Tuesday: true, Wednesday: true },
-        messages: [
-          { from: 'trainer', text: 'Big week, Karan. We\u2019re testing squat triples on Friday \u2014 sleep well Thursday.', ts: 'Aug 13, 7:00 PM' },
-          { from: 'client', text: 'Locked in. Knee sleeve packed.', ts: 'Aug 13, 7:22 PM' },
+        weightLog: [
+          { date: 'Jul 20', value: 85.8 }, { date: 'Jul 27', value: 85.1 },
+          { date: 'Aug 3', value: 84.7 }, { date: 'Aug 10', value: 84.3 }, { date: 'Aug 17', value: 84.0 },
         ],
         checkIns: [
           {
-            id: 'ci-3', date: isoDate(-1), session: 'Completed as programmed', energy: 'high',
-            meals: 'High day: eggs + toast, chicken rice bowl, steak and potatoes, curd. Hit all planned meals.',
-            protein: '190', calories: '3100', water: '4', sleep: '8', weight: '92.0',
-            workoutNotes: 'Squat triple at 160 kg moved fast. Knee felt stable with sleeve.',
+            id: 'ci-2', date: isoDate(-1), session: 'Heavy lower body day', energy: 'medium',
+            meals: 'Breakfast: eggs + sourdough. Lunch: chicken biryani (homemade, tracked). Dinner: fish curry + rice.',
+            protein: '160', calories: '2200', water: '3.5', sleep: '6.5', weight: '84.0',
+            notes: 'Knee felt okay with knee sleeves. Did 4 sets on leg press.',
             status: 'new',
           },
+        ],
+        messages: [
+          { id: 'm-3', from: 'client', text: 'Morning coach, checked in. Sleep was a bit low last night.', time: '1 day ago' },
+        ],
+      },
+    }),
+    seedClient('c-kavya', {
+      name: 'Kavya Nair', age: '23', height: '158', heightUnit: 'cm', weight: '52', weightUnit: 'kg',
+      gender: 'women', lifestyle: 'sedentary', injuries: '',
+      goal: 'muscle', equipment: 'home', experience: 'beginner', daysPerWeek: 3,
+    }, {
+      autoPlan: true, joined: '2026-07-20', lastActive: 'Yesterday',
+      overrides: {
+        completed: { Monday: true },
+        weightLog: [{ date: 'Aug 3', value: 51.5 }, { date: 'Aug 10', value: 51.8 }, { date: 'Aug 17', value: 52.0 }],
+        checkIns: [],
+        messages: [
+          { id: 'm-4', from: 'client', text: 'First time working out properly. Loving the home routine so far!', time: '3 days ago' },
+          { id: 'm-5', from: 'trainer', text: 'Welcome Kavya! Consistency is key. Take your time on the tempo cues.', time: '2 days ago' },
+        ],
+      },
+    }),
+    seedClient('c-dev', {
+      name: 'Dev Patel', age: '41', height: '172', heightUnit: 'cm', weight: '91', weightUnit: 'kg',
+      gender: 'men', lifestyle: 'desk', injuries: 'Chronic shoulder impingement (left side)',
+      goal: 'fatloss', equipment: 'gym', experience: 'beginner', daysPerWeek: 3,
+    }, {
+      autoPlan: false, joined: '2026-08-10', lastActive: 'Today',
+      overrides: {
+        planStatus: 'pending',
+        completed: {},
+        weightLog: [{ date: 'Aug 10', value: 91.8 }, { date: 'Aug 17', value: 91.0 }],
+        checkIns: [
+          {
+            id: 'ci-3', date: isoDate(0), session: 'Cardio + Mobility', energy: 'high',
+            meals: 'Diet tracked strictly: 1800 kcal, 130g protein. No sugar.',
+            protein: '130', calories: '1800', water: '4', sleep: '8', weight: '91.0',
+            notes: 'Awaiting updated workout plan for shoulder rehab.',
+            status: 'new',
+          },
+        ],
+        messages: [
+          { id: 'm-6', from: 'client', text: 'Hi coach, submitted my intake form and check-in. Looking forward to the program.', time: 'Today' },
         ],
       },
     }),
@@ -128,7 +142,7 @@ function seed() {
   ]
 
   return {
-    trainer: { id: 't-vikram', role: 'trainer', name: 'Coach Vikram', title: 'Head Trainer, X Fit Formula' },
+    trainer: { id: 't-admin', role: 'trainer', name: 'Coach', title: 'Head Trainer, X Fit Formula' },
     clients,
   }
 }

@@ -138,7 +138,29 @@ export default function App() {
       const role    = profile?.role || user.user_metadata?.role || 'client'
 
       if (role === 'trainer' || role === 'admin') {
-        setSession({ role: 'trainer', supabaseAuth: true, userId: user.id })
+        const rawName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Trainer'
+        const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
+        const trainerName = displayName.toLowerCase().startsWith('coach') ? displayName : `Coach ${displayName}`
+        const trainerTitle = profile?.title || 'Head Trainer, X Fit Formula'
+
+        setDb((prev) => ({
+          ...prev,
+          trainer: {
+            id: user.id,
+            role: 'trainer',
+            name: trainerName,
+            title: trainerTitle,
+            email: user.email || '',
+          },
+        }))
+
+        setSession({
+          role: 'trainer',
+          supabaseAuth: true,
+          userId: user.id,
+          trainerName,
+          trainerTitle,
+        })
       } else {
         const clientObj = buildSupabaseClient(user, profile)
 
@@ -314,9 +336,15 @@ export default function App() {
     }
 
     if (session.role === 'trainer') {
+      const activeTrainer = {
+        ...db.trainer,
+        id: session.userId || db.trainer?.id || 'trainer',
+        name: session.trainerName || db.trainer?.name || 'Coach',
+        title: session.trainerTitle || db.trainer?.title || 'Head Trainer, X Fit Formula',
+      }
       return (
         <TrainerPortal
-          trainer={db.trainer}
+          trainer={activeTrainer}
           clients={db.clients.filter((c) => c.onboarded)}
           onUpdateClient={updateClient}
           onLogout={logout}
@@ -350,7 +378,7 @@ export default function App() {
     return (
       <ClientPortal
         client={client}
-        trainerName={db.trainer.name}
+        trainerName={session?.trainerName || db.trainer?.name || 'Coach'}
         onUpdate={updateClient}
         onLogout={logout}
       />
