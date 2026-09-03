@@ -136,26 +136,26 @@ export default function App() {
   // ── Supabase user → session mapping ──────────────────────────────────────
   async function handleSupabaseUser(user) {
     try {
-      const intendedRole = sessionStorage.getItem('xff_intended_role')
+      const intendedRole = localStorage.getItem('xff_intended_role') || sessionStorage.getItem('xff_intended_role')
       if (intendedRole) {
+        localStorage.removeItem('xff_intended_role')
         sessionStorage.removeItem('xff_intended_role')
       }
 
       let profile = await getProfile(user.id)
-      let role    = profile?.role || user.user_metadata?.role || intendedRole || 'client'
+      let role    = intendedRole || profile?.role || user.user_metadata?.role || 'client'
 
-      // If user came in through Trainer Access, ensure profile is saved as trainer
-      if (intendedRole === 'trainer' && role !== 'trainer') {
-        role = 'trainer'
-        await upsertProfile(user.id, {
-          role: 'trainer',
-          full_name: profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0],
-          email: user.email,
-        })
-        profile = await getProfile(user.id)
-      }
-
+      // If user selected Trainer Access, ensure profile in Supabase is updated to trainer
       if (role === 'trainer' || role === 'admin') {
+        if (profile?.role !== 'trainer' && profile?.role !== 'admin') {
+          await upsertProfile(user.id, {
+            role: 'trainer',
+            full_name: profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0],
+            email: user.email,
+          })
+          profile = await getProfile(user.id)
+        }
+
         const rawName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Trainer'
         const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
         const trainerName = displayName.toLowerCase().startsWith('coach') ? displayName : `Coach ${displayName}`
@@ -229,6 +229,7 @@ export default function App() {
     if (provider === 'google') {
       try {
         const role = portal === 'trainer' ? 'trainer' : 'client'
+        localStorage.setItem('xff_intended_role', role)
         sessionStorage.setItem('xff_intended_role', role)
         await signInWithGoogle(role)
         return { success: true }
@@ -362,6 +363,9 @@ export default function App() {
   }
 
   const logout = async () => {
+    localStorage.removeItem('xff_intended_role')
+    sessionStorage.removeItem('xff_intended_role')
+    sessionStorage.removeItem(SESSION_KEY)
     if (session?.supabaseAuth) {
       await signOut().catch(() => {})
     }
