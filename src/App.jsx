@@ -17,6 +17,7 @@ import {
   verifyMobileOtp,
   resetPassword,
   updatePassword,
+  fetchAllClients,
 } from './lib/supabase.js'
 import { Label, TextInput, Btn } from './components/ui.jsx'
 import { KeyRound, ShieldCheck, CheckCircle2, X, Eye, EyeOff } from 'lucide-react'
@@ -143,6 +144,8 @@ export default function App() {
         const trainerName = displayName.toLowerCase().startsWith('coach') ? displayName : `Coach ${displayName}`
         const trainerTitle = profile?.title || 'Head Trainer, X Fit Formula'
 
+        const realClients = await fetchAllClients()
+
         setDb((prev) => ({
           ...prev,
           trainer: {
@@ -152,6 +155,7 @@ export default function App() {
             title: trainerTitle,
             email: user.email || '',
           },
+          clients: isSupabaseConfigured ? realClients : prev.clients,
         }))
 
         setSession({

@@ -192,6 +192,57 @@ export async function getProfile(userId) {
   }
 }
 
+/** Fetch all registered client profiles for the trainer roster in production */
+export async function fetchAllClients() {
+  if (!isSupabaseConfigured || !supabase) return []
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'client')
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return (data || []).map((p) => {
+      const isComplete = Boolean(p.gender && p.age && p.weight)
+      return {
+        id: p.id,
+        role: 'client',
+        onboarded: isComplete,
+        supabaseAuth: true,
+        profile: {
+          name: p.full_name || p.email?.split('@')[0] || p.phone || 'Client',
+          email: p.email || '',
+          phone: p.phone || '',
+          age: p.age || '',
+          height: p.height || '',
+          heightUnit: p.height_unit || 'cm',
+          weight: p.weight || '',
+          weightUnit: p.weight_unit || 'kg',
+          gender: p.gender || '',
+          lifestyle: p.lifestyle || '',
+          injuries: p.injuries || '',
+          goal: p.goal || 'general',
+          equipment: p.equipment || 'gym',
+          experience: p.experience || 'beginner',
+          daysPerWeek: p.days_per_week || 3,
+        },
+        plan: null,
+        planStatus: 'pending',
+        planMeta: null,
+        completed: {},
+        weightLog: [],
+        checkIns: [],
+        messages: [],
+        joined: p.created_at ? p.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10),
+        lastActive: 'Today',
+      }
+    })
+  } catch (err) {
+    console.warn('[Supabase] fetchAllClients failed:', err.message)
+    return []
+  }
+}
+
 /** Create or update a profile record. */
 export async function upsertProfile(userId, patch) {
   if (!isSupabaseConfigured || !supabase || !userId) return null

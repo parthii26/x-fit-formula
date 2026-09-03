@@ -260,11 +260,19 @@ function Roster({ clients, onOpen }) {
         </table>
       </div>
 
-      {filtered.length === 0 && (
+      {clients.length === 0 ? (
+        <div className="mt-8 border border-white/10 bg-surface/40 p-12 text-center">
+          <Users className="mx-auto h-8 w-8 text-gold/50 mb-3" strokeWidth={1.5} />
+          <p className="font-display text-sm font-bold uppercase tracking-[0.2em] text-ink">No Registered Athletes Yet</p>
+          <p className="mt-2 text-xs text-mute max-w-sm mx-auto">
+            Your roster is ready for production. When clients sign up and complete onboarding, their profile will appear here automatically.
+          </p>
+        </div>
+      ) : filtered.length === 0 ? (
         <p className="mt-8 border border-white/10 p-10 text-center text-[10px] uppercase tracking-[0.3em] text-white/25">
-          No records match
+          No records match search
         </p>
-      )}
+      ) : null}
     </div>
   )
 }
