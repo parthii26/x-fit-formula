@@ -193,8 +193,20 @@ export default function App() {
   }
 
   // ─── Login handler (100% Production Supabase Authentication) ────────────────
-  const handleLogin = async ({ portal, mode, name, email, password }) => {
+  const handleLogin = async ({ portal, mode, name, email, password, provider }) => {
     setAuthError(null)
+
+    // ── Google OAuth Provider ───────────────────────────────────────────────
+    if (provider === 'google') {
+      try {
+        const role = portal === 'trainer' ? 'trainer' : 'client'
+        await signInWithGoogle(role)
+        return { success: true }
+      } catch (err) {
+        setAuthError(err.message || 'Google authentication failed. Ensure Google provider is enabled in Supabase.')
+        return { error: true }
+      }
+    }
 
     // ── Production Supabase Email + Password Auth ───────────────────────────
     if (isSupabaseConfigured && email && password) {
