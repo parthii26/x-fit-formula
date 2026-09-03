@@ -166,6 +166,32 @@ The schema enforces the following access rules:
 
 ---
 
+## Step 10 — Workout Libraries (Home & Gym)
+
+The Workout Library tabs (Client "Library" and Trainer "Workout Library") read from
+two dedicated tables that mirror each other. Each table needs a migration + importer:
+
+| Library | Table | Migration | Importer |
+|---|---|---|---|
+| Home Workouts | `home_workout_videos` | `supabase/migrations/005_home_workout_videos.sql` | `node scripts/import-home-workout-videos.js` |
+| Gym Workouts | `gym_workout_videos` | `supabase/migrations/006_gym_workout_videos.sql` | `node scripts/import-gym-workout-videos.js` |
+
+Setup for each library:
+
+1. Run its migration file in the Supabase SQL editor (creates the table, RLS, indexes).
+2. From the project root with `.env.local` credentials set, run its importer:
+   ```bash
+   node scripts/import-gym-workout-videos.js --dry-run   # preview counts first
+   node scripts/import-gym-workout-videos.js             # seed the table
+   ```
+3. Redeploy Netlify if needed so the frontend reads the seeded rows.
+
+> If a library's Supabase table is missing/empty/partial, the frontend automatically
+> falls back to the bundled seed curriculum — it will never show fewer movements than
+> the official program for a selected level/day.
+
+---
+
 ## Supabase Free Tier Limits Reference
 
 | Resource | Free Tier Limit | Current Usage |
