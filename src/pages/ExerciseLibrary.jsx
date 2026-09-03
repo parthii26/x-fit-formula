@@ -130,15 +130,21 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
     // ── GYM ──
     if (collection === 'gym') {
       const groups = []
+      const levelsToInclude = gymLevel === 'All' ? ['Beginner', 'Intermediate', 'Advanced'] : [gymLevel]
       const daysToInclude = gymDay === 'All' ? DAYS_OF_WEEK : [gymDay]
-      daysToInclude.forEach((dayName) => {
-        const dayExercises = exercises.filter(
-          (ex) => (ex.day || '').toLowerCase() === dayName.toLowerCase()
-        )
-        if (dayExercises.length > 0) {
-          const splitName = dayExercises[0]?.split_name || 'Workout Routine'
-          groups.push({ dayName, splitName, kind: 'gym', dayExercises })
-        }
+
+      levelsToInclude.forEach((lvl) => {
+        daysToInclude.forEach((dayName) => {
+          const dayExercises = exercises.filter(
+            (ex) =>
+              (ex.level || '').toLowerCase() === lvl.toLowerCase() &&
+              (ex.day || '').toLowerCase() === dayName.toLowerCase()
+          )
+          if (dayExercises.length > 0) {
+            const splitName = dayExercises[0]?.split_name || 'Workout Routine'
+            groups.push({ dayName, level: lvl, splitName, kind: 'gym', dayExercises })
+          }
+        })
       })
       return groups
     }
