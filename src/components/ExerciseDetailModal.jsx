@@ -174,7 +174,7 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
             {/* Left Column: Native Movement Visualizer & Session Tracker */}
             <div className="flex flex-col gap-3.5 lg:col-span-5">
               {/* Native Motion Demonstration Box */}
-              <div className="relative aspect-video sm:aspect-square w-full overflow-hidden border border-white/10 bg-obsidian shadow-2xl">
+              <div className="relative aspect-video w-full overflow-hidden border border-white/10 bg-obsidian shadow-2xl flex items-center justify-center">
                 {currentVideoSrc && !videoError ? (
                   <video
                     ref={videoRef}
@@ -185,14 +185,14 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
                     loop
                     muted
                     playsInline
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain bg-obsidian"
                   />
                 ) : frames.length > 0 ? (
                   <div className="relative h-full w-full bg-obsidian flex flex-col items-center justify-between">
                     <img
                       src={frames[activeFrameIndex] || frames[0]}
                       alt={`${exerciseName} continuous motion`}
-                      className="h-full w-full object-cover transition-all duration-300 select-none"
+                      className="h-full w-full object-contain bg-obsidian transition-all duration-300 select-none"
                     />
 
                     {/* Active Cadence & Position Badge */}

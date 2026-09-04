@@ -327,14 +327,14 @@ export default function ActiveWorkoutPlayer({
               playsInline
               preload="metadata"
               onError={handleVideoError}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain bg-obsidian"
             />
           ) : openSourceDemo?.frames?.length ? (
             <div className="relative h-full w-full bg-obsidian flex items-center justify-center">
               <img
                 src={openSourceDemo.frames[activeFrameIndex] || openSourceDemo.frames[0]}
                 alt={currentEx.name}
-                className="h-full w-full object-cover transition-opacity duration-300"
+                className="h-full w-full object-contain bg-obsidian transition-opacity duration-300"
               />
               <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-obsidian/85 px-2 py-0.5 border border-white/15 backdrop-blur-md">
                 <span className={`h-1.5 w-1.5 rounded-full ${activeFrameIndex === 0 ? 'bg-amber-400' : 'bg-gold animate-pulse'}`} />
@@ -345,15 +345,9 @@ export default function ActiveWorkoutPlayer({
             </div>
           ) : normalizedThumbnail ? (
             <img
-              src={openSourceDemo.frames[activeFrameIndex] || openSourceDemo.frames[0]}
-              alt={currentEx.name}
-              className="h-full w-full object-cover transition-opacity duration-300"
-            />
-          ) : normalizedThumbnail ? (
-            <img
               src={normalizedThumbnail}
               alt={currentEx.name}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain bg-obsidian transition-opacity duration-300"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-obsidian">
