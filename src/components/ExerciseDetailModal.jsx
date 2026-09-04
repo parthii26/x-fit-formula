@@ -8,8 +8,8 @@ import { getOpenSourceDemo, getYouTubeEmbedUrl, getYouTubeWatchUrl } from '../li
 
 export default function ExerciseDetailModal({ exercise, onClose }) {
   const isHomeWorkout = Boolean(exercise?.isHomeWorkout)
-  const openSourceDemo = getOpenSourceDemo(exercise?.slug)
-  const youtubeUrl = openSourceDemo?.videoUrl || exercise?.video_url || exercise?.source_url || null
+  const openSourceDemo = getOpenSourceDemo(exercise?.slug || exercise?.name || exercise?.exercise_name)
+  const youtubeUrl = openSourceDemo?.videoUrl || exercise?.video_url || exercise?.videoUrl || exercise?.source_url || null
   const embedUrl = getYouTubeEmbedUrl(youtubeUrl)
 
   // Gender support for dual-demo movements

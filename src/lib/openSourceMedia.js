@@ -114,27 +114,27 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'machine-bench-press': {
     path: 'Leverage_Chest_Press',
     frames: [`${BASE_URL}/Leverage_Chest_Press/0.jpg`, `${BASE_URL}/Leverage_Chest_Press/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=2q8E_3U3k_g',
+    videoUrl: 'https://www.youtube.com/watch?v=xUm0BiZCWlQ',
   },
   'dumbbell-pullover': {
     path: 'Straight-Arm_Dumbbell_Pullover',
     frames: [`${BASE_URL}/Straight-Arm_Dumbbell_Pullover/0.jpg`, `${BASE_URL}/Straight-Arm_Dumbbell_Pullover/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=FK4rHfW644U',
+    videoUrl: 'https://www.youtube.com/watch?v=VmB1G1K7v94',
   },
   'db-pullover': {
     path: 'Straight-Arm_Dumbbell_Pullover',
     frames: [`${BASE_URL}/Straight-Arm_Dumbbell_Pullover/0.jpg`, `${BASE_URL}/Straight-Arm_Dumbbell_Pullover/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=FK4rHfW644U',
+    videoUrl: 'https://www.youtube.com/watch?v=VmB1G1K7v94',
   },
   'decline-dumbbell-press': {
     path: 'Decline_Dumbbell_Bench_Press',
     frames: [`${BASE_URL}/Decline_Dumbbell_Bench_Press/0.jpg`, `${BASE_URL}/Decline_Dumbbell_Bench_Press/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=8x-2f_iW_54',
+    videoUrl: 'https://www.youtube.com/watch?v=LfyQBUKR8SE',
   },
   'decline-dumbbell-chest-fly': {
     path: 'Decline_Dumbbell_Flyes',
     frames: [`${BASE_URL}/Decline_Dumbbell_Flyes/0.jpg`, `${BASE_URL}/Decline_Dumbbell_Flyes/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=DFwM2gHkJyU',
+    videoUrl: 'https://www.youtube.com/watch?v=eozdVDA78K0',
   },
   'cable-crossover': {
     path: 'Cable_Crossover',
@@ -154,7 +154,7 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'low-cable-flye': {
     path: 'Low_Cable_Crossover',
     frames: [`${BASE_URL}/Low_Cable_Crossover/0.jpg`, `${BASE_URL}/Low_Cable_Crossover/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=5B3b5N3x74E',
+    videoUrl: 'https://www.youtube.com/watch?v=M1N804yWA-8',
   },
 
   // ─── BACK & LATS MOVEMENTS ────────────────────────────────────────────────
@@ -201,22 +201,22 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'barbell-row': {
     path: 'Bent_Over_Barbell_Row',
     frames: [`${BASE_URL}/Bent_Over_Barbell_Row/0.jpg`, `${BASE_URL}/Bent_Over_Barbell_Row/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=FWJR5Ve8gkQ',
+    videoUrl: 'https://www.youtube.com/watch?v=vT2GjY_Umpw',
   },
   'bent-over-row': {
     path: 'Bent_Over_Barbell_Row',
     frames: [`${BASE_URL}/Bent_Over_Barbell_Row/0.jpg`, `${BASE_URL}/Bent_Over_Barbell_Row/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=FWJR5Ve8gkQ',
+    videoUrl: 'https://www.youtube.com/watch?v=vT2GjY_Umpw',
   },
   'bent-over-row-advanced': {
     path: 'Bent_Over_Barbell_Row',
     frames: [`${BASE_URL}/Bent_Over_Barbell_Row/0.jpg`, `${BASE_URL}/Bent_Over_Barbell_Row/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=FWJR5Ve8gkQ',
+    videoUrl: 'https://www.youtube.com/watch?v=vT2GjY_Umpw',
   },
   'reverse-grip-bent-over-row': {
     path: 'Bent_Over_Barbell_Row',
     frames: [`${BASE_URL}/Bent_Over_Barbell_Row/0.jpg`, `${BASE_URL}/Bent_Over_Barbell_Row/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=FWJR5Ve8gkQ',
+    videoUrl: 'https://www.youtube.com/watch?v=vT2GjY_Umpw',
   },
   'dumbbell-rowing': {
     path: 'One-Arm_Dumbbell_Row',
@@ -251,22 +251,22 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'seated-cable-row': {
     path: 'Seated_Cable_Rows',
     frames: [`${BASE_URL}/Seated_Cable_Rows/0.jpg`, `${BASE_URL}/Seated_Cable_Rows/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=GZbfZ033fBo',
+    videoUrl: 'https://www.youtube.com/watch?v=sP_4vybjVJs',
   },
   'seated-row': {
     path: 'Seated_Cable_Rows',
     frames: [`${BASE_URL}/Seated_Cable_Rows/0.jpg`, `${BASE_URL}/Seated_Cable_Rows/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=GZbfZ033fBo',
+    videoUrl: 'https://www.youtube.com/watch?v=sP_4vybjVJs',
   },
   'v-grip-lat-pulldowns': {
     path: 'V-Bar_Pulldown',
     frames: [`${BASE_URL}/V-Bar_Pulldown/0.jpg`, `${BASE_URL}/V-Bar_Pulldown/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=l_tZ9zMsz5I',
+    videoUrl: 'https://www.youtube.com/watch?v=CAwf7n6Luuc',
   },
   'single-arm-lat-pulldowns': {
     path: 'One-Arm_Lat_Pulldown',
     frames: [`${BASE_URL}/One-Arm_Lat_Pulldown/0.jpg`, `${BASE_URL}/One-Arm_Lat_Pulldown/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=mRkzRkJQ5iA',
+    videoUrl: 'https://www.youtube.com/watch?v=CAwf7n6Luuc',
   },
   'cable-machine': {
     path: 'Cable_Crossover',
@@ -296,12 +296,12 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'doorframe-row-towel-row': {
     path: 'Pullups',
     frames: [`${BASE_URL}/Pullups/0.jpg`, `${BASE_URL}/Pullups/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=rloXYB8M3vU',
+    videoUrl: 'https://www.youtube.com/watch?v=eGo4IYlbE5g',
   },
   'inverted-row-table': {
     path: 'Pullups',
     frames: [`${BASE_URL}/Pullups/0.jpg`, `${BASE_URL}/Pullups/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=hXTc1mDnZCw',
+    videoUrl: 'https://www.youtube.com/watch?v=eGo4IYlbE5g',
   },
 
   // ─── SHOULDERS & TRAPS ────────────────────────────────────────────────────
@@ -353,7 +353,7 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'db-arnold-press': {
     path: 'Standing_Dumbbell_Press',
     frames: [`${BASE_URL}/Standing_Dumbbell_Press/0.jpg`, `${BASE_URL}/Standing_Dumbbell_Press/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=6Z15_WdXmVw',
+    videoUrl: 'https://www.youtube.com/watch?v=qEwKCR5JCog',
   },
   'db-push-press': {
     path: 'Standing_Dumbbell_Press',
@@ -368,12 +368,12 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'barbell-front-raise': {
     path: 'Barbell_Front_Raise',
     frames: [`${BASE_URL}/Barbell_Front_Raise/0.jpg`, `${BASE_URL}/Barbell_Front_Raise/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=gzDawOzDe2Y',
+    videoUrl: 'https://www.youtube.com/watch?v=3VcKaXpzqRo',
   },
   'barbell-front-raises': {
     path: 'Barbell_Front_Raise',
     frames: [`${BASE_URL}/Barbell_Front_Raise/0.jpg`, `${BASE_URL}/Barbell_Front_Raise/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=gzDawOzDe2Y',
+    videoUrl: 'https://www.youtube.com/watch?v=3VcKaXpzqRo',
   },
   'bent-over-raise': {
     path: 'Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench',
@@ -413,12 +413,12 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'barbell-shrug': {
     path: 'Barbell_Shrug',
     frames: [`${BASE_URL}/Barbell_Shrug/0.jpg`, `${BASE_URL}/Barbell_Shrug/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=M-5H4b1P_vM',
+    videoUrl: 'https://www.youtube.com/watch?v=NAqCVe2mwzM',
   },
   'dumbbell-shrug': {
     path: 'Dumbbell_Shrug',
     frames: [`${BASE_URL}/Dumbbell_Shrug/0.jpg`, `${BASE_URL}/Dumbbell_Shrug/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=g6qbq4Du13g',
+    videoUrl: 'https://www.youtube.com/watch?v=cJRVVxmytaM',
   },
 
   // ─── ARMS (BICEPS, TRICEPS & FOREARMS) ────────────────────────────────────
@@ -460,17 +460,17 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'cable-biceps-curl-bar': {
     path: 'Cable_Curl',
     frames: [`${BASE_URL}/Cable_Curl/0.jpg`, `${BASE_URL}/Cable_Curl/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=AsAVbXupbHA',
+    videoUrl: 'https://www.youtube.com/watch?v=NFzTWp2qpiE',
   },
   'cable-biceps-curls': {
     path: 'Cable_Curl',
     frames: [`${BASE_URL}/Cable_Curl/0.jpg`, `${BASE_URL}/Cable_Curl/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=AsAVbXupbHA',
+    videoUrl: 'https://www.youtube.com/watch?v=NFzTWp2qpiE',
   },
   'cable-hammer-curl': {
     path: 'Cable_Hammer_Curls_-_Rope_Attachment',
     frames: [`${BASE_URL}/Cable_Hammer_Curls_-_Rope_Attachment/0.jpg`, `${BASE_URL}/Cable_Hammer_Curls_-_Rope_Attachment/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=d_kXkVvK_40',
+    videoUrl: 'https://www.youtube.com/watch?v=zC3nLlEvin4',
   },
   'barbell-hammer-curl': {
     path: 'Hammer_Curls',
@@ -485,12 +485,12 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'forearm': {
     path: 'Palms-Down_Wrist_Curl_Over_A_Bench',
     frames: [`${BASE_URL}/Palms-Down_Wrist_Curl_Over_A_Bench/0.jpg`, `${BASE_URL}/Palms-Down_Wrist_Curl_Over_A_Bench/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=uK7hLgA2Q5A',
+    videoUrl: 'https://www.youtube.com/watch?v=kwG2ipFRgfo',
   },
   'forearm-wrist-curl': {
     path: 'Palms-Down_Wrist_Curl_Over_A_Bench',
     frames: [`${BASE_URL}/Palms-Down_Wrist_Curl_Over_A_Bench/0.jpg`, `${BASE_URL}/Palms-Down_Wrist_Curl_Over_A_Bench/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=uK7hLgA2Q5A',
+    videoUrl: 'https://www.youtube.com/watch?v=kwG2ipFRgfo',
   },
   'skullcrusher': {
     path: 'Lying_Triceps_Extension',
@@ -505,7 +505,7 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'cable-overhead-extension-with-rope': {
     path: 'Cable_Rope_Overhead_Triceps_Extension',
     frames: [`${BASE_URL}/Cable_Rope_Overhead_Triceps_Extension/0.jpg`, `${BASE_URL}/Cable_Rope_Overhead_Triceps_Extension/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=1u18yJcL160',
+    videoUrl: 'https://www.youtube.com/watch?v=-Vyt2QdsR7E',
   },
   'cable-push-down': {
     path: 'Triceps_Pushdown',
@@ -550,7 +550,7 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'triceps-machine-dip': {
     path: 'Leverage_Chest_Press',
     frames: [`${BASE_URL}/Leverage_Chest_Press/0.jpg`, `${BASE_URL}/Leverage_Chest_Press/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=2q8E_3U3k_g',
+    videoUrl: 'https://www.youtube.com/watch?v=6kALZikXxLc',
   },
   'triceps-dip': {
     path: 'Dips_-_Triceps_Version',
@@ -582,7 +582,7 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'db-front-squat': {
     path: 'Dumbbell_Squat',
     frames: [`${BASE_URL}/Dumbbell_Squat/0.jpg`, `${BASE_URL}/Dumbbell_Squat/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=v_C6VoK5fA8',
+    videoUrl: 'https://www.youtube.com/watch?v=MVMNk0HiTMg',
   },
   'leg-extension': {
     path: 'Leg_Extensions',
@@ -632,12 +632,12 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'dumbbell-squat': {
     path: 'Dumbbell_Squat',
     frames: [`${BASE_URL}/Dumbbell_Squat/0.jpg`, `${BASE_URL}/Dumbbell_Squat/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=v_C6VoK5fA8',
+    videoUrl: 'https://www.youtube.com/watch?v=MVMNk0HiTMg',
   },
   'goblet-squat': {
     path: 'Dumbbell_Squat',
     frames: [`${BASE_URL}/Dumbbell_Squat/0.jpg`, `${BASE_URL}/Dumbbell_Squat/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=v_C6VoK5fA8',
+    videoUrl: 'https://www.youtube.com/watch?v=MVMNk0HiTMg',
   },
   'leg-press': {
     path: 'Leg_Press',
@@ -647,12 +647,12 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'lying-leg-curl': {
     path: 'Lying_Leg_Curls',
     frames: [`${BASE_URL}/Lying_Leg_Curls/0.jpg`, `${BASE_URL}/Lying_Leg_Curls/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=1Tq3EDRyKUw',
+    videoUrl: 'https://www.youtube.com/watch?v=ELOCsoDSmrg',
   },
   'leg-curl': {
     path: 'Lying_Leg_Curls',
     frames: [`${BASE_URL}/Lying_Leg_Curls/0.jpg`, `${BASE_URL}/Lying_Leg_Curls/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=1Tq3EDRyKUw',
+    videoUrl: 'https://www.youtube.com/watch?v=ELOCsoDSmrg',
   },
   'seated-leg-curl': {
     path: 'Seated_Leg_Curl',
@@ -682,22 +682,22 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'hip-thrust': {
     path: 'Glute_Bridge',
     frames: [`${BASE_URL}/Glute_Bridge/0.jpg`, `${BASE_URL}/Glute_Bridge/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=OUgsJ8-Vigk',
+    videoUrl: 'https://www.youtube.com/watch?v=wPM8icPu6H8',
   },
   'db-hip-thrust': {
     path: 'Glute_Bridge',
     frames: [`${BASE_URL}/Glute_Bridge/0.jpg`, `${BASE_URL}/Glute_Bridge/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=OUgsJ8-Vigk',
+    videoUrl: 'https://www.youtube.com/watch?v=wPM8icPu6H8',
   },
   'glute-bridge': {
     path: 'Glute_Bridge',
     frames: [`${BASE_URL}/Glute_Bridge/0.jpg`, `${BASE_URL}/Glute_Bridge/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=OUgsJ8-Vigk',
+    videoUrl: 'https://www.youtube.com/watch?v=wPM8icPu6H8',
   },
   'single-leg-glute-bridge': {
     path: 'Glute_Bridge',
     frames: [`${BASE_URL}/Glute_Bridge/0.jpg`, `${BASE_URL}/Glute_Bridge/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=OUgsJ8-Vigk',
+    videoUrl: 'https://www.youtube.com/watch?v=wPM8icPu6H8',
   },
   'reverse-lunge': {
     path: 'Bodyweight_Walking_Lunge',
@@ -727,7 +727,7 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'bulgarian-split-squat': {
     path: 'Bodyweight_Walking_Lunge',
     frames: [`${BASE_URL}/Bodyweight_Walking_Lunge/0.jpg`, `${BASE_URL}/Bodyweight_Walking_Lunge/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=2C-uNgKwPLE',
+    videoUrl: 'https://www.youtube.com/watch?v=L8fvypPrzzs',
   },
   'split-squat': {
     path: 'Bodyweight_Walking_Lunge',
@@ -737,7 +737,7 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'db-step-up': {
     path: 'Bodyweight_Walking_Lunge',
     frames: [`${BASE_URL}/Bodyweight_Walking_Lunge/0.jpg`, `${BASE_URL}/Bodyweight_Walking_Lunge/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=9ZknEYboBOQ',
+    videoUrl: 'https://www.youtube.com/watch?v=L8fvypPrzzs',
   },
 
   // ─── CORE & CONDITIONING ──────────────────────────────────────────────────
@@ -754,47 +754,47 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'side-plank': {
     path: 'Plank',
     frames: [`${BASE_URL}/Plank/0.jpg`, `${BASE_URL}/Plank/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=N_s9V38nWu8',
+    videoUrl: 'https://www.youtube.com/watch?v=K2VljzCC16g',
   },
   'hollow-hold': {
     path: 'Plank',
     frames: [`${BASE_URL}/Plank/0.jpg`, `${BASE_URL}/Plank/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=LlDNef_Ztsc',
+    videoUrl: 'https://www.youtube.com/watch?v=pSHjTRCQxIw',
   },
   'bird-dog': {
     path: 'Plank',
     frames: [`${BASE_URL}/Plank/0.jpg`, `${BASE_URL}/Plank/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=wiFNA3sqjCA',
+    videoUrl: 'https://www.youtube.com/watch?v=pSHjTRCQxIw',
   },
   'superman': {
     path: 'Plank',
     frames: [`${BASE_URL}/Plank/0.jpg`, `${BASE_URL}/Plank/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=z6PJMT2y8GQ',
+    videoUrl: 'https://www.youtube.com/watch?v=pSHjTRCQxIw',
   },
   'superman-hold': {
     path: 'Plank',
     frames: [`${BASE_URL}/Plank/0.jpg`, `${BASE_URL}/Plank/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=z6PJMT2y8GQ',
+    videoUrl: 'https://www.youtube.com/watch?v=pSHjTRCQxIw',
   },
   'reverse-snow-angel': {
     path: 'Plank',
     frames: [`${BASE_URL}/Plank/0.jpg`, `${BASE_URL}/Plank/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=6r0lT_e_6n0',
+    videoUrl: 'https://www.youtube.com/watch?v=pSHjTRCQxIw',
   },
   'prone-y-t-w': {
     path: 'Plank',
     frames: [`${BASE_URL}/Plank/0.jpg`, `${BASE_URL}/Plank/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=fB3hL8gE1Zk',
+    videoUrl: 'https://www.youtube.com/watch?v=pSHjTRCQxIw',
   },
   'decline-crunch': {
     path: 'Decline_Crunch',
     frames: [`${BASE_URL}/Decline_Crunch/0.jpg`, `${BASE_URL}/Decline_Crunch/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=Xkyk3E8F43w',
+    videoUrl: 'https://www.youtube.com/watch?v=5ER5Of4MOPI',
   },
   'cable-crunch': {
     path: 'Decline_Crunch',
     frames: [`${BASE_URL}/Decline_Crunch/0.jpg`, `${BASE_URL}/Decline_Crunch/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=Xkyk3E8F43w',
+    videoUrl: 'https://www.youtube.com/watch?v=5ER5Of4MOPI',
   },
   'knee-raise': {
     path: 'Hanging_Leg_Raise',
@@ -814,72 +814,72 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'cardio': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=b4bM5G2i68w',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'walking': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=b4bM5G2i68w',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'walking-treadmill': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=b4bM5G2i68w',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'cardio-treadmill': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=b4bM5G2i68w',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'incline-treadmill-walk': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=b4bM5G2i68w',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'brisk-walk': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=b4bM5G2i68w',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'walk-30-40-min': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=b4bM5G2i68w',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'light-cycling': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=yYJZXjVp9j0',
+    videoUrl: 'https://www.youtube.com/watch?v=zQ82RYIFLN8',
   },
   'rower-intervals': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=gTxg_gA1gq8',
+    videoUrl: 'https://www.youtube.com/watch?v=zQ82RYIFLN8',
   },
   'sled-push': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=x7k2bHwY3rY',
+    videoUrl: 'https://www.youtube.com/watch?v=zQ82RYIFLN8',
   },
   'battle-ropes': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=v3vF8qGvWq8',
+    videoUrl: 'https://www.youtube.com/watch?v=zQ82RYIFLN8',
   },
   'assault-bike-sprints': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=yYJZXjVp9j0',
+    videoUrl: 'https://www.youtube.com/watch?v=zQ82RYIFLN8',
   },
   'farmer-carry': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=Fkzk_RqlYig',
+    videoUrl: 'https://www.youtube.com/watch?v=zQ82RYIFLN8',
   },
   'db-farmer-carry': {
     path: 'Walking_Treadmill',
     frames: [`${BASE_URL}/Walking_Treadmill/0.jpg`, `${BASE_URL}/Walking_Treadmill/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=Fkzk_RqlYig',
+    videoUrl: 'https://www.youtube.com/watch?v=zQ82RYIFLN8',
   },
   'push-up': {
     path: 'Pushups',
@@ -894,7 +894,7 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'pike-push-up': {
     path: 'Incline_Push-Up',
     frames: [`${BASE_URL}/Incline_Push-Up/0.jpg`, `${BASE_URL}/Incline_Push-Up/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=qT3lT_Z4MZs',
+    videoUrl: 'https://www.youtube.com/watch?v=SKPab2YC8BE',
   },
   'decline-push-up': {
     path: 'Incline_Push-Up',
@@ -909,7 +909,7 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'plank-to-push-up': {
     path: 'Pushups',
     frames: [`${BASE_URL}/Pushups/0.jpg`, `${BASE_URL}/Pushups/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=L4oFJRDAU4Q',
+    videoUrl: 'https://www.youtube.com/watch?v=IODxDxX7oi4',
   },
   'bodyweight-squat': {
     path: 'Bodyweight_Squat',
@@ -929,62 +929,62 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'jump-squat': {
     path: 'Bodyweight_Squat',
     frames: [`${BASE_URL}/Bodyweight_Squat/0.jpg`, `${BASE_URL}/Bodyweight_Squat/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=A-cFYWvaW3I',
+    videoUrl: 'https://www.youtube.com/watch?v=CVaEhXotL7M',
   },
   'jump-squats': {
     path: 'Bodyweight_Squat',
     frames: [`${BASE_URL}/Bodyweight_Squat/0.jpg`, `${BASE_URL}/Bodyweight_Squat/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=A-cFYWvaW3I',
+    videoUrl: 'https://www.youtube.com/watch?v=CVaEhXotL7M',
   },
   'wall-sit': {
     path: 'Bodyweight_Squat',
     frames: [`${BASE_URL}/Bodyweight_Squat/0.jpg`, `${BASE_URL}/Bodyweight_Squat/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=-cdph8ys0O0',
+    videoUrl: 'https://www.youtube.com/watch?v=y-wV4Venusw',
   },
   'warm-up': {
     path: 'Dynamic_Chest_Stretch',
     frames: [`${BASE_URL}/Dynamic_Chest_Stretch/0.jpg`, `${BASE_URL}/Dynamic_Chest_Stretch/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=Jm2hI_g4P3w',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'dynamic-warm-up': {
     path: 'Dynamic_Chest_Stretch',
     frames: [`${BASE_URL}/Dynamic_Chest_Stretch/0.jpg`, `${BASE_URL}/Dynamic_Chest_Stretch/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=Jm2hI_g4P3w',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'mobility-flow': {
     path: 'Dynamic_Chest_Stretch',
     frames: [`${BASE_URL}/Dynamic_Chest_Stretch/0.jpg`, `${BASE_URL}/Dynamic_Chest_Stretch/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=Jm2hI_g4P3w',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'foam-rolling': {
     path: 'Dynamic_Chest_Stretch',
     frames: [`${BASE_URL}/Dynamic_Chest_Stretch/0.jpg`, `${BASE_URL}/Dynamic_Chest_Stretch/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=4p1FhS2uX1w',
+    videoUrl: 'https://www.youtube.com/watch?v=tybOi4hjZFQ',
   },
   'stretching-circuit': {
     path: 'Dynamic_Chest_Stretch',
     frames: [`${BASE_URL}/Dynamic_Chest_Stretch/0.jpg`, `${BASE_URL}/Dynamic_Chest_Stretch/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=g_tea8ZNk5A',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'yoga-sequence': {
     path: 'Dynamic_Chest_Stretch',
     frames: [`${BASE_URL}/Dynamic_Chest_Stretch/0.jpg`, `${BASE_URL}/Dynamic_Chest_Stretch/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=v7AYKMP6rOE',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'deep-stretching': {
     path: 'Dynamic_Chest_Stretch',
     frames: [`${BASE_URL}/Dynamic_Chest_Stretch/0.jpg`, `${BASE_URL}/Dynamic_Chest_Stretch/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=g_tea8ZNk5A',
+    videoUrl: 'https://www.youtube.com/watch?v=iSSAk4XCsRA',
   },
   'breathing-drills': {
     path: 'Dynamic_Chest_Stretch',
     frames: [`${BASE_URL}/Dynamic_Chest_Stretch/0.jpg`, `${BASE_URL}/Dynamic_Chest_Stretch/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=nmFUDkj1Aq0',
+    videoUrl: 'https://www.youtube.com/watch?v=tybOi4hjZFQ',
   },
   'incline-push-ups': {
     path: 'Incline_Push-Up',
     frames: [`${BASE_URL}/Incline_Push-Up/0.jpg`, `${BASE_URL}/Incline_Push-Up/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=cfns5VDl_P0',
+    videoUrl: 'https://www.youtube.com/watch?v=SKPab2YC8BE',
   },
   'standard-crunches': {
     path: 'Crunches',
@@ -1009,7 +1009,7 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'russian-twist': {
     path: 'Crunches',
     frames: [`${BASE_URL}/Crunches/0.jpg`, `${BASE_URL}/Crunches/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=wkD8rjkodUI',
+    videoUrl: 'https://www.youtube.com/watch?v=5ER5Of4MOPI',
   },
   'leg-raises': {
     path: 'Flat_Bench_Lying_Leg_Raise',
@@ -1024,17 +1024,17 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'mountain-climbers': {
     path: 'Mountain_Climbers',
     frames: [`${BASE_URL}/Mountain_Climbers/0.jpg`, `${BASE_URL}/Mountain_Climbers/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=nmwgirgXLYM',
+    videoUrl: 'https://www.youtube.com/watch?v=kLh-uczlPLg',
   },
   'mountain-climber': {
     path: 'Mountain_Climbers',
     frames: [`${BASE_URL}/Mountain_Climbers/0.jpg`, `${BASE_URL}/Mountain_Climbers/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=nmwgirgXLYM',
+    videoUrl: 'https://www.youtube.com/watch?v=kLh-uczlPLg',
   },
   'reverse-crunches': {
     path: 'Reverse_Crunch',
     frames: [`${BASE_URL}/Reverse_Crunch/0.jpg`, `${BASE_URL}/Reverse_Crunch/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=gAyxnl_qH_g',
+    videoUrl: 'https://www.youtube.com/watch?v=hyv14e2QDq0',
   },
   'burpee': {
     path: 'Pushups',
@@ -1059,22 +1059,69 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
   'db-swing': {
     path: 'Dumbbell_Squat',
     frames: [`${BASE_URL}/Dumbbell_Squat/0.jpg`, `${BASE_URL}/Dumbbell_Squat/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=v_C6VoK5fA8',
+    videoUrl: 'https://www.youtube.com/watch?v=MVMNk0HiTMg',
   },
   'db-swings': {
     path: 'Dumbbell_Squat',
     frames: [`${BASE_URL}/Dumbbell_Squat/0.jpg`, `${BASE_URL}/Dumbbell_Squat/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=v_C6VoK5fA8',
+    videoUrl: 'https://www.youtube.com/watch?v=MVMNk0HiTMg',
   },
   'db-thrusters': {
     path: 'Dumbbell_Squat',
     frames: [`${BASE_URL}/Dumbbell_Squat/0.jpg`, `${BASE_URL}/Dumbbell_Squat/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=v_C6VoK5fA8',
+    videoUrl: 'https://www.youtube.com/watch?v=MVMNk0HiTMg',
   },
   'db-man-makers': {
     path: 'Dumbbell_Squat',
     frames: [`${BASE_URL}/Dumbbell_Squat/0.jpg`, `${BASE_URL}/Dumbbell_Squat/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=v_C6VoK5fA8',
+    videoUrl: 'https://www.youtube.com/watch?v=MVMNk0HiTMg',
+  },
+
+  // ─── WARM-UP & MOBILITY MOVEMENTS ──────────────────────────────────────────
+  'dynamic-warm-up': {
+    path: 'Bodyweight_Squat',
+    frames: [`${BASE_URL}/Bodyweight_Squat/0.jpg`, `${BASE_URL}/Bodyweight_Squat/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=2L2lnxIcNmo',
+  },
+  'dynamic-warmup': {
+    path: 'Bodyweight_Squat',
+    frames: [`${BASE_URL}/Bodyweight_Squat/0.jpg`, `${BASE_URL}/Bodyweight_Squat/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=2L2lnxIcNmo',
+  },
+  'warm-up': {
+    path: 'Bodyweight_Squat',
+    frames: [`${BASE_URL}/Bodyweight_Squat/0.jpg`, `${BASE_URL}/Bodyweight_Squat/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=2L2lnxIcNmo',
+  },
+  'warmup': {
+    path: 'Bodyweight_Squat',
+    frames: [`${BASE_URL}/Bodyweight_Squat/0.jpg`, `${BASE_URL}/Bodyweight_Squat/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=2L2lnxIcNmo',
+  },
+  'full-body-warmup': {
+    path: 'Bodyweight_Squat',
+    frames: [`${BASE_URL}/Bodyweight_Squat/0.jpg`, `${BASE_URL}/Bodyweight_Squat/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=2L2lnxIcNmo',
+  },
+  'full-body-warm-up': {
+    path: 'Bodyweight_Squat',
+    frames: [`${BASE_URL}/Bodyweight_Squat/0.jpg`, `${BASE_URL}/Bodyweight_Squat/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=2L2lnxIcNmo',
+  },
+  'mobility-routine': {
+    path: 'Bodyweight_Squat',
+    frames: [`${BASE_URL}/Bodyweight_Squat/0.jpg`, `${BASE_URL}/Bodyweight_Squat/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=2L2lnxIcNmo',
+  },
+  'stretch': {
+    path: 'Bodyweight_Squat',
+    frames: [`${BASE_URL}/Bodyweight_Squat/0.jpg`, `${BASE_URL}/Bodyweight_Squat/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=2L2lnxIcNmo',
+  },
+  'stretching': {
+    path: 'Bodyweight_Squat',
+    frames: [`${BASE_URL}/Bodyweight_Squat/0.jpg`, `${BASE_URL}/Bodyweight_Squat/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=2L2lnxIcNmo',
   },
 }
 
@@ -1096,7 +1143,7 @@ function normalizeLookupKey(str) {
  * and plural/singular variations.
  */
 export function getOpenSourceDemo(slugOrName) {
-  if (!slugOrName) return null
+  if (!slugOrName) return OPEN_SOURCE_EXERCISE_MEDIA['dynamic-warm-up'] || OPEN_SOURCE_EXERCISE_MEDIA['push-up']
   const key = normalizeLookupKey(slugOrName)
   if (OPEN_SOURCE_EXERCISE_MEDIA[key]) {
     return OPEN_SOURCE_EXERCISE_MEDIA[key]
@@ -1130,7 +1177,7 @@ export function getOpenSourceDemo(slugOrName) {
   }
 
   // 4. Fallback dynamic mobility / general movement
-  return OPEN_SOURCE_EXERCISE_MEDIA['dynamic-warm-up']
+  return OPEN_SOURCE_EXERCISE_MEDIA['dynamic-warm-up'] || OPEN_SOURCE_EXERCISE_MEDIA['push-up']
 }
 
 /**

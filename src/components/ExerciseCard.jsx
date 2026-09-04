@@ -6,7 +6,7 @@ import { getOpenSourceDemo } from '../lib/openSourceMedia.js'
 export default function ExerciseCard({ exercise, onSelect, index }) {
   const isHomeWorkout = Boolean(exercise?.isHomeWorkout)
   const isGymWorkout = Boolean(exercise?.isGymWorkout)
-  const openSourceDemo = getOpenSourceDemo(exercise?.slug)
+  const openSourceDemo = getOpenSourceDemo(exercise?.slug || exercise?.name || exercise?.exercise_name)
 
   const localSvgFallback = isHomeWorkout
     ? `/media/thumbnails/home-workouts/${exercise?.slug}.svg`

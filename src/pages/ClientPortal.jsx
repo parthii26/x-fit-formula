@@ -8,7 +8,7 @@ import { Card, Badge, BigCheck, Divider, Btn, SectionTitle, Label, TextInput, Te
 import { AttachmentStrip } from '../components/Attachments.jsx'
 import { LABELS } from '../lib/planGenerator.js'
 import { nowStamp, isoDate, dateLabel } from '../lib/store.js'
-import { fetchExerciseById, fetchHomeWorkoutVideoById } from '../lib/supabase.js'
+import { fetchExerciseById, fetchHomeWorkoutVideoById, fetchGymWorkoutVideoById } from '../lib/supabase.js'
 import ExerciseLibrary from './ExerciseLibrary.jsx'
 import ExerciseDetailModal from '../components/ExerciseDetailModal.jsx'
 import ActiveWorkoutPlayer from '../components/ActiveWorkoutPlayer.jsx'
@@ -90,6 +90,11 @@ export default function ClientPortal({ client, trainerName, onUpdate, onLogout }
     const hwFound = await fetchHomeWorkoutVideoById(name)
     if (hwFound) {
       setPreviewExercise(hwFound)
+      return
+    }
+    const gwFound = await fetchGymWorkoutVideoById(name)
+    if (gwFound) {
+      setPreviewExercise(gwFound)
       return
     }
     const found = await fetchExerciseById(name)
