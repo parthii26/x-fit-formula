@@ -242,9 +242,11 @@ export default function App() {
     // ── Production Supabase Email + Password Auth ───────────────────────────
     if (isSupabaseConfigured && email && password) {
       setAuthSubmitting(true)
+      const role = portal === 'trainer' ? 'trainer' : 'client'
+      localStorage.setItem('xff_intended_role', role)
+      sessionStorage.setItem('xff_intended_role', role)
       try {
         if (mode === 'signup') {
-          const role = portal === 'trainer' ? 'trainer' : 'client'
           const data = await signUp(email, password, name?.trim() || email.split('@')[0], role)
           
           if (data?.session?.user) {
