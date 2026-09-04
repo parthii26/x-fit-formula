@@ -497,9 +497,14 @@ export const OPEN_SOURCE_EXERCISE_MEDIA = {
     videoUrl: 'https://www.youtube.com/watch?v=L8fvypPrzzs',
   },
   'warm-up': {
-    path: 'Arm_Circles',
-    frames: [`${BASE_URL}/Arm_Circles/0.jpg`, `${BASE_URL}/Arm_Circles/1.jpg`],
-    videoUrl: 'https://www.youtube.com/watch?v=A2WJ27b6y3o',
+    path: 'Dynamic_Chest_Stretch',
+    frames: [`${BASE_URL}/Dynamic_Chest_Stretch/0.jpg`, `${BASE_URL}/Dynamic_Chest_Stretch/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=Jm2hI_g4P3w',
+  },
+  'dynamic-warm-up': {
+    path: 'Dynamic_Chest_Stretch',
+    frames: [`${BASE_URL}/Dynamic_Chest_Stretch/0.jpg`, `${BASE_URL}/Dynamic_Chest_Stretch/1.jpg`],
+    videoUrl: 'https://www.youtube.com/watch?v=Jm2hI_g4P3w',
   },
   'incline-push-ups': {
     path: 'Incline_Push-Up',
