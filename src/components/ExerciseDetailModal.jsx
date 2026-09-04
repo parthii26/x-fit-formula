@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   X, Play, Pause, RotateCcw, ShieldCheck, Dumbbell, Flame, Info,
-  CheckCircle2, AlertTriangle, Wind, User, Users, AlertCircle, Clock, Check, Sparkles, Timer, Activity, FastForward
+  CheckCircle2, AlertTriangle, Wind, User, Users, AlertCircle, Clock, Check, Sparkles, Timer, Activity, FastForward, Film
 } from 'lucide-react'
 import { DifficultyBadge, EquipmentBadge, CategoryBadge, MuscleBadge } from './badges.jsx'
-import { getOpenSourceDemo } from '../lib/openSourceMedia.js'
+import { getOpenSourceDemo, getYouTubeEmbedUrl, getYouTubeWatchUrl } from '../lib/openSourceMedia.js'
 
 export default function ExerciseDetailModal({ exercise, onClose }) {
   const isHomeWorkout = Boolean(exercise?.isHomeWorkout)
   const openSourceDemo = getOpenSourceDemo(exercise?.slug)
+  const youtubeUrl = openSourceDemo?.videoUrl || exercise?.video_url || exercise?.source_url || null
+  const embedUrl = getYouTubeEmbedUrl(youtubeUrl)
 
   // Gender support for dual-demo movements
   const hasMale = Boolean(exercise?.male_video_path || exercise?.maleVideoUrl)
@@ -21,6 +23,7 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
   const [loopSpeed, setLoopSpeed] = useState(1100) // ms per frame (1100ms standard, 750ms fast, 1600ms slow)
   const [currentVideoSrc, setCurrentVideoSrc] = useState(null)
   const [videoError, setVideoError] = useState(false)
+  const [viewMode, setViewMode] = useState(embedUrl ? 'video' : 'motion') // 'video' | 'motion'
   const videoRef = useRef(null)
 
   // Follow-Along Workout Companion State
@@ -61,7 +64,7 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
 
   // Automated Smooth Motion Loop
   useEffect(() => {
-    if (!openSourceDemo?.frames?.length || !isPlaying) return
+    if (!openSourceDemo?.frames?.length || !isPlaying || viewMode !== 'motion') return
 
     const interval = setInterval(() => {
       setActiveFrameIndex((prev) => {
@@ -72,7 +75,7 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
     }, loopSpeed)
 
     return () => clearInterval(interval)
-  }, [openSourceDemo, isPlaying, loopSpeed])
+  }, [openSourceDemo, isPlaying, loopSpeed, viewMode])
 
   // Rest Timer countdown
   useEffect(() => {
@@ -173,7 +176,35 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
             {/* Left Column: Native Movement Visualizer & Session Tracker */}
             <div className="flex flex-col gap-3.5 lg:col-span-5">
-              {/* Native Motion Demonstration Box */}
+              {/* Media View Mode Switcher (If both video embed and motion loop are available) */}
+              {embedUrl && frames.length > 0 && !currentVideoSrc && (
+                <div className="flex items-center gap-1 border border-white/10 bg-surface-2 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('video')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                      viewMode === 'video'
+                        ? 'bg-gold text-obsidian font-extrabold shadow-sm'
+                        : 'text-mute hover:text-ink'
+                    }`}
+                  >
+                    <Play className="h-3 w-3 fill-current" /> HD Video Tutorial
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('motion')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                      viewMode === 'motion'
+                        ? 'bg-gold text-obsidian font-extrabold shadow-sm'
+                        : 'text-mute hover:text-ink'
+                    }`}
+                  >
+                    <Activity className="h-3 w-3" /> Motion Loop
+                  </button>
+                </div>
+              )}
+
+              {/* Native Motion / Video Demonstration Box */}
               <div className="relative aspect-video w-full overflow-hidden border border-white/10 bg-obsidian shadow-2xl flex items-center justify-center">
                 {currentVideoSrc && !videoError ? (
                   <video
@@ -186,6 +217,14 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
                     muted
                     playsInline
                     className="h-full w-full object-contain bg-obsidian"
+                  />
+                ) : viewMode === 'video' && embedUrl ? (
+                  <iframe
+                    src={embedUrl}
+                    title={`${exerciseName} Video Tutorial`}
+                    className="h-full w-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
                   />
                 ) : frames.length > 0 ? (
                   <div className="relative h-full w-full bg-obsidian flex flex-col items-center justify-between">

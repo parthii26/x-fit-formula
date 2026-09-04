@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   X, Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Check,
-  CheckCircle2, Flame, Timer, Volume2, VolumeX, AlertCircle, Dumbbell, Award
+  CheckCircle2, Flame, Timer, Volume2, VolumeX, AlertCircle, Dumbbell, Award, Activity, Film
 } from 'lucide-react'
 import { fetchExerciseById } from '../lib/supabase.js'
 import { CategoryBadge, DifficultyBadge } from './badges.jsx'
@@ -23,6 +23,7 @@ export default function ActiveWorkoutPlayer({
   const [videoSrc, setVideoSrc] = useState(null)
   const [videoError, setVideoError] = useState(false)
   const [activeFrameIndex, setActiveFrameIndex] = useState(0)
+  const [viewMode, setViewMode] = useState('video')
 
   // Timer state
   const [restTimer, setRestTimer] = useState(0)
@@ -51,10 +52,7 @@ export default function ActiveWorkoutPlayer({
           ? (data.femaleVideoUrl || data.female_video_path || data.maleVideoUrl || data.male_video_path)
           : (data.maleVideoUrl || data.male_video_path || data.femaleVideoUrl || data.female_video_path)
 
-        const normalized = rawUrl?.startsWith('http') || rawUrl?.startsWith('/media')
-          ? rawUrl
-          : `/media/${rawUrl}`
-
+        const normalized = rawUrl?.endsWith('.mp4') ? rawUrl : null
         setVideoSrc(normalized)
         setLoadingMedia(false)
       }
@@ -66,7 +64,17 @@ export default function ActiveWorkoutPlayer({
   }, [currentEx.name, gender])
 
   const openSourceDemo = getOpenSourceDemo(currentEx.slug || exerciseData?.slug || currentEx.name)
-  const youtubeEmbedUrl = getYouTubeEmbedUrl(videoSrc)
+  const youtubeUrl = openSourceDemo?.videoUrl || exerciseData?.video_url || exerciseData?.videoUrl || null
+  const embedUrl = getYouTubeEmbedUrl(youtubeUrl)
+
+  // Reset viewMode when exercise changes
+  useEffect(() => {
+    if (embedUrl) {
+      setViewMode('video')
+    } else if (openSourceDemo?.frames?.length) {
+      setViewMode('motion')
+    }
+  }, [currentEx.name, embedUrl, openSourceDemo])
 
   // Automated frame loop in active workout player
   useEffect(() => {
@@ -314,8 +322,36 @@ export default function ActiveWorkoutPlayer({
           )}
         </div>
 
+        {/* Media View Mode Switcher */}
+        {embedUrl && openSourceDemo?.frames?.length > 0 && !videoSrc && (
+          <div className="flex items-center gap-1 border border-white/10 bg-surface-2 p-1">
+            <button
+              type="button"
+              onClick={() => setViewMode('video')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                viewMode === 'video'
+                  ? 'bg-gold text-obsidian font-extrabold shadow-sm'
+                  : 'text-mute hover:text-ink'
+              }`}
+            >
+              <Play className="h-3 w-3 fill-current" /> HD Video Tutorial
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('motion')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                viewMode === 'motion'
+                  ? 'bg-gold text-obsidian font-extrabold shadow-sm'
+                  : 'text-mute hover:text-ink'
+              }`}
+            >
+              <Activity className="h-3 w-3" /> Motion Loop
+            </button>
+          </div>
+        )}
+
         {/* Video / Media Display */}
-        <div className="relative aspect-video w-full overflow-hidden border border-white/15 bg-surface-2 shadow-inner">
+        <div className="relative aspect-video w-full overflow-hidden border border-white/15 bg-obsidian shadow-inner flex items-center justify-center">
           {videoSrc && !videoError ? (
             <video
               key={`${currentEx.name}-${gender}-${videoSrc}`}
@@ -329,12 +365,20 @@ export default function ActiveWorkoutPlayer({
               onError={handleVideoError}
               className="h-full w-full object-contain bg-obsidian"
             />
+          ) : viewMode === 'video' && embedUrl ? (
+            <iframe
+              src={embedUrl}
+              title={`${currentEx.name} Video Tutorial`}
+              className="h-full w-full border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
           ) : openSourceDemo?.frames?.length ? (
             <div className="relative h-full w-full bg-obsidian flex items-center justify-center">
               <img
                 src={openSourceDemo.frames[activeFrameIndex] || openSourceDemo.frames[0]}
                 alt={currentEx.name}
-                className="h-full w-full object-contain bg-obsidian transition-opacity duration-300"
+                className="h-full w-full object-contain bg-obsidian transition-opacity duration-300 select-none"
               />
               <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-obsidian/85 px-2 py-0.5 border border-white/15 backdrop-blur-md">
                 <span className={`h-1.5 w-1.5 rounded-full ${activeFrameIndex === 0 ? 'bg-amber-400' : 'bg-gold animate-pulse'}`} />

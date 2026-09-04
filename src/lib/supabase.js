@@ -601,13 +601,57 @@ export async function fetchExerciseById(id) {
     }
   }
   const all = getUnifiedExercises()
-  const found = all.find(
+  const cleanId = String(id).toLowerCase().trim()
+  const slugId = cleanId.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+
+  let found = all.find(
     (ex) =>
       ex.id === id ||
       ex.slug === id ||
+      ex.slug === slugId ||
       ex.source_id === id ||
-      ex.name.toLowerCase() === String(id).toLowerCase()
+      (ex.name && ex.name.toLowerCase() === cleanId) ||
+      (ex.exercise_name && ex.exercise_name.toLowerCase() === cleanId)
   )
+
+  if (!found) {
+    found = all.find(
+      (ex) =>
+        (ex.name && ex.name.toLowerCase().includes(cleanId)) ||
+        (ex.slug && (cleanId.includes(ex.slug) || ex.slug.includes(slugId)))
+    )
+  }
+
+  // Synthesized fallback for dynamically generated routine exercises
+  if (!found) {
+    const demo = getOpenSourceDemo(id)
+    const bp = inferBodyPart({ name: id })
+    const eq = inferEquipment({ name: id })
+    return formatExerciseRecord({
+      id: `gen-${slugId}`,
+      source_id: `gen-${slugId}`,
+      name: id,
+      exercise_name: id,
+      slug: slugId,
+      body_part: bp,
+      target: bp,
+      equipment: eq,
+      difficulty: 'Intermediate',
+      category: 'Gym',
+      instructions: [
+        `Position yourself with proper alignment for ${id}.`,
+        'Engage core and control the movement through full range of motion.',
+        'Squeeze target muscles at peak contraction and return with controlled tempo.'
+      ],
+      form_cues: [
+        'Maintain controlled tempo and steady breathing throughout the set.',
+        'Keep spine neutral and avoid excessive momentum.'
+      ],
+      video_url: demo?.videoUrl || null,
+      thumbnail_url: demo?.frames?.[0] || null,
+    })
+  }
+
   return found ? formatExerciseRecord(found) : null
 }
 
@@ -1140,9 +1184,9 @@ export async function addTrainerClientRelationship(trainerId, clientId) {
 
 /** Normalise a raw database exercise record into the standard app shape. */
 function formatExerciseRecord(item) {
-  const openSourceDemo = getOpenSourceDemo(item.slug)
+  const openSourceDemo = getOpenSourceDemo(item.slug || item.name || item.exercise_name)
   const defaultThumb = openSourceDemo?.frames?.[0] || null
-  const resolvedVideo = item.video_url || openSourceDemo?.videoUrl || (item.male_video_path ? getMediaUrl(item.male_video_path) : null)
+  const resolvedVideo = item.video_url || item.videoUrl || openSourceDemo?.videoUrl || (item.male_video_path ? getMediaUrl(item.male_video_path) : null)
   return {
     ...item,
     maleVideoUrl:       resolvedVideo || getMediaUrl(item.male_video_path || item.maleVideoUrl),
