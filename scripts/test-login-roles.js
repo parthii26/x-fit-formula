@@ -2,9 +2,9 @@ import { chromium } from 'playwright'
 
 const BASE_URL = process.env.TEST_URL || 'http://localhost:5173'
 
-async function runLoginRoleTests() {
+async function runRealAuthTests() {
   console.log('===============================================================')
-  console.log(`🔐 TESTING CLIENT & TRAINER LOGIN NAVIGATION ON: ${BASE_URL}`)
+  console.log(`🔐 TESTING REAL SUPABASE AUTH & ROLE NAVIGATION ON: ${BASE_URL}`)
   console.log('===============================================================\n')
 
   const browser = await chromium.launch({ headless: true })
@@ -29,138 +29,103 @@ async function runLoginRoleTests() {
   }
 
   try {
-    // ── TEST 1: CLIENT PORTAL SIGN-UP & LOGIN FLOW ──────────────────────
-    console.log('--- Test 1: Client Portal Entrance & Login Flow ---')
+    // ── TEST 1: LANDING PAGE PORTAL CARDS ────────────────────────────────
+    console.log('--- Test 1: Landing Page & Portal Entrances ---')
     await resetToLanding()
 
-    // 1. Click Client Portal entrance card
-    const clientCard = page.locator('button:has-text("Client Portal")').first()
-    await clientCard.click()
-    await page.waitForTimeout(400)
+    const hasClientCard = await page.locator('button:has-text("Client Portal")').first().isVisible()
+    const hasTrainerCard = await page.locator('button:has-text("Trainer Access")').first().isVisible()
+    logResult('Landing Page displays Client & Trainer Entrances', hasClientCard && hasTrainerCard)
 
-    // 2. Fill name, email and password
-    const nameInput = page.locator('input[placeholder="Your full name"]')
-    if (await nameInput.isVisible()) {
-      await nameInput.fill('Alex Rivera')
-    }
-    await page.locator('input[placeholder="name@domain.com"]').fill('alex.rivera@example.com')
-    await page.locator('input[type="password"]').fill('ClientPassword123!')
-
-    // 3. Submit
-    await page.locator('button[type="submit"]').click()
-    await page.waitForTimeout(1500)
-
-    // 4. Assert Client Portal or Onboarding is visible & Trainer Command Center is NOT
-    const isTrainerUI = (await page.locator('text=Command Center').first().isVisible().catch(() => false)) ||
-                        (await page.locator('text=Athlete Roster').first().isVisible().catch(() => false)) ||
-                        (await page.locator('aside:has-text("Trainer")').first().isVisible().catch(() => false))
-    const isClientUI = (await page.locator('text=Alex').first().isVisible().catch(() => false)) ||
-                       (await page.locator('text=Week Adherence').first().isVisible().catch(() => false)) ||
-                       (await page.locator('text=Movement Checklist').first().isVisible().catch(() => false)) ||
-                       (await page.locator('text=Biometrics & Profile').first().isVisible().catch(() => false)) ||
-                       (await page.locator('text=01 Profile').first().isVisible().catch(() => false)) ||
-                       (await page.locator('text=Precision Intake Assessment').first().isVisible().catch(() => false))
-
-    logResult(
-      'Client Portal entrance navigates strictly to Client Portal (NOT Trainer)',
-      Boolean(isClientUI && !isTrainerUI),
-      `isClient: ${isClientUI}, isTrainer: ${isTrainerUI}`
-    )
-
-    // ── TEST 2: LOGOUT FROM CLIENT PORTAL ────────────────────────────────
-    console.log('\n--- Test 2: Logout from Client Portal ---')
-    const shellSignOut = page.locator('button[title="Sign out"]').first()
-    if (await shellSignOut.isVisible().catch(() => false)) {
-      await shellSignOut.click()
-    } else {
-      const exitBtn = page.locator('button:has-text("Sign Out"), button:has-text("Exit"), button:has-text("Logout")').first()
-      if (await exitBtn.isVisible().catch(() => false)) {
-        await exitBtn.click()
-      } else {
-        await resetToLanding()
-      }
-    }
-    await page.waitForTimeout(800)
-
-    const isLandingAfterClient = (await page.locator('button:has-text("Client Portal")').first().isVisible().catch(() => false)) &&
-                                 (await page.locator('button:has-text("Trainer Access")').first().isVisible().catch(() => false))
-    logResult('Logout from Client cleanly returns to Landing page', Boolean(isLandingAfterClient))
-
-    // ── TEST 3: TRAINER ACCESS ENTRANCE & LOGIN FLOW ─────────────────────
-    console.log('\n--- Test 3: Trainer Access Entrance & Login Flow ---')
-    await page.locator('button:has-text("Trainer Access")').first().click()
-    await page.waitForTimeout(400)
-
-    // Fill Trainer credentials
-    await page.locator('input[placeholder="name@domain.com"]').fill('coach@xfitformula.com')
-    await page.locator('input[type="password"]').fill('CoachAdmin123!')
-    await page.locator('button[type="submit"]').click()
-    await page.waitForTimeout(1500)
-
-    const isTrainerCenter = (await page.locator('text=Overview').first().isVisible().catch(() => false)) ||
-                            (await page.locator('text=Roster').first().isVisible().catch(() => false)) ||
-                            (await page.locator('text=Coach').first().isVisible().catch(() => false)) ||
-                            (await page.locator('text=Command Center').first().isVisible().catch(() => false))
-    const isClientViewDuringTrainer = (await page.locator('text=Week Adherence').first().isVisible().catch(() => false)) ||
-                                      (await page.locator('text=Movement Checklist').first().isVisible().catch(() => false))
-
-    logResult(
-      'Trainer Access entrance navigates strictly to Trainer Command Center',
-      Boolean(isTrainerCenter && !isClientViewDuringTrainer),
-      `isTrainerCenter: ${isTrainerCenter}, isClientView: ${isClientViewDuringTrainer}`
-    )
-
-    // ── TEST 4: LOGOUT FROM TRAINER PORTAL ───────────────────────────────
-    console.log('\n--- Test 4: Logout from Trainer Command Center ---')
-    const trainerSignOut = page.locator('button[data-testid="sign-out-btn"], button[data-testid="mobile-sign-out-btn"], button[title="Sign out"], button[aria-label="Sign out"]').first()
-    if (await trainerSignOut.isVisible().catch(() => false)) {
-      await trainerSignOut.click()
-    } else {
-      await resetToLanding()
-    }
-    await page.waitForTimeout(800)
-
-    const isLandingAfterTrainer = (await page.locator('button:has-text("Client Portal")').first().isVisible().catch(() => false)) &&
-                                  (await page.locator('button:has-text("Trainer Access")').first().isVisible().catch(() => false))
-    logResult('Logout from Trainer cleanly returns to Landing page', Boolean(isLandingAfterTrainer))
-
-    // ── TEST 5: ROLE SWITCH (TRAINER -> CLIENT CLEAN SWITCH) ─────────────
-    console.log('\n--- Test 5: Role Switch from Trainer back to Client ---')
+    // ── TEST 2: CLIENT PORTAL REAL AUTH VALIDATION ──────────────────────
+    console.log('\n--- Test 2: Client Portal Real Auth Validation (No Demo Bypass) ---')
     await page.locator('button:has-text("Client Portal")').first().click()
     await page.waitForTimeout(400)
 
-    // Toggle to Log In if visible
+    // Switch to Log In mode
     const loginToggle = page.locator('button:has-text("Log In")').first()
-    if (await loginToggle.isVisible().catch(() => false)) {
+    if (await loginToggle.isVisible()) {
       await loginToggle.click()
       await page.waitForTimeout(300)
     }
 
-    await page.locator('input[placeholder="name@domain.com"]').fill('alex.rivera@example.com')
-    await page.locator('input[type="password"]').fill('ClientPassword123!')
+    // Try invalid credentials -> must show real error, NOT silently log in as demo
+    await page.locator('input[placeholder="name@domain.com"]').fill('unregistered.client@example.com')
+    await page.locator('input[type="password"]').fill('WrongPassword123!')
     await page.locator('button[type="submit"]').click()
     await page.waitForTimeout(1500)
 
-    const isClientFinal = (await page.locator('text=Alex').first().isVisible().catch(() => false)) ||
-                          (await page.locator('text=Week Adherence').first().isVisible().catch(() => false)) ||
-                          (await page.locator('text=Movement Checklist').first().isVisible().catch(() => false)) ||
-                          (await page.locator('text=Biometrics & Profile').first().isVisible().catch(() => false))
-    const isTrainerFinal = (await page.locator('text=Command Center').first().isVisible().catch(() => false)) ||
-                           (await page.locator('aside:has-text("Trainer")').first().isVisible().catch(() => false))
+    const isErrorMessage = await page.locator('text=Invalid email or password').first().isVisible() ||
+                           await page.locator('text=Authentication failed').first().isVisible() ||
+                           await page.locator('text=Email rate limit').first().isVisible()
+    const noFakeLogin = !(await page.locator('text=Command Center').isVisible()) &&
+                        !(await page.locator('text=Alex Rivera').isVisible())
 
     logResult(
-      'Switching back to Client Portal routes to Client without sticky Trainer session',
-      Boolean(isClientFinal && !isTrainerFinal),
-      `finalClientCheck: ${isClientFinal}, finalTrainerCheck: ${isTrainerFinal}`
+      'Invalid client credentials shows real error message (NO mock/demo bypass)',
+      isErrorMessage && noFakeLogin,
+      `hasErrorMsg: ${isErrorMessage}, noFakeLogin: ${noFakeLogin}`
     )
+
+    // ── TEST 3: TRAINER ACCESS REAL AUTH VALIDATION ──────────────────────
+    console.log('\n--- Test 3: Trainer Access Real Auth Validation (No Demo Bypass) ---')
+    await resetToLanding()
+    await page.locator('button:has-text("Trainer Access")').first().click()
+    await page.waitForTimeout(400)
+
+    // Try invalid credentials on trainer portal -> must show real error
+    await page.locator('input[placeholder="name@domain.com"]').fill('unregistered.coach@example.com')
+    await page.locator('input[type="password"]').fill('WrongCoachPass123!')
+    await page.locator('button[type="submit"]').click()
+    await page.waitForTimeout(1500)
+
+    const isTrainerError = await page.locator('text=Invalid email or password').first().isVisible() ||
+                           await page.locator('text=Authentication failed').first().isVisible() ||
+                           await page.locator('text=Email rate limit').first().isVisible()
+    const noTrainerFakeLogin = !(await page.locator('text=Overview').first().isVisible())
+
+    logResult(
+      'Invalid trainer credentials shows real error message (NO mock/demo bypass)',
+      isTrainerError && noTrainerFakeLogin,
+      `hasErrorMsg: ${isTrainerError}, noFakeLogin: ${noTrainerFakeLogin}`
+    )
+
+    // ── TEST 4: FORGOT PASSWORD FLOW ────────────────────────────────────
+    console.log('\n--- Test 4: Forgot Password Flow ---')
+    const forgotBtn = page.locator('button:has-text("Forgot Password?")').first()
+    if (await forgotBtn.isVisible()) {
+      await forgotBtn.click()
+      await page.waitForTimeout(300)
+    }
+
+    const isForgotScreen = await page.locator('text=Reset Password').first().isVisible()
+    logResult('Forgot password screen accessible', isForgotScreen)
+
+    // ── TEST 5: CLIENT SIGN-UP FORM INTEGRATION ─────────────────────────
+    console.log('\n--- Test 5: Client Sign-Up Form Structure ---')
+    await resetToLanding()
+    await page.locator('button:has-text("Client Portal")').first().click()
+    await page.waitForTimeout(400)
+
+    const nameInput = page.locator('input[placeholder="Your full name"]')
+    const emailInput = page.locator('input[placeholder="name@domain.com"]')
+    const passInput = page.locator('input[type="password"]')
+    const googleBtn = page.locator('button:has-text("Continue with Google")')
+
+    const hasAllFields = (await nameInput.isVisible()) &&
+                         (await emailInput.isVisible()) &&
+                         (await passInput.isVisible()) &&
+                         (await googleBtn.isVisible())
+
+    logResult('Real Sign-Up form includes Name, Email, Password, and Google OAuth', hasAllFields)
 
   } catch (err) {
     console.error('❌ Playwright Test execution error:', err)
-    logResult('Playwright Login Role Execution', false, err.message)
+    logResult('Playwright Real Auth Execution', false, err.message)
   } finally {
     await browser.close()
     console.log('\n===============================================================')
-    console.log('🏆 LOGIN & ROLE ROUTING TEST SUMMARY:')
+    console.log('🏆 REAL SUPABASE AUTH TEST SUMMARY:')
     const passed = results.filter((r) => r.passed).length
     const total = results.length
     console.log(`Passed: ${passed} / ${total}`)
@@ -171,5 +136,5 @@ async function runLoginRoleTests() {
   }
 }
 
-runLoginRoleTests()
+runRealAuthTests()
 
