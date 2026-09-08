@@ -69,10 +69,12 @@ export function getMediaUrl(path) {
 /** Sign up a new user. Creates profile via database trigger. */
 export async function signUp(email, password, fullName, role = 'client') {
   if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured')
+  const redirectUrl = typeof window !== 'undefined' ? window.location.origin : 'https://x-fit-formula.vercel.app'
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      emailRedirectTo: redirectUrl,
       data: { full_name: fullName, role },
     },
   })
@@ -91,10 +93,11 @@ export async function signIn(email, password) {
 /** Sign in with Google OAuth. */
 export async function signInWithGoogle(role = 'client') {
   if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured')
+  const redirectUrl = typeof window !== 'undefined' ? window.location.origin : 'https://x-fit-formula.vercel.app'
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin,
+      redirectTo: redirectUrl,
       queryParams: {
         access_type: 'offline',
         prompt: 'consent',
@@ -135,8 +138,9 @@ export async function verifyMobileOtp(phone, token) {
 /** Request password reset email. */
 export async function resetPassword(email) {
   if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured')
+  const redirectUrl = typeof window !== 'undefined' ? window.location.origin : 'https://x-fit-formula.vercel.app'
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}`,
+    redirectTo: redirectUrl,
   })
   if (error) throw error
   return data
