@@ -70,7 +70,7 @@ export default function Shell({ user, roleLabel, nav, active, onNav, onLogout, c
               <p className="truncate text-xs font-semibold tracking-wide text-ink">{user.name}</p>
               <p className="truncate text-[10px] uppercase tracking-[0.15em] text-mute">{user.subtitle}</p>
             </div>
-            <button onClick={onLogout} title="Sign out" className="p-2 text-mute transition-colors hover:text-gold">
+            <button onClick={onLogout} title="Sign out" aria-label="Sign out" data-testid="sign-out-btn" className="p-2 text-mute transition-colors hover:text-gold">
               <LogOut className="h-4 w-4" strokeWidth={1.5} />
             </button>
           </div>
@@ -82,7 +82,7 @@ export default function Shell({ user, roleLabel, nav, active, onNav, onLogout, c
         <Wordmark compact />
         <div className="flex items-center gap-3">
           <span className="text-[9px] font-semibold uppercase tracking-[0.3em] text-mute">{roleLabel}</span>
-          <button onClick={onLogout} title="Sign out" className="min-h-[44px] px-1 text-mute transition-colors hover:text-gold">
+          <button onClick={onLogout} title="Sign out" aria-label="Sign out" data-testid="mobile-sign-out-btn" className="min-h-[44px] px-1 text-mute transition-colors hover:text-gold">
             <LogOut className="h-[18px] w-[18px]" strokeWidth={1.5} />
           </button>
         </div>

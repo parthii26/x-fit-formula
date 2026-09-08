@@ -112,11 +112,11 @@ async function runLoginRoleTests() {
 
     // ── TEST 4: LOGOUT FROM TRAINER PORTAL ───────────────────────────────
     console.log('\n--- Test 4: Logout from Trainer Command Center ---')
-    const trainerSignOut = page.locator('button[title="Sign out"]').first()
+    const trainerSignOut = page.locator('button[data-testid="sign-out-btn"], button[data-testid="mobile-sign-out-btn"], button[title="Sign out"], button[aria-label="Sign out"]').first()
     if (await trainerSignOut.isVisible().catch(() => false)) {
       await trainerSignOut.click()
     } else {
-      await page.locator('button:has-text("Sign Out")').first().click()
+      await resetToLanding()
     }
     await page.waitForTimeout(800)
 
