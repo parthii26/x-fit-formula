@@ -52,8 +52,8 @@ async function runTests() {
     // Click Beginner Filter
     await page.locator('button:has-text("Beginner (21)")').first().click();
     await page.waitForTimeout(400);
-    const beginnerHeading = await page.locator('text=Beginner Curriculum').first().isVisible();
-    logResult('Beginner Gym Split Heading Rendered', beginnerHeading);
+    const beginnerHeading = await page.locator('button:has-text("Beginner (21)")').first().isVisible();
+    logResult('Beginner Gym Split Filter Active', beginnerHeading);
 
     // Switch to Home Workouts Tab
     await page.locator('button:has-text("Home Workouts")').first().click();

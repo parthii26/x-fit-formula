@@ -221,21 +221,85 @@ export default function App() {
     }
   }
 
-  // ─── Login handler (100% Production Supabase Authentication) ────────────────
+  // ─── Login handler (Live Supabase + Resilient Local Demo Mode) ─────────────
   const handleLogin = async ({ portal, mode, name, email, password, provider }) => {
     setAuthError(null)
 
     // ── Google OAuth Provider ───────────────────────────────────────────────
     if (provider === 'google') {
-      try {
-        const role = portal === 'trainer' ? 'trainer' : 'client'
-        localStorage.setItem('xff_intended_role', role)
-        sessionStorage.setItem('xff_intended_role', role)
-        await signInWithGoogle(role)
+      const role = portal === 'trainer' ? 'trainer' : 'client'
+      localStorage.setItem('xff_intended_role', role)
+      sessionStorage.setItem('xff_intended_role', role)
+
+      if (isSupabaseConfigured && supabase) {
+        try {
+          await signInWithGoogle(role)
+          return { success: true }
+        } catch (err) {
+          setAuthError(err.message || 'Google authentication failed. Ensure Google provider is enabled in Supabase.')
+          return { error: true }
+        }
+      }
+
+      // Standalone / Demo Google Sign-In Fallback
+      if (role === 'trainer') {
+        setSession({
+          role: 'trainer',
+          userId: 't-admin',
+          trainerName: db.trainer?.name || 'Coach King',
+          trainerTitle: db.trainer?.title || 'Head Trainer, X Fit Formula',
+          supabaseAuth: false,
+        })
         return { success: true }
-      } catch (err) {
-        setAuthError(err.message || 'Google authentication failed. Ensure Google provider is enabled in Supabase.')
-        return { error: true }
+      } else {
+        const googleClientId = 'client-google-demo'
+        const existing = db.clients.find((c) => c.id === googleClientId)
+        if (!existing) {
+          const googleClient = {
+            id: googleClientId,
+            role: 'client',
+            onboarded: true,
+            supabaseAuth: false,
+            profile: {
+              name: 'Alex Rivera',
+              email: 'alex.rivera@example.com',
+              phone: '',
+              age: '28',
+              gender: 'men',
+              height: '175',
+              heightUnit: 'cm',
+              weight: '74',
+              weightUnit: 'kg',
+              lifestyle: 'active',
+              goal: 'strength',
+              equipment: 'gym',
+              experience: 'intermediate',
+              daysPerWeek: 4,
+              injuries: '',
+            },
+            plan: [
+              { day: 'Monday', focus: 'Upper Body Power', rest: false, exercises: [{ name: 'Barbell Flat Bench Press', sets: '3', reps: '10' }, { name: 'Lat Pulldown', sets: '3', reps: '12' }] },
+              { day: 'Tuesday', focus: 'Lower Body Strength', rest: false, exercises: [{ name: 'Barbell Squat', sets: '4', reps: '10' }, { name: 'Leg Press', sets: '3', reps: '12' }] },
+              { day: 'Wednesday', focus: 'Rest & Mobility', rest: true, exercises: [] },
+              { day: 'Thursday', focus: 'Upper Hypertrophy', rest: false, exercises: [{ name: 'Incline Dumbbell Bench Press', sets: '3', reps: '10' }, { name: 'Barbell Row', sets: '3', reps: '10' }] },
+              { day: 'Friday', focus: 'Lower Volume & Core', rest: false, exercises: [{ name: 'Romanian Deadlift', sets: '3', reps: '10' }, { name: 'Plank', sets: '3', reps: '45s' }] },
+              { day: 'Saturday', focus: 'Rest', rest: true, exercises: [] },
+              { day: 'Sunday', focus: 'Rest', rest: true, exercises: [] },
+            ],
+            planStatus: 'assigned',
+            planMeta: { split: 'Upper / Lower', assignedBy: 'Coach King' },
+            completed: {},
+            exerciseDone: {},
+            weightLog: [{ date: 'Sep 01', value: 74.5 }, { date: 'Sep 08', value: 74.0 }],
+            checkIns: [],
+            messages: [{ from: 'trainer', text: 'Welcome Alex! Your precision programming is live.', ts: 'Today' }],
+            joined: new Date().toISOString().slice(0, 10),
+            lastActive: 'Today',
+          }
+          setDb((prev) => ({ ...prev, clients: [...prev.clients, googleClient] }))
+        }
+        setSession({ role: 'client', clientId: googleClientId, userId: googleClientId, supabaseAuth: false })
+        return { success: true }
       }
     }
 
@@ -282,6 +346,110 @@ export default function App() {
         return { error: true }
       } finally {
         setAuthSubmitting(false)
+      }
+    }
+
+    // ── Standalone / Demo Email + Password Mode ──────────────────────────────
+    if (!isSupabaseConfigured && email) {
+      if (mode === 'signup') {
+        const newId = slugId(name || email)
+        const newClient = {
+          id: newId,
+          role: 'client',
+          onboarded: false,
+          supabaseAuth: false,
+          profile: {
+            name: name?.trim() || email.split('@')[0],
+            email: email.trim(),
+            phone: '',
+            age: '',
+            height: '',
+            heightUnit: 'cm',
+            weight: '',
+            weightUnit: 'kg',
+            gender: '',
+            lifestyle: 'active',
+            injuries: '',
+            goal: 'general',
+            equipment: 'gym',
+            experience: 'beginner',
+            daysPerWeek: 3,
+          },
+          plan: null,
+          planStatus: 'pending',
+          planMeta: null,
+          completed: {},
+          exerciseDone: {},
+          weightLog: [],
+          checkIns: [],
+          messages: [],
+          joined: new Date().toISOString().slice(0, 10),
+          lastActive: 'Today',
+        }
+        setDb((prev) => ({ ...prev, clients: [...prev.clients, newClient] }))
+        setSession({ role: 'client', clientId: newId, userId: newId, supabaseAuth: false })
+        return { success: true }
+      }
+
+      if (mode === 'login') {
+        if (portal === 'trainer') {
+          setSession({
+            role: 'trainer',
+            userId: 't-admin',
+            trainerName: db.trainer?.name || 'Coach King',
+            trainerTitle: db.trainer?.title || 'Head Trainer, X Fit Formula',
+            supabaseAuth: false,
+          })
+          return { success: true }
+        } else {
+          const matched = db.clients.find((c) => c.profile?.email?.toLowerCase() === email.trim().toLowerCase())
+          if (matched) {
+            setSession({ role: 'client', clientId: matched.id, userId: matched.id, supabaseAuth: false })
+            return { success: true }
+          }
+          // If first time demo login without prior signup, create instant client
+          const newId = slugId(email)
+          const instantClient = {
+            id: newId,
+            role: 'client',
+            onboarded: false,
+            supabaseAuth: false,
+            profile: {
+              name: email.split('@')[0],
+              email: email.trim(),
+              phone: '',
+              age: '',
+              height: '',
+              heightUnit: 'cm',
+              weight: '',
+              weightUnit: 'kg',
+              gender: '',
+              lifestyle: 'active',
+              injuries: '',
+              goal: 'general',
+              equipment: 'gym',
+              experience: 'beginner',
+              daysPerWeek: 3,
+            },
+            plan: null,
+            planStatus: 'pending',
+            planMeta: null,
+            completed: {},
+            exerciseDone: {},
+            weightLog: [],
+            checkIns: [],
+            messages: [],
+            joined: new Date().toISOString().slice(0, 10),
+            lastActive: 'Today',
+          }
+          setDb((prev) => ({ ...prev, clients: [...prev.clients, instantClient] }))
+          setSession({ role: 'client', clientId: newId, userId: newId, supabaseAuth: false })
+          return { success: true }
+        }
+      }
+
+      if (mode === 'forgot') {
+        return { success: true }
       }
     }
 
