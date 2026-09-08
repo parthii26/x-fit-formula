@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 
-const BASE_URL = 'http://localhost:5173';
+const BASE_URL = process.env.TEST_URL || 'http://localhost:5173';
 
 async function runTests() {
   console.log('?? Launching Chromium for E2E System Verification...');

@@ -9,6 +9,7 @@ import { AttachmentStrip } from '../components/Attachments.jsx'
 import { LABELS, generatePlan, assembleWeek } from '../lib/planGenerator.js'
 import { nowStamp, dateLabel } from '../lib/store.js'
 import { fetchExerciseById, fetchHomeWorkoutVideoById, createWorkout, isSupabaseConfigured } from '../lib/supabase.js'
+import { broadcastMessage, broadcastProgramAssigned } from '../lib/realtime.js'
 import ExerciseLibrary from './ExerciseLibrary.jsx'
 import ExerciseDetailModal from '../components/ExerciseDetailModal.jsx'
 
@@ -21,15 +22,26 @@ const NAV = [
   { id: 'inbox', label: 'Inbox', icon: MessageSquare },
 ]
 
-export default function TrainerPortal({ trainer, clients, onUpdateClient, onLogout }) {
-  const [tab, setTab] = useState('dash')
-  const [selectedId, setSelectedId] = useState(null)
+export default function TrainerPortal({ trainer, clients, onUpdateClient, onLogout, initialTab, initialClientId }) {
+  const [tab, setTab] = useState(initialTab || 'dash')
+  const [selectedId, setSelectedId] = useState(initialClientId || null)
   const [builderId, setBuilderId] = useState(null)
   const [previewExercise, setPreviewExercise] = useState(null)
 
+  useEffect(() => {
+    if (initialTab) setTab(initialTab)
+    if (initialClientId) setSelectedId(initialClientId)
+  }, [initialTab, initialClientId])
+
   const pendingCount = clients.filter((c) => c.planStatus !== 'assigned').length
   const reportCount = clients.reduce((sum, c) => sum + newCheckIns(c).length, 0)
-  const nav = NAV.map((n) => (n.id === 'roster' ? { ...n, badge: (pendingCount + reportCount) || null } : n))
+  const unreadCount = clients.filter((c) => (c.messages || []).at(-1)?.from === 'client').length
+  const nav = NAV.map((n) => {
+    if (n.id === 'roster') return { ...n, badge: (pendingCount + reportCount) || null }
+    if (n.id === 'inbox') return { ...n, badge: unreadCount || null }
+    return n
+  })
+
 
   const selected = clients.find((c) => c.id === selectedId)
   const building = clients.find((c) => c.id === builderId)
@@ -297,7 +309,17 @@ function ClientDetail({ client, onBack, onBuild, onUpdate }) {
   const sendReply = (e) => {
     e.preventDefault()
     if (!reply.trim()) return
-    onUpdate({ ...client, messages: [...client.messages, { from: 'trainer', text: reply.trim(), ts: nowStamp() }] })
+    const ts = nowStamp()
+    const text = reply.trim()
+    const newMsg = { from: 'trainer', text, ts }
+    onUpdate({ ...client, messages: [...(client.messages || []), newMsg] })
+    broadcastMessage({
+      clientId: client.id,
+      from: 'trainer',
+      senderName: 'Coach',
+      text,
+      ts,
+    })
     setReply('')
   }
 
@@ -622,13 +644,25 @@ function WorkoutBuilder({ client, trainerName, onCancel, onSave, onPreview }) {
       }
     }
 
-    onSave({
+    const planMeta = { rx: gen.rx, volumeNote: gen.volumeNote, split: days.map((d) => d.focus).join(' / '), assignedBy: trainerName }
+    const updatedClient = {
       ...client,
       plan: week,
       planStatus: 'assigned',
-      planMeta: { rx: gen.rx, volumeNote: gen.volumeNote, split: days.map((d) => d.focus).join(' / '), assignedBy: trainerName },
+      planMeta,
       completed: {},
       exerciseDone: {},
+    }
+
+    onSave(updatedClient)
+
+    broadcastProgramAssigned({
+      clientId: client.id,
+      trainerName,
+      plan: week,
+      planMeta,
+      planStatus: 'assigned',
+      ts: new Date().toISOString(),
     })
   }
 
@@ -818,7 +852,17 @@ function Inbox({ clients, onUpdateClient }) {
   const send = (e) => {
     e.preventDefault()
     if (!text.trim() || !open) return
-    onUpdateClient({ ...open, messages: [...open.messages, { from: 'trainer', text: text.trim(), ts: nowStamp() }] })
+    const ts = nowStamp()
+    const msgText = text.trim()
+    const newMsg = { from: 'trainer', text: msgText, ts }
+    onUpdateClient({ ...open, messages: [...(open.messages || []), newMsg] })
+    broadcastMessage({
+      clientId: open.id,
+      from: 'trainer',
+      senderName: 'Coach',
+      text: msgText,
+      ts,
+    })
     setText('')
   }
 

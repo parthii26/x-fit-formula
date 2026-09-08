@@ -9,6 +9,7 @@ import { AttachmentStrip } from '../components/Attachments.jsx'
 import { LABELS } from '../lib/planGenerator.js'
 import { nowStamp, isoDate, dateLabel } from '../lib/store.js'
 import { fetchExerciseById, fetchHomeWorkoutVideoById, fetchGymWorkoutVideoById } from '../lib/supabase.js'
+import { broadcastMessage, broadcastCheckIn } from '../lib/realtime.js'
 import ExerciseLibrary from './ExerciseLibrary.jsx'
 import ExerciseDetailModal from '../components/ExerciseDetailModal.jsx'
 import ActiveWorkoutPlayer from '../components/ActiveWorkoutPlayer.jsx'
@@ -38,15 +39,26 @@ const FOCUS_TITLE = {
 
 const sessionTitle = (focus) => FOCUS_TITLE[focus] || focus
 
-export default function ClientPortal({ client, trainerName, onUpdate, onLogout }) {
-  const [tab, setTab] = useState('home')
+export default function ClientPortal({ client, trainerName, onUpdate, onLogout, initialTab }) {
+  const [tab, setTab] = useState(initialTab || 'home')
   const [previewExercise, setPreviewExercise] = useState(null)
   const [activeWorkoutMode, setActiveWorkoutMode] = useState(false)
   const p = client.profile
 
+  useEffect(() => {
+    if (initialTab) {
+      setTab(initialTab)
+    }
+  }, [initialTab])
+
   const trainingDays = (client.plan || []).filter((d) => !d.rest)
   const doneCount = trainingDays.filter((d) => client.completed[d.day]).length
   const pct = trainingDays.length ? Math.round((doneCount / trainingDays.length) * 100) : 0
+
+  // Badge coach tab if last message was from coach
+  const lastMsg = (client.messages || []).at(-1)
+  const hasCoachMsg = lastMsg?.from === 'trainer' && tab !== 'profile'
+  const navItems = NAV.map((n) => (n.id === 'profile' && hasCoachMsg ? { ...n, badge: '1' } : n))
 
   const toggleExercise = (day, exIdx) => {
     const key = `${day}:${exIdx}`
@@ -74,17 +86,34 @@ export default function ClientPortal({ client, trainerName, onUpdate, onLogout }
   }
 
   const sendMessage = (text) => {
-    onUpdate({ ...client, messages: [...client.messages, { from: 'client', text, ts: nowStamp() }] })
+    const ts = nowStamp()
+    const newMsg = { from: 'client', text, ts }
+    onUpdate({ ...client, messages: [...(client.messages || []), newMsg] })
+    broadcastMessage({
+      clientId: client.id,
+      from: 'client',
+      senderName: client.profile?.name || 'Athlete',
+      text,
+      ts,
+    })
   }
 
   const submitCheckIn = (entry) => {
+    const ts = nowStamp()
     const updated = { ...client, checkIns: [...(client.checkIns || []), entry] }
     // Bodyweight from a check-in feeds the progress trend automatically
     if (entry.weight && !isNaN(parseFloat(entry.weight))) {
       updated.weightLog = [...(client.weightLog || []), { date: dateLabel(entry.date), value: parseFloat(entry.weight) }]
     }
     onUpdate(updated)
+    broadcastCheckIn({
+      clientId: client.id,
+      clientName: client.profile?.name || 'Athlete',
+      checkIn: entry,
+      ts,
+    })
   }
+
 
   const openPreview = async (name) => {
     const hwFound = await fetchHomeWorkoutVideoById(name)
@@ -123,7 +152,7 @@ export default function ClientPortal({ client, trainerName, onUpdate, onLogout }
   const todayPlan = (client.plan || []).find((d) => d.day === todayName)
 
   return (
-    <Shell user={shellUser} roleLabel="Client" nav={NAV} active={tab} onNav={setTab} onLogout={onLogout}>
+    <Shell user={shellUser} roleLabel="Client" nav={navItems} active={tab} onNav={setTab} onLogout={onLogout}>
       {tab === 'home' && (
         <TodayView
           client={client}

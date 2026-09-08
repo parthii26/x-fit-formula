@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Landing from './pages/Landing.jsx'
 import Onboarding, { initialProfile } from './pages/Onboarding.jsx'
 import ClientPortal from './pages/ClientPortal.jsx'
 import TrainerPortal from './pages/TrainerPortal.jsx'
+import NotificationToast from './components/NotificationToast.jsx'
 import { loadDB, saveDB, slugId } from './lib/store.js'
+import { initRealtime, requestNotificationPermission } from './lib/realtime.js'
 import {
   supabase,
   isSupabaseConfigured,
@@ -21,6 +23,7 @@ import {
 } from './lib/supabase.js'
 import { Label, TextInput, Btn } from './components/ui.jsx'
 import { KeyRound, ShieldCheck, CheckCircle2, X, Eye, EyeOff } from 'lucide-react'
+
 
 const SESSION_KEY = 'xff-session-v1'
 
@@ -71,6 +74,18 @@ export default function App() {
   const [authSubmitting,    setAuthSubmitting]    = useState(false)
   const [authError,         setAuthError]         = useState(null)
 
+  // Real-time Notification & Portal navigation state
+  const [toast, setToast] = useState(null)
+  const [clientActiveTab, setClientActiveTab] = useState('home')
+  const [trainerActiveTab, setTrainerActiveTab] = useState('dash')
+  const [trainerActiveClientId, setTrainerActiveClientId] = useState(null)
+
+  const sessionRef = useRef(session)
+  const dbRef = useRef(db)
+
+  useEffect(() => { sessionRef.current = session }, [session])
+  useEffect(() => { dbRef.current = db }, [db])
+
   // Password Recovery state
   const [isResettingPassword, setIsResettingPassword] = useState(false)
   const [newPassword, setNewPassword] = useState('')
@@ -89,6 +104,235 @@ export default function App() {
       else         sessionStorage.removeItem(SESSION_KEY)
     } catch { /* ignore */ }
   }, [session])
+
+  // ── Realtime Live Channel Listener ────────────────────────────────────────
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return
+
+    requestNotificationPermission()
+
+    const cleanup = initRealtime({
+      onMessage: (payload) => {
+        const curSession = sessionRef.current
+
+        setDb((prev) => {
+          const clientExists = prev.clients.some((c) => c.id === payload.clientId)
+          const newMsg = payload.message || { from: payload.from, text: payload.text, ts: payload.ts }
+
+          if (!clientExists) {
+            const newClient = {
+              id: payload.clientId,
+              role: 'client',
+              onboarded: true,
+              profile: {
+                name: payload.senderName || 'Athlete',
+                email: '',
+                phone: '',
+                age: '—',
+                height: '—',
+                heightUnit: 'cm',
+                weight: '—',
+                weightUnit: 'kg',
+                gender: '—',
+                lifestyle: 'active',
+                injuries: '',
+                goal: 'general',
+                equipment: 'gym',
+                experience: 'beginner',
+                daysPerWeek: 3,
+              },
+              plan: null,
+              planStatus: 'pending',
+              planMeta: null,
+              completed: {},
+              exerciseDone: {},
+              weightLog: [],
+              checkIns: [],
+              messages: [newMsg],
+              joined: new Date().toISOString().slice(0, 10),
+              lastActive: 'Today',
+            }
+            return {
+              ...prev,
+              clients: [newClient, ...prev.clients],
+            }
+          }
+
+          return {
+            ...prev,
+            clients: prev.clients.map((c) => {
+              if (c.id === payload.clientId) {
+                const alreadyHas = (c.messages || []).some((m) => m.ts === payload.ts && m.text === payload.text)
+                if (alreadyHas) return c
+                return {
+                  ...c,
+                  messages: [...(c.messages || []), newMsg],
+                }
+              }
+              return c
+            }),
+          }
+        })
+
+        // Notification Toast
+        if (curSession?.role === 'client' && payload.clientId === (curSession.clientId || curSession.userId) && payload.from !== 'client') {
+          setToast({
+            type: 'message',
+            title: `Message from ${payload.senderName || 'Coach'}`,
+            message: payload.text,
+            senderName: payload.senderName || 'Coach',
+            actionLabel: 'Open Chat',
+            actionTab: 'profile',
+          })
+        } else if (curSession?.role === 'trainer' && payload.from === 'client') {
+          setToast({
+            type: 'message',
+            title: `Message from ${payload.senderName || 'Athlete'}`,
+            message: payload.text,
+            senderName: payload.senderName || 'Athlete',
+            clientId: payload.clientId,
+            actionLabel: 'Open Inbox',
+            actionTab: 'inbox',
+          })
+        }
+      },
+
+      onProgramAssigned: (payload) => {
+        const curSession = sessionRef.current
+
+        setDb((prev) => ({
+          ...prev,
+          clients: prev.clients.map((c) => {
+            if (c.id === payload.clientId) {
+              return {
+                ...c,
+                plan: payload.plan || c.plan,
+                planMeta: payload.planMeta || c.planMeta,
+                planStatus: payload.planStatus || 'assigned',
+              }
+            }
+            return c
+          }),
+        }))
+
+        if (curSession?.role === 'client' && payload.clientId === (curSession.clientId || curSession.userId)) {
+          setToast({
+            type: 'program',
+            title: 'New Protocol Assigned',
+            message: `${payload.trainerName || 'Coach'} has assigned your workout plan!`,
+            senderName: payload.trainerName || 'Coach',
+            actionLabel: 'View Workouts',
+            actionTab: 'plan',
+          })
+        }
+      },
+
+      onCheckIn: (payload) => {
+        const curSession = sessionRef.current
+
+        setDb((prev) => {
+          const clientExists = prev.clients.some((c) => c.id === payload.clientId)
+          if (!clientExists && payload.checkIn) {
+            const newClient = {
+              id: payload.clientId,
+              role: 'client',
+              onboarded: true,
+              profile: {
+                name: payload.clientName || 'Athlete',
+                email: '',
+                phone: '',
+                age: '—',
+                height: '—',
+                heightUnit: 'cm',
+                weight: '—',
+                weightUnit: 'kg',
+                gender: '—',
+                lifestyle: 'active',
+                injuries: '',
+                goal: 'general',
+                equipment: 'gym',
+                experience: 'beginner',
+                daysPerWeek: 3,
+              },
+              plan: null,
+              planStatus: 'pending',
+              planMeta: null,
+              completed: {},
+              exerciseDone: {},
+              weightLog: [],
+              checkIns: [payload.checkIn],
+              messages: [],
+              joined: new Date().toISOString().slice(0, 10),
+              lastActive: 'Today',
+            }
+            return { ...prev, clients: [newClient, ...prev.clients] }
+          }
+
+          return {
+            ...prev,
+            clients: prev.clients.map((c) => {
+              if (c.id === payload.clientId && payload.checkIn) {
+                const alreadyHas = (c.checkIns || []).some((ci) => ci.id === payload.checkIn.id)
+                if (alreadyHas) return c
+                return {
+                  ...c,
+                  checkIns: [...(c.checkIns || []), payload.checkIn],
+                }
+              }
+              return c
+            }),
+          }
+        })
+
+        if (curSession?.role === 'trainer') {
+          setToast({
+            type: 'checkin',
+            title: 'New Athlete Report',
+            message: `${payload.clientName || 'Athlete'} submitted a daily check-in.`,
+            senderName: payload.clientName || 'Athlete',
+            clientId: payload.clientId,
+            actionLabel: 'Review Report',
+            actionTab: 'roster',
+          })
+        }
+      },
+
+      onProfileSync: (newProfile) => {
+        if (!newProfile || !newProfile.id) return
+        setDb((prev) => ({
+          ...prev,
+          clients: prev.clients.map((c) => {
+            if (c.id === newProfile.id) {
+              return {
+                ...c,
+                plan: newProfile.plan || c.plan,
+                planStatus: newProfile.plan_status || c.planStatus,
+                planMeta: newProfile.plan_meta || c.planMeta,
+                messages: newProfile.messages || c.messages,
+                checkIns: newProfile.check_ins || c.checkIns,
+                completed: newProfile.completed || c.completed,
+                exerciseDone: newProfile.exercise_done || c.exerciseDone,
+                weightLog: newProfile.weight_log || c.weightLog,
+              }
+            }
+            return c
+          }),
+        }))
+      },
+    })
+
+    return () => cleanup?.()
+  }, [])
+
+  const handleToastAction = (t) => {
+    if (session?.role === 'client') {
+      if (t.actionTab) setClientActiveTab(t.actionTab)
+    } else if (session?.role === 'trainer') {
+      if (t.actionTab) setTrainerActiveTab(t.actionTab)
+      if (t.clientId) setTrainerActiveClientId(t.clientId)
+    }
+  }
+
 
   // ── Supabase Auth state listener ──────────────────────────────────────────
   useEffect(() => {
@@ -452,6 +696,8 @@ export default function App() {
           onUpdateClient={updateClient}
           onLogout={logout}
           trainerUserId={session.userId || null}
+          initialTab={trainerActiveTab}
+          initialClientId={trainerActiveClientId}
         />
       )
     }
@@ -511,12 +757,19 @@ export default function App() {
         trainerName={session?.trainerName || db.trainer?.name || 'Coach'}
         onUpdate={updateClient}
         onLogout={logout}
+        initialTab={clientActiveTab}
       />
     )
   }
 
   return (
     <>
+      <NotificationToast
+        toast={toast}
+        onDismiss={() => setToast(null)}
+        onAction={handleToastAction}
+      />
+
       {isResettingPassword && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/90 p-4 backdrop-blur-md animate-fade-up">
           <div className="w-full max-w-md border border-white/15 bg-surface p-6 sm:p-8 shadow-2xl">

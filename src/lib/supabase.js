@@ -248,10 +248,41 @@ export async function fetchAllClients() {
   }
 }
 
+/** Update an existing profile record (ideal for trainers updating client plans/messages) */
+export async function updateProfileData(userId, patch) {
+  if (!isSupabaseConfigured || !supabase || !userId) return null
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ ...patch, updated_at: new Date().toISOString() })
+      .eq('id', userId)
+      .select()
+      .maybeSingle()
+    if (error) throw error
+    return data
+  } catch (err) {
+    console.warn('[Supabase] updateProfileData failed:', err.message)
+    return null
+  }
+}
+
 /** Create or update a profile record. */
 export async function upsertProfile(userId, patch) {
   if (!isSupabaseConfigured || !supabase || !userId) return null
   try {
+    // Try update first (matches UPDATE policy without triggering INSERT constraint check)
+    const { data: updateData, error: updateErr } = await supabase
+      .from('profiles')
+      .update({ ...patch, updated_at: new Date().toISOString() })
+      .eq('id', userId)
+      .select()
+      .maybeSingle()
+
+    if (!updateErr && updateData) {
+      return updateData
+    }
+
+    // If update affected 0 rows (new profile) or errored, try upsert
     const { data, error } = await supabase
       .from('profiles')
       .upsert({ id: userId, ...patch, updated_at: new Date().toISOString() }, { onConflict: 'id' })
@@ -264,6 +295,7 @@ export async function upsertProfile(userId, patch) {
     return null
   }
 }
+
 
 // Helper to derive accurate body_part and equipment from gym/home workout seed items
 function inferBodyPart(item) {
