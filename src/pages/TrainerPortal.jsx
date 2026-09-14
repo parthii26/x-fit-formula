@@ -8,7 +8,7 @@ import { Card, Badge, Avatar, Label, TextInput, TextArea, Btn, Divider, SectionT
 import { AttachmentStrip } from '../components/Attachments.jsx'
 import { LABELS, generatePlan, assembleWeek } from '../lib/planGenerator.js'
 import { nowStamp, dateLabel } from '../lib/store.js'
-import { fetchExerciseById, fetchHomeWorkoutVideoById, createWorkout, isSupabaseConfigured } from '../lib/supabase.js'
+import { fetchExerciseById, fetchHomeWorkoutVideoById, fetchGymWorkoutVideoById, isSupabaseConfigured } from '../lib/supabase.js'
 import { broadcastMessage, broadcastProgramAssigned } from '../lib/realtime.js'
 import ExerciseLibrary from './ExerciseLibrary.jsx'
 import ExerciseDetailModal from '../components/ExerciseDetailModal.jsx'
@@ -54,6 +54,11 @@ export default function TrainerPortal({ trainer, clients, onUpdateClient, onLogo
     const hwFound = await fetchHomeWorkoutVideoById(name)
     if (hwFound) {
       setPreviewExercise(hwFound)
+      return
+    }
+    const gwFound = await fetchGymWorkoutVideoById(name)
+    if (gwFound) {
+      setPreviewExercise(gwFound)
       return
     }
     const found = await fetchExerciseById(name)
