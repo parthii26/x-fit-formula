@@ -88,29 +88,30 @@ async function runVideoTests() {
     const modalTitle = await page.locator('h3:has-text("Barbell Flat Bench Press")').first().isVisible()
     logResult('Gym Exercise Detail Modal Opens on Card Click', modalTitle)
 
-    // Check YouTube iframe presence
-    const iframe = page.locator('iframe[src*="youtube.com/embed"]')
-    const iframeVisible = await iframe.isVisible()
-    const iframeSrc = await iframe.getAttribute('src')
-    logResult(
-      'Gym Exercise Modal Renders Valid YouTube Embed iframe',
-      iframeVisible && iframeSrc && iframeSrc.includes('youtube.com/embed'),
-      `src: ${iframeSrc}`
-    )
+    // Check P1/P2 Step Photos presence
+    const p1PhotoVisible = await page.locator('text=Starting Stance').first().isVisible()
+    logResult('Gym Exercise Modal Defaults to P1/P2 Step Photos Comparison', p1PhotoVisible)
 
-    // Test Video / Motion Loop Switcher
-    const motionBtn = page.locator('button:has-text("Motion Loop")').first()
-    if (await motionBtn.isVisible()) {
-      await motionBtn.click()
-      await page.waitForTimeout(400)
-      const motionImg = await page.locator('img[alt*="motion"]').first().isVisible()
-      logResult('Switcher Toggles to Motion Loop Mode', motionImg)
+    // Switch to HD Video Tutorial tab
+    const videoTabBtn = page.locator('button:has-text("HD Video Tutorial")').first()
+    if (await videoTabBtn.isVisible()) {
+      await videoTabBtn.click()
+      await page.waitForTimeout(600)
+      const iframe = page.locator('iframe[src*="youtube.com/embed"]')
+      const iframeVisible = await iframe.isVisible()
+      const iframeSrc = await iframe.getAttribute('src')
+      logResult(
+        'Gym Exercise Modal Switches to Valid YouTube Embed iframe',
+        iframeVisible && iframeSrc && iframeSrc.includes('youtube.com/embed'),
+        `src: ${iframeSrc}`
+      )
 
-      const videoBtn = page.locator('button:has-text("HD Video Tutorial")').first()
-      await videoBtn.click()
+      // Switch back to Step Photos
+      const photosTabBtn = page.locator('button:has-text("Step Photos")').first()
+      await photosTabBtn.click()
       await page.waitForTimeout(400)
-      const iframeRestored = await page.locator('iframe[src*="youtube.com/embed"]').isVisible()
-      logResult('Switcher Toggles back to HD Video Tutorial', iframeRestored)
+      const photoView = await page.locator('text=Starting Stance').first().isVisible()
+      logResult('Switcher Toggles back to P1/P2 Step Photos Mode', photoView)
     }
 
     // Close modal
@@ -126,14 +127,20 @@ async function runVideoTests() {
     await pushUpCard.click()
     await page.waitForTimeout(600)
 
-    const homeIframe = page.locator('iframe[src*="youtube.com/embed"]')
-    const homeIframeVisible = await homeIframe.isVisible()
-    const homeIframeSrc = await homeIframe.getAttribute('src')
-    logResult(
-      'Home Workout Video Embed Loads with Valid YouTube Iframe',
-      homeIframeVisible && homeIframeSrc && homeIframeSrc.includes('youtube.com/embed'),
-      `src: ${homeIframeSrc}`
-    )
+    // Switch to HD Video Tutorial tab
+    const homeVideoTab = page.locator('button:has-text("HD Video Tutorial")').first()
+    if (await homeVideoTab.isVisible()) {
+      await homeVideoTab.click()
+      await page.waitForTimeout(600)
+      const homeIframe = page.locator('iframe[src*="youtube.com/embed"]')
+      const homeIframeVisible = await homeIframe.isVisible()
+      const homeIframeSrc = await homeIframe.getAttribute('src')
+      logResult(
+        'Home Workout Video Embed Loads with Valid YouTube Iframe',
+        homeIframeVisible && homeIframeSrc && homeIframeSrc.includes('youtube.com/embed'),
+        `src: ${homeIframeSrc}`
+      )
+    }
 
     await page.locator('button[aria-label="Close modal"]').click()
     await page.waitForTimeout(400)
@@ -148,9 +155,15 @@ async function runVideoTests() {
     await firstMovementCard.click()
     await page.waitForTimeout(600)
 
-    const fullLibIframe = page.locator('iframe[src*="youtube.com/embed"]')
-    const fullLibIframeVisible = await fullLibIframe.isVisible()
-    logResult('Full Movement Library Exercise Card Launches Video Modal', fullLibIframeVisible)
+    // Switch to HD Video tab
+    const fullLibVideoTab = page.locator('button:has-text("HD Video Tutorial")').first()
+    if (await fullLibVideoTab.isVisible()) {
+      await fullLibVideoTab.click()
+      await page.waitForTimeout(600)
+      const fullLibIframe = page.locator('iframe[src*="youtube.com/embed"]')
+      const fullLibIframeVisible = await fullLibIframe.isVisible()
+      logResult('Full Movement Library Exercise Card Switches to Video Modal', fullLibIframeVisible)
+    }
 
     await page.locator('button[aria-label="Close modal"]').click()
     await page.waitForTimeout(400)
@@ -218,9 +231,15 @@ async function runVideoTests() {
     const demoBtn = page.locator('button:has-text("Demo")').first()
     if (await demoBtn.isVisible()) {
       await demoBtn.click()
-      await page.waitForTimeout(600)
+      await page.waitForSelector('button:has-text("Step Photos")', { timeout: 10000 })
+      const modalOpen = await page.locator('button:has-text("Step Photos")').first().isVisible()
+      const videoBtnInModal = page.locator('button:has-text("HD Video Tutorial")').first()
+      if (await videoBtnInModal.isVisible()) {
+        await videoBtnInModal.click()
+        await page.waitForSelector('iframe[src*="youtube.com/embed"]', { timeout: 10000 })
+      }
       const demoModalIframe = await page.locator('iframe[src*="youtube.com/embed"]').isVisible()
-      logResult('Client Routine Exercise Demo Button Launches Video Tutorial Modal', demoModalIframe)
+      logResult('Client Routine Exercise Demo Button Launches Video Tutorial Modal', modalOpen && demoModalIframe)
       await page.locator('button[aria-label="Close modal"]').click()
       await page.waitForTimeout(400)
     }

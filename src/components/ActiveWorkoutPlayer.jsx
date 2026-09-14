@@ -323,56 +323,93 @@ export default function ActiveWorkoutPlayer({
         </div>
 
         {/* Media View Mode Switcher */}
-        {embedUrl && openSourceDemo?.frames?.length > 0 && !videoSrc && (
-          <div className="flex items-center gap-1 border border-white/10 bg-surface-2 p-1">
-            <button
-              type="button"
-              onClick={() => setViewMode('video')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
-                viewMode === 'video'
-                  ? 'bg-gold text-obsidian font-extrabold shadow-sm'
-                  : 'text-mute hover:text-ink'
-              }`}
-            >
-              <Play className="h-3 w-3 fill-current" /> HD Video Tutorial
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('motion')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
-                viewMode === 'motion'
-                  ? 'bg-gold text-obsidian font-extrabold shadow-sm'
-                  : 'text-mute hover:text-ink'
-              }`}
-            >
-              <Activity className="h-3 w-3" /> Motion Loop
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-1.5 border border-white/15 bg-surface-2 p-1">
+          <button
+            type="button"
+            onClick={() => setViewMode('images')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-[10px] font-extrabold uppercase tracking-wider transition-all ${
+              viewMode === 'images' || viewMode === 'motion'
+                ? 'bg-gold text-obsidian font-black shadow-md'
+                : 'text-mute hover:text-ink'
+            }`}
+          >
+            <span>📸 Step Photos (P1 & P2)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('video')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-[10px] font-extrabold uppercase tracking-wider transition-all ${
+              viewMode === 'video'
+                ? 'bg-gold text-obsidian font-black shadow-md'
+                : 'text-mute hover:text-ink'
+            }`}
+          >
+            <Play className="h-3.5 w-3.5 fill-current" />
+            <span>🎬 HD Video Tutorial</span>
+          </button>
+        </div>
 
         {/* Video / Media Display */}
         <div className="relative aspect-video w-full overflow-hidden border border-white/15 bg-obsidian shadow-inner flex items-center justify-center">
-          {videoSrc && !videoError ? (
-            <video
-              key={`${currentEx.name}-${gender}-${videoSrc}`}
-              src={videoSrc}
-              poster={normalizedThumbnail}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              onError={handleVideoError}
-              className="h-full w-full object-contain bg-obsidian"
-            />
-          ) : viewMode === 'video' && embedUrl ? (
-            <iframe
-              src={embedUrl}
-              title={`${currentEx.name} Video Tutorial`}
-              className="h-full w-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
+          {viewMode === 'video' ? (
+            videoSrc && !videoError ? (
+              <video
+                key={`${currentEx.name}-${gender}-${videoSrc}`}
+                src={videoSrc}
+                poster={normalizedThumbnail}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                onError={handleVideoError}
+                className="h-full w-full object-contain bg-obsidian"
+              />
+            ) : embedUrl ? (
+              <iframe
+                src={embedUrl}
+                title={`${currentEx.name} Video Tutorial`}
+                className="h-full w-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center p-6 text-center">
+                <Dumbbell className="h-12 w-12 text-gold/40 mb-2" />
+                <p className="text-xs text-mute uppercase tracking-wider">Video tutorial loading...</p>
+              </div>
+            )
+          ) : openSourceDemo?.frames?.length > 1 ? (
+            // Dual Side-by-Side P1 & P2 View for athlete during active workout
+            <div className="h-full w-full grid grid-cols-2 gap-px bg-white/15 p-px">
+              <div className="relative h-full w-full bg-obsidian flex flex-col items-center justify-between p-1.5">
+                <div className="absolute top-2 left-2 z-10 bg-obsidian/90 border border-gold/40 px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-gold">
+                  P1 • Setup
+                </div>
+                <img
+                  src={openSourceDemo.frames[0] || normalizedThumbnail}
+                  alt={`${currentEx.name} Phase 1 - Starting Position`}
+                  className="h-full w-full object-contain bg-obsidian select-none"
+                />
+                <div className="absolute bottom-1 inset-x-1 bg-obsidian/85 border border-white/10 px-1.5 py-0.5 text-center">
+                  <p className="text-[7px] font-bold text-ink uppercase tracking-wider truncate">1. Starting Stance (Inhale)</p>
+                </div>
+              </div>
+
+              <div className="relative h-full w-full bg-obsidian flex flex-col items-center justify-between p-1.5">
+                <div className="absolute top-2 right-2 z-10 bg-gold border border-gold px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-obsidian">
+                  P2 • Peak
+                </div>
+                <img
+                  src={openSourceDemo.frames[1] || openSourceDemo.frames[0] || normalizedThumbnail}
+                  alt={`${currentEx.name} Phase 2 - Peak Contraction`}
+                  className="h-full w-full object-contain bg-obsidian select-none"
+                />
+                <div className="absolute bottom-1 inset-x-1 bg-obsidian/85 border border-gold/30 px-1.5 py-0.5 text-center">
+                  <p className="text-[7px] font-bold text-gold uppercase tracking-wider truncate">2. Peak Contraction (Exhale)</p>
+                </div>
+              </div>
+            </div>
           ) : openSourceDemo?.frames?.length ? (
             <div className="relative h-full w-full bg-obsidian flex items-center justify-center">
               <img

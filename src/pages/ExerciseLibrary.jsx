@@ -38,6 +38,7 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedExercise, setSelectedExercise] = useState(null)
+  const [modalInitialMode, setModalInitialMode] = useState('images')
 
   // Debounce search (250ms)
   useEffect(() => {
@@ -545,7 +546,10 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
                         key={ex.id || `${ex.slug}-${ex.day}-${ex.level}-${dayName}-${idx}`}
                         exercise={ex}
                         index={idx + 1}
-                        onSelect={(selected) => setSelectedExercise(selected)}
+                        onSelect={(selected, mode = 'images') => {
+                          setSelectedExercise(selected)
+                          setModalInitialMode(mode)
+                        }}
                       />
                     ))}
                   </div>
@@ -563,17 +567,21 @@ export default function ExerciseLibrary({ onBack, embedded = false, initialColle
                 key={ex.id || `${ex.slug}-${ex.day}-${ex.level}-${idx}`}
                 exercise={ex}
                 index={undefined}
-                onSelect={(selected) => setSelectedExercise(selected)}
+                onSelect={(selected, mode = 'images') => {
+                  setSelectedExercise(selected)
+                  setModalInitialMode(mode)
+                }}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Exercise Detail Modal */}
+      {/* Exercise Detail Modal with chosen initialMode */}
       {selectedExercise && (
         <ExerciseDetailModal
           exercise={selectedExercise}
+          initialMode={modalInitialMode}
           onClose={() => setSelectedExercise(null)}
         />
       )}

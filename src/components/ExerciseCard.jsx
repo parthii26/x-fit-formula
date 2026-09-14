@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Play, Dumbbell, Clock, Calendar, Repeat } from 'lucide-react'
+import { Play, Dumbbell, Clock, Calendar, Repeat, Image as ImageIcon, Sparkles } from 'lucide-react'
 import { DifficultyBadge, EquipmentBadge, CategoryBadge } from './badges.jsx'
 import { getOpenSourceDemo } from '../lib/openSourceMedia.js'
 
@@ -7,51 +7,74 @@ export default function ExerciseCard({ exercise, onSelect, index }) {
   const isHomeWorkout = Boolean(exercise?.isHomeWorkout)
   const isGymWorkout = Boolean(exercise?.isGymWorkout)
   const openSourceDemo = getOpenSourceDemo(exercise?.slug || exercise?.name || exercise?.exercise_name)
+  const frames = openSourceDemo?.frames || []
 
   const localSvgFallback = isHomeWorkout
     ? `/media/thumbnails/home-workouts/${exercise?.slug}.svg`
     : `/media/thumbnails/${exercise?.gender || 'male'}/${exercise?.slug}.svg`
 
   const initialThumb =
-    openSourceDemo?.frames?.[0] ||
+    frames[0] ||
     exercise?.thumbnailUrl ||
     exercise?.maleThumbnailUrl ||
     exercise?.femaleThumbnailUrl ||
     localSvgFallback ||
     '/media/thumbnails/male/push-up.svg'
 
-  const [imgSrc, setImgSrc] = useState(initialThumb)
+  const [activeFrameIdx, setActiveFrameIdx] = useState(0)
   const [imgFailed, setImgFailed] = useState(false)
+
+  const currentFrameUrl = frames[activeFrameIdx] || (activeFrameIdx === 0 ? initialThumb : (frames[0] || initialThumb))
 
   const secondaryMusclesText = Array.isArray(exercise?.secondary_muscles) && exercise.secondary_muscles.length > 0
     ? ` • ${exercise.secondary_muscles.slice(0, 2).join(' • ')}`
     : ''
 
   useEffect(() => {
-    setImgSrc(initialThumb)
+    setActiveFrameIdx(0)
     setImgFailed(false)
-  }, [exercise, initialThumb])
+  }, [exercise])
+
+  const handleCardClick = (e) => {
+    // Default click opens in image P1/P2 step view or video view
+    if (onSelect) onSelect(exercise, 'images')
+  }
+
+  const handleOpenImages = (e) => {
+    e.stopPropagation()
+    if (onSelect) onSelect(exercise, 'images')
+  }
+
+  const handleOpenVideo = (e) => {
+    e.stopPropagation()
+    if (onSelect) onSelect(exercise, 'video')
+  }
+
+  const handleFrameSwitch = (e, idx) => {
+    e.stopPropagation()
+    setActiveFrameIdx(idx)
+  }
 
   return (
     <div
-      onClick={() => onSelect(exercise)}
+      onClick={handleCardClick}
       className="group relative flex flex-col justify-between border border-white/10 bg-surface text-left transition-all duration-300 hover:border-gold/60 hover:bg-surface-2 active:bg-surface-2 cursor-pointer shadow-md"
     >
       {/* Top Image Media Block */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-obsidian border-b border-white/10 flex items-center justify-center">
         {!imgFailed ? (
           <img
-            src={imgSrc}
+            src={currentFrameUrl}
             alt={exercise.name || exercise.exercise_name}
             loading="lazy"
             onError={() => {
-              if (imgSrc !== localSvgFallback && localSvgFallback) {
-                setImgSrc(localSvgFallback)
+              if (currentFrameUrl !== localSvgFallback && localSvgFallback) {
+                setActiveFrameIdx(0)
               } else {
                 setImgFailed(true)
               }
             }}
-            className="h-full w-full object-contain bg-obsidian object-center transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-contain bg-obsidian object-center transition-transform duration-500 group-hover:scale-105 select-none"
           />
         ) : (
           <div className="flex flex-col items-center justify-center p-6 text-center">
@@ -64,11 +87,25 @@ export default function ExerciseCard({ exercise, onSelect, index }) {
           </div>
         )}
 
-        {/* Hover & Mobile Active Play Button Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center bg-obsidian/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gold/80 bg-gold text-obsidian shadow-xl transition-transform duration-300 group-hover:scale-110">
-            <Play className="ml-0.5 h-5 w-5 fill-current" strokeWidth={1.5} />
-          </div>
+        {/* Hover / Mobile Action Overlay (Choose between P1/P2 Images or Video) */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-obsidian/60 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100 p-3">
+          <button
+            type="button"
+            onClick={handleOpenImages}
+            className="w-full flex items-center justify-center gap-2 border border-gold/80 bg-gold px-3 py-2 text-[10px] font-extrabold uppercase tracking-wider text-obsidian shadow-lg hover:bg-white hover:border-white transition-all transform hover:scale-[1.02]"
+          >
+            <ImageIcon className="h-3.5 w-3.5" />
+            <span>📸 View P1 • P2 Images</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleOpenVideo}
+            className="w-full flex items-center justify-center gap-2 border border-white/30 bg-surface/90 px-3 py-2 text-[10px] font-extrabold uppercase tracking-wider text-ink shadow-lg hover:border-gold hover:text-gold transition-all transform hover:scale-[1.02]"
+          >
+            <Play className="h-3.5 w-3.5 fill-current text-gold" />
+            <span>🎬 Watch HD Video</span>
+          </button>
         </div>
 
         {/* Category / Level / Step Badge top left */}
@@ -91,6 +128,36 @@ export default function ExerciseCard({ exercise, onSelect, index }) {
           <DifficultyBadge difficulty={exercise.level || exercise.difficulty || 'Beginner'} />
         </div>
 
+        {/* Interactive P1 / P2 Frame Switcher Pill (Bottom Right of Image) */}
+        {frames.length > 1 && (
+          <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-obsidian/90 border border-white/20 p-1 backdrop-blur-md z-10">
+            <button
+              type="button"
+              onClick={(e) => handleFrameSwitch(e, 0)}
+              className={`px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider transition-colors ${
+                activeFrameIdx === 0
+                  ? 'bg-gold text-obsidian font-black'
+                  : 'bg-white/10 text-mute hover:text-ink'
+              }`}
+              title="Phase 1: Starting Position"
+            >
+              P1
+            </button>
+            <button
+              type="button"
+              onClick={(e) => handleFrameSwitch(e, 1)}
+              className={`px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider transition-colors ${
+                activeFrameIdx === 1
+                  ? 'bg-gold text-obsidian font-black'
+                  : 'bg-white/10 text-mute hover:text-ink'
+              }`}
+              title="Phase 2: Peak Contraction"
+            >
+              P2
+            </button>
+          </div>
+        )}
+
         {/* Sets & Reps Pill bottom left if Gym Workout */}
         {exercise.sets && (
           <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 bg-obsidian/90 px-2 py-0.5 text-[9px] font-bold text-gold backdrop-blur-xs border border-gold/30 pointer-events-none">
@@ -101,7 +168,7 @@ export default function ExerciseCard({ exercise, onSelect, index }) {
 
         {/* Duration tag for home tutorials if available */}
         {exercise.duration && !exercise.sets && (
-          <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1 bg-obsidian/80 px-2 py-0.5 text-[9px] font-bold text-ink backdrop-blur-xs border border-white/10 pointer-events-none">
+          <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 bg-obsidian/80 px-2 py-0.5 text-[9px] font-bold text-ink backdrop-blur-xs border border-white/10 pointer-events-none">
             <Clock className="h-2.5 w-2.5 text-gold" />
             <span>{exercise.duration}</span>
           </div>
@@ -127,13 +194,31 @@ export default function ExerciseCard({ exercise, onSelect, index }) {
           </p>
         </div>
 
-        {/* Footer Meta Strip */}
-        <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+        {/* Footer Meta Strip with Dual Action Triggers */}
+        <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 gap-2">
           <EquipmentBadge equipment={exercise.equipment || 'Gym'} />
 
-          <span className="inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-gold group-hover:translate-x-0.5 transition-transform">
-            ▶ Watch Tutorial
-          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleOpenImages}
+              className="inline-flex items-center gap-1 px-2 py-1 text-[8px] font-extrabold uppercase tracking-wider border border-white/15 bg-surface-2 text-mute hover:border-gold hover:text-gold transition-colors"
+              title="View P1 & P2 Step Photos"
+            >
+              <ImageIcon className="h-2.5 w-2.5" />
+              <span>P1/P2</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleOpenVideo}
+              className="inline-flex items-center gap-1 px-2 py-1 text-[8px] font-extrabold uppercase tracking-wider border border-gold/40 bg-gold/10 text-gold hover:bg-gold hover:text-obsidian transition-colors"
+              title="Watch Video Tutorial"
+            >
+              <Play className="h-2.5 w-2.5 fill-current" />
+              <span>Video</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

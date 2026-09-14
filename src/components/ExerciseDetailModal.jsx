@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   X, Play, Pause, RotateCcw, ShieldCheck, Dumbbell, Flame, Info,
-  CheckCircle2, AlertTriangle, Wind, User, Users, AlertCircle, Clock, Check, Sparkles, Timer, Activity, FastForward, Film
+  CheckCircle2, AlertTriangle, Wind, User, Users, AlertCircle, Clock, Check, Sparkles, Timer, Activity, FastForward, Film, Image as ImageIcon, Columns
 } from 'lucide-react'
 import { DifficultyBadge, EquipmentBadge, CategoryBadge, MuscleBadge } from './badges.jsx'
 import { getOpenSourceDemo, getYouTubeEmbedUrl, getYouTubeWatchUrl } from '../lib/openSourceMedia.js'
 
-export default function ExerciseDetailModal({ exercise, onClose }) {
+export default function ExerciseDetailModal({ exercise, onClose, initialMode = 'images' }) {
   const isHomeWorkout = Boolean(exercise?.isHomeWorkout)
   const openSourceDemo = getOpenSourceDemo(exercise?.slug || exercise?.name || exercise?.exercise_name)
   const youtubeUrl = openSourceDemo?.videoUrl || exercise?.video_url || exercise?.videoUrl || exercise?.source_url || null
@@ -23,7 +23,11 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
   const [loopSpeed, setLoopSpeed] = useState(1100) // ms per frame (1100ms standard, 750ms fast, 1600ms slow)
   const [currentVideoSrc, setCurrentVideoSrc] = useState(null)
   const [videoError, setVideoError] = useState(false)
-  const [viewMode, setViewMode] = useState(embedUrl ? 'video' : 'motion') // 'video' | 'motion'
+  
+  // 'images' (Step Photos P1/P2) | 'video' (HD Video Tutorial)
+  const [viewMode, setViewMode] = useState(initialMode || (embedUrl ? 'video' : 'images'))
+  // 'side-by-side' | 'motion'
+  const [photoLayout, setPhotoLayout] = useState('side-by-side')
   const videoRef = useRef(null)
 
   // Follow-Along Workout Companion State
@@ -64,7 +68,7 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
 
   // Automated Smooth Motion Loop
   useEffect(() => {
-    if (!openSourceDemo?.frames?.length || !isPlaying || viewMode !== 'motion') return
+    if (!openSourceDemo?.frames?.length || !isPlaying || viewMode !== 'images' || photoLayout !== 'motion') return
 
     const interval = setInterval(() => {
       setActiveFrameIndex((prev) => {
@@ -75,7 +79,7 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
     }, loopSpeed)
 
     return () => clearInterval(interval)
-  }, [openSourceDemo, isPlaying, loopSpeed, viewMode])
+  }, [openSourceDemo, isPlaying, loopSpeed, viewMode, photoLayout])
 
   // Rest Timer countdown
   useEffect(() => {
@@ -115,6 +119,9 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
   const exerciseName = exercise.name || exercise.exercise_name
   const targetMuscle = exercise.target || exercise.target_muscle || 'Full Body'
   const frames = openSourceDemo?.frames || []
+
+  const p1Image = frames[0] || exercise?.thumbnailUrl || exercise?.maleThumbnailUrl || '/media/thumbnails/male/push-up.svg'
+  const p2Image = frames[1] || frames[0] || p1Image
 
   const completeSet = (setNum) => {
     if (!completedSets.includes(setNum)) {
@@ -174,138 +181,226 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
         {/* Scrollable Content Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-8 safe-area-bottom">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-            {/* Left Column: Native Movement Visualizer & Session Tracker */}
+            {/* Left Column: Visualizer (Step Photos P1/P2 + Video Player) */}
             <div className="flex flex-col gap-3.5 lg:col-span-5">
-              {/* Media View Mode Switcher (If both video embed and motion loop are available) */}
-              {embedUrl && frames.length > 0 && !currentVideoSrc && (
-                <div className="flex items-center gap-1 border border-white/10 bg-surface-2 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('video')}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
-                      viewMode === 'video'
-                        ? 'bg-gold text-obsidian font-extrabold shadow-sm'
-                        : 'text-mute hover:text-ink'
-                    }`}
-                  >
-                    <Play className="h-3 w-3 fill-current" /> HD Video Tutorial
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('motion')}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
-                      viewMode === 'motion'
-                        ? 'bg-gold text-obsidian font-extrabold shadow-sm'
-                        : 'text-mute hover:text-ink'
-                    }`}
-                  >
-                    <Activity className="h-3 w-3" /> Motion Loop
-                  </button>
+              {/* Top View Mode Switcher (Prominent First-Class Tabs for P1/P2 Images and Video) */}
+              <div className="flex items-center gap-1.5 border border-white/15 bg-surface-2 p-1 shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('images')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-[10px] font-extrabold uppercase tracking-wider transition-all ${
+                    viewMode === 'images'
+                      ? 'bg-gold text-obsidian font-black shadow-md scale-[1.01]'
+                      : 'text-mute hover:text-ink hover:bg-white/5'
+                  }`}
+                >
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  <span>📸 Step Photos (P1 & P2)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setViewMode('video')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-[10px] font-extrabold uppercase tracking-wider transition-all ${
+                    viewMode === 'video'
+                      ? 'bg-gold text-obsidian font-black shadow-md scale-[1.01]'
+                      : 'text-mute hover:text-ink hover:bg-white/5'
+                  }`}
+                >
+                  <Play className="h-3.5 w-3.5 fill-current" />
+                  <span>🎬 HD Video Tutorial</span>
+                </button>
+              </div>
+
+              {/* Sub-Switcher for Image Mode: Side-by-Side vs Interactive Motion */}
+              {viewMode === 'images' && frames.length > 1 && (
+                <div className="flex items-center justify-between border-b border-white/10 pb-2 px-1">
+                  <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-gold">
+                    Photo Layout Mode:
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setPhotoLayout('side-by-side')}
+                      className={`px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wider border transition-colors ${
+                        photoLayout === 'side-by-side'
+                          ? 'border-gold bg-gold/20 text-gold'
+                          : 'border-white/10 text-mute hover:text-ink'
+                      }`}
+                    >
+                      Side-by-Side (P1 + P2)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPhotoLayout('motion')}
+                      className={`px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wider border transition-colors ${
+                        photoLayout === 'motion'
+                          ? 'border-gold bg-gold/20 text-gold'
+                          : 'border-white/10 text-mute hover:text-ink'
+                      }`}
+                    >
+                      Motion Loop & Flip
+                    </button>
+                  </div>
                 </div>
               )}
 
-              {/* Native Motion / Video Demonstration Box */}
+              {/* Main Media Box */}
               <div className="relative aspect-video w-full overflow-hidden border border-white/10 bg-obsidian shadow-2xl flex items-center justify-center">
-                {currentVideoSrc && !videoError ? (
-                  <video
-                    ref={videoRef}
-                    key={`${exercise.slug}-${gender}-${currentVideoSrc}`}
-                    src={currentVideoSrc}
-                    controls
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="h-full w-full object-contain bg-obsidian"
-                  />
-                ) : viewMode === 'video' && embedUrl ? (
-                  <iframe
-                    src={embedUrl}
-                    title={`${exerciseName} Video Tutorial`}
-                    className="h-full w-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
-                ) : frames.length > 0 ? (
-                  <div className="relative h-full w-full bg-obsidian flex flex-col items-center justify-between">
-                    <img
-                      src={frames[activeFrameIndex] || frames[0]}
-                      alt={`${exerciseName} continuous motion`}
-                      className="h-full w-full object-contain bg-obsidian transition-all duration-300 select-none"
-                    />
+                {/* ── MODE 1: STEP PHOTOS (P1 & P2) ── */}
+                {viewMode === 'images' ? (
+                  photoLayout === 'side-by-side' && frames.length > 1 ? (
+                    // Dual Side-by-Side P1 & P2 Grid
+                    <div className="h-full w-full grid grid-cols-2 gap-px bg-white/15 p-px">
+                      {/* P1: Starting Position */}
+                      <div className="relative h-full w-full bg-obsidian flex flex-col items-center justify-between p-1.5 group cursor-pointer" onClick={() => { setActiveFrameIndex(0); setPhotoLayout('motion'); }}>
+                        <div className="absolute top-2 left-2 z-10 bg-obsidian/90 border border-gold/40 px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-gold">
+                          P1 • Setup
+                        </div>
+                        <img
+                          src={p1Image}
+                          alt={`${exerciseName} Phase 1 - Starting Position`}
+                          className="h-full w-full object-contain bg-obsidian select-none transition-transform group-hover:scale-105"
+                        />
+                        <div className="absolute bottom-1.5 inset-x-1.5 bg-obsidian/85 border border-white/10 px-2 py-1 text-center backdrop-blur-xs">
+                          <p className="text-[8px] font-bold text-ink uppercase tracking-wider truncate">1. Starting Stance</p>
+                          <p className="text-[7px] text-mute uppercase tracking-widest">Inhale & Align</p>
+                        </div>
+                      </div>
 
-                    {/* Active Cadence & Position Badge */}
-                    <div className="absolute top-3 right-3 flex items-center gap-2 bg-obsidian/85 px-2.5 py-1 border border-white/15 backdrop-blur-md">
-                      <span className={`h-2 w-2 rounded-full ${activeFrameIndex === 0 ? 'bg-amber-400' : 'bg-gold animate-pulse'}`} />
-                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-ink font-mono">
-                        {activeFrameIndex === 0 ? '1. Starting Stance' : '2. Peak Contraction'}
-                      </span>
+                      {/* P2: Peak Contraction */}
+                      <div className="relative h-full w-full bg-obsidian flex flex-col items-center justify-between p-1.5 group cursor-pointer" onClick={() => { setActiveFrameIndex(1); setPhotoLayout('motion'); }}>
+                        <div className="absolute top-2 right-2 z-10 bg-gold border border-gold px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-obsidian">
+                          P2 • Peak
+                        </div>
+                        <img
+                          src={p2Image}
+                          alt={`${exerciseName} Phase 2 - Peak Contraction`}
+                          className="h-full w-full object-contain bg-obsidian select-none transition-transform group-hover:scale-105"
+                        />
+                        <div className="absolute bottom-1.5 inset-x-1.5 bg-obsidian/85 border border-gold/30 px-2 py-1 text-center backdrop-blur-xs">
+                          <p className="text-[8px] font-bold text-gold uppercase tracking-wider truncate">2. Peak Contraction</p>
+                          <p className="text-[7px] text-mute uppercase tracking-widest">Exhale & Squeeze</p>
+                        </div>
+                      </div>
                     </div>
+                  ) : (
+                    // Single Frame Interactive Motion / Flip Viewer
+                    <div className="relative h-full w-full bg-obsidian flex flex-col items-center justify-between">
+                      <img
+                        src={frames[activeFrameIndex] || p1Image}
+                        alt={`${exerciseName} step posture`}
+                        className="h-full w-full object-contain bg-obsidian transition-all duration-300 select-none"
+                      />
 
-                    {/* Native Motion Control Bar */}
-                    <div className="absolute bottom-2.5 inset-x-2.5 flex items-center justify-between bg-obsidian/90 px-3 py-2 border border-white/15 backdrop-blur-md">
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setIsPlaying(!isPlaying)}
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-gold text-obsidian text-[9px] font-extrabold uppercase tracking-wider hover:bg-white transition-colors"
-                        >
-                          {isPlaying ? <Pause className="h-3 w-3 fill-current" /> : <Play className="h-3 w-3 fill-current" />}
-                          {isPlaying ? 'Pause' : 'Play Motion'}
-                        </button>
+                      {/* Active Cadence & Position Badge */}
+                      <div className="absolute top-3 right-3 flex items-center gap-2 bg-obsidian/85 px-2.5 py-1 border border-white/15 backdrop-blur-md">
+                        <span className={`h-2 w-2 rounded-full ${activeFrameIndex === 0 ? 'bg-amber-400' : 'bg-gold animate-pulse'}`} />
+                        <span className="text-[9px] font-extrabold uppercase tracking-wider text-ink font-mono">
+                          {activeFrameIndex === 0 ? '1. Starting Stance (P1)' : '2. Peak Contraction (P2)'}
+                        </span>
                       </div>
 
-                      {/* Speed Control */}
-                      <div className="flex items-center gap-1">
-                        {[
-                          { label: '0.8x', speed: 1600 },
-                          { label: '1.0x', speed: 1100 },
-                          { label: '1.4x', speed: 750 },
-                        ].map((s) => (
+                      {/* Native Motion Control Bar */}
+                      <div className="absolute bottom-2.5 inset-x-2.5 flex items-center justify-between bg-obsidian/90 px-3 py-2 border border-white/15 backdrop-blur-md">
+                        <div className="flex items-center gap-2">
                           <button
-                            key={s.label}
                             type="button"
-                            onClick={() => {
-                              setLoopSpeed(s.speed)
-                              setIsPlaying(true)
-                            }}
-                            className={`px-1.5 py-0.5 text-[8px] font-bold uppercase transition-all ${
-                              loopSpeed === s.speed
-                                ? 'bg-gold text-obsidian font-extrabold'
-                                : 'bg-white/10 text-mute hover:bg-white/20'
-                            }`}
+                            onClick={() => setIsPlaying(!isPlaying)}
+                            className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-gold text-obsidian text-[9px] font-extrabold uppercase tracking-wider hover:bg-white transition-colors"
                           >
-                            {s.label}
+                            {isPlaying ? <Pause className="h-3 w-3 fill-current" /> : <Play className="h-3 w-3 fill-current" />}
+                            {isPlaying ? 'Pause Loop' : 'Play Loop'}
                           </button>
-                        ))}
-                      </div>
+                        </div>
 
-                      {/* Step P1/P2 manual selectors */}
-                      <div className="flex items-center gap-1">
-                        {frames.map((_, i) => (
+                        {/* Speed Control */}
+                        <div className="flex items-center gap-1">
+                          {[
+                            { label: '0.8x', speed: 1600 },
+                            { label: '1.0x', speed: 1100 },
+                            { label: '1.4x', speed: 750 },
+                          ].map((s) => (
+                            <button
+                              key={s.label}
+                              type="button"
+                              onClick={() => {
+                                setLoopSpeed(s.speed)
+                                setIsPlaying(true)
+                              }}
+                              className={`px-1.5 py-0.5 text-[8px] font-bold uppercase transition-all ${
+                                loopSpeed === s.speed
+                                  ? 'bg-gold text-obsidian font-extrabold'
+                                  : 'bg-white/10 text-mute hover:bg-white/20'
+                              }`}
+                            >
+                              {s.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Step P1/P2 manual selectors */}
+                        <div className="flex items-center gap-1">
                           <button
-                            key={i}
                             type="button"
                             onClick={() => {
-                              setActiveFrameIndex(i)
+                              setActiveFrameIndex(0)
                               setIsPlaying(false)
                             }}
-                            className={`flex items-center justify-center text-[8px] font-extrabold uppercase px-1.5 py-0.5 transition-all ${
-                              activeFrameIndex === i
-                                ? 'bg-gold text-obsidian font-bold'
-                                : 'bg-white/10 text-mute hover:bg-white/20'
+                            className={`flex items-center justify-center text-[8px] font-black uppercase px-2 py-0.5 border transition-all ${
+                              activeFrameIndex === 0
+                                ? 'border-gold bg-gold text-obsidian'
+                                : 'border-white/15 bg-white/10 text-mute hover:text-ink'
                             }`}
                           >
-                            P{i + 1}
+                            P1 Setup
                           </button>
-                        ))}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveFrameIndex(1)
+                              setIsPlaying(false)
+                            }}
+                            className={`flex items-center justify-center text-[8px] font-black uppercase px-2 py-0.5 border transition-all ${
+                              activeFrameIndex === 1
+                                ? 'border-gold bg-gold text-obsidian'
+                                : 'border-white/15 bg-white/10 text-mute hover:text-ink'
+                            }`}
+                          >
+                            P2 Peak
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-surface-2">
-                    <Dumbbell className="h-16 w-16 text-white/20" strokeWidth={1} />
-                  </div>
+                  /* ── MODE 2: HD VIDEO TUTORIAL ── */
+                  currentVideoSrc && !videoError ? (
+                    <video
+                      ref={videoRef}
+                      key={`${exercise.slug}-${gender}-${currentVideoSrc}`}
+                      src={currentVideoSrc}
+                      controls
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="h-full w-full object-contain bg-obsidian"
+                    />
+                  ) : embedUrl ? (
+                    <iframe
+                      src={embedUrl}
+                      title={`${exerciseName} Video Tutorial`}
+                      className="h-full w-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-6 text-center">
+                      <Film className="h-12 w-12 text-gold/40 mb-2" />
+                      <p className="text-xs text-mute uppercase tracking-wider">Video stream loading...</p>
+                    </div>
+                  )
                 )}
 
                 {/* Badges Over Visualizer */}
@@ -354,11 +449,11 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
                 </div>
                 <div className="mt-2 flex items-center gap-2">
                   <div className="flex-1 bg-obsidian p-2 text-center border border-white/5">
-                    <p className="text-[8px] uppercase tracking-wider text-mute">Descent / Eccentric</p>
+                    <p className="text-[8px] uppercase tracking-wider text-mute">Descent / Eccentric (P1)</p>
                     <p className="text-[11px] font-bold text-ink">2.0s Inhale</p>
                   </div>
                   <div className="flex-1 bg-obsidian p-2 text-center border border-white/5">
-                    <p className="text-[8px] uppercase tracking-wider text-mute">Drive / Concentric</p>
+                    <p className="text-[8px] uppercase tracking-wider text-mute">Drive / Concentric (P2)</p>
                     <p className="text-[11px] font-bold text-gold">1.0s Exhale</p>
                   </div>
                 </div>
@@ -477,7 +572,7 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
                   <div className="flex items-center gap-2 mb-3">
                     <CheckCircle2 className="h-4 w-4 text-gold" />
                     <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink">
-                      Step-by-Step Execution
+                      Step-by-Step Execution (P1 to P2)
                     </h5>
                   </div>
                   <ol className="space-y-2.5">
@@ -548,8 +643,8 @@ export default function ExerciseDetailModal({ exercise, onClose }) {
 
               {/* Footer Stamp */}
               <div className="mt-2 border-t border-white/10 pt-3 flex items-center justify-between text-[8px] font-semibold uppercase tracking-[0.25em] text-mute">
-                <span>X FIT FORMULA — Official Movement Library</span>
-                <span>Verified Biomechanics</span>
+                <span>X FIT FORMULA — Dual Media Visualizer</span>
+                <span>P1/P2 Step Photos & HD Video</span>
               </div>
             </div>
           </div>
