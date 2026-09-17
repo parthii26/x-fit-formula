@@ -6,7 +6,7 @@ import {
 import Shell from '../components/Shell.jsx'
 import { Card, Badge, Avatar, Label, TextInput, TextArea, Btn, Divider, SectionTitle } from '../components/ui.jsx'
 import { AttachmentStrip } from '../components/Attachments.jsx'
-import { LABELS, generatePlan, assembleWeek } from '../lib/planGenerator.js'
+import { LABELS, generatePlan, assembleWeek, calculateBMI } from '../lib/planGenerator.js'
 import { nowStamp, dateLabel } from '../lib/store.js'
 import { fetchExerciseById, fetchHomeWorkoutVideoById, fetchGymWorkoutVideoById, isSupabaseConfigured } from '../lib/supabase.js'
 import { broadcastMessage, broadcastProgramAssigned } from '../lib/realtime.js'
@@ -378,22 +378,27 @@ function ClientDetail({ client, onBack, onBuild, onUpdate }) {
       {/* Intake data grid */}
       <div className="mt-10">
         <SectionTitle kicker="Intake">Client Data</SectionTitle>
-        <div className="mt-6 grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-4">
-          {[
-            ['Age', p.age && p.age !== '—' ? p.age : 'Pending'],
-            ['Gender', p.gender === 'men' ? 'Male' : p.gender === 'women' ? 'Female' : p.gender || 'Pending'],
-            ['Height', p.height && p.height !== '—' ? `${p.height} ${p.heightUnit || 'cm'}` : 'Pending'],
-            ['Weight', p.weight && p.weight !== '—' ? `${p.weight} ${p.weightUnit || 'kg'}` : 'Pending'],
-            ['Lifestyle', LABELS.lifestyle[p.lifestyle] || p.lifestyle || 'Pending'],
-            ['Goal', LABELS.goal[p.goal] || p.goal || 'General Fitness'],
-            ['Equipment', LABELS.equipment[p.equipment] || p.equipment || 'Full Gym', true],
-            ['Frequency', p.daysPerWeek ? `${p.daysPerWeek} Days / Week` : '3 Days / Week', true],
-          ].map(([k, v, gold]) => (
-            <div key={k} className="bg-surface p-5 sm:p-6">
-              <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-mute">{k}</p>
-              <p className={`mt-2 font-display text-sm font-bold uppercase tracking-[0.1em] ${gold ? 'text-gold' : 'text-ink'}`}>{v}</p>
-            </div>
-          ))}
+        <div className="mt-6 grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-3 lg:grid-cols-5">
+          {(() => {
+            const bmi = calculateBMI(p.height, p.heightUnit, p.weight, p.weightUnit)
+            return [
+              ['Age', p.age && p.age !== '—' ? p.age : 'Pending'],
+              ['Gender', p.gender === 'men' ? 'Male' : p.gender === 'women' ? 'Female' : p.gender || 'Pending'],
+              ['Height', p.height && p.height !== '—' ? `${p.height} ${p.heightUnit || 'cm'}` : 'Pending'],
+              ['Weight', p.weight && p.weight !== '—' ? `${p.weight} ${p.weightUnit || 'kg'}` : 'Pending'],
+              ['BMI Index', bmi ? `${bmi.value} (${bmi.category})` : 'Pending', true],
+              ['Lifestyle', LABELS.lifestyle[p.lifestyle] || p.lifestyle || 'Pending'],
+              ['Goal', LABELS.goal[p.goal] || p.goal || 'General Fitness'],
+              ['Equipment', LABELS.equipment[p.equipment] || p.equipment || 'Full Gym', true],
+              ['Frequency', p.daysPerWeek ? `${p.daysPerWeek} Days / Week` : '3 Days / Week', true],
+              ['Target Weight', bmi ? bmi.idealWeightText : '—'],
+            ].map(([k, v, gold]) => (
+              <div key={k} className="bg-surface p-5 sm:p-6">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-mute">{k}</p>
+                <p className={`mt-2 font-display text-sm font-bold uppercase tracking-[0.1em] ${gold ? 'text-gold' : 'text-ink'} truncate`}>{v}</p>
+              </div>
+            ))
+          })()}
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, LogOut, Lock, Check } from 'lucide-react'
 import { Label, TextInput, TextArea, Select, UnitToggle, Btn, Divider } from '../components/ui.jsx'
-import { LABELS } from '../lib/planGenerator.js'
+import { LABELS, calculateBMI } from '../lib/planGenerator.js'
 
 export const GOALS = [
   { id: 'fatloss', label: 'Fat Loss', desc: 'Reduce body fat. Preserve muscle.' },
@@ -114,9 +114,9 @@ export default function Onboarding({ initialName = '', onComplete, onLogout }) {
   )
 }
 
-// ─── 01 Profile ─────────────────────────────────────────────────────────────
-
 function StepProfile({ data, set }) {
+  const bmi = calculateBMI(data.height, data.heightUnit, data.weight, data.weightUnit)
+
   return (
     <div className="animate-fade-up space-y-10">
       <div>
@@ -144,6 +144,37 @@ function StepProfile({ data, set }) {
           </div>
         </div>
       </div>
+
+      {/* Live Biometric & BMI Calculation Feedback */}
+      {bmi && (
+        <div className="border border-white/10 bg-surface/80 p-4 sm:p-5 flex items-center justify-between gap-4 animate-fade-up shadow-sm">
+          <div className="flex items-center gap-3.5">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-gold/10 text-gold border border-gold/30 font-display font-extrabold text-xs">
+              BMI
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="font-display text-lg sm:text-xl font-extrabold text-ink">
+                  {bmi.value}
+                </p>
+                <span className={`px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wider ${
+                  bmi.tone === 'emerald' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' :
+                  bmi.tone === 'amber' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' :
+                  'bg-red-500/15 text-red-400 border border-red-500/30'
+                }`}>
+                  {bmi.category}
+                </span>
+              </div>
+              <p className="text-[9px] text-mute mt-0.5">
+                Target Weight: <span className="text-ink font-semibold">{bmi.idealWeightText}</span> (BMI 18.5–24.9)
+              </p>
+            </div>
+          </div>
+          <p className="hidden sm:block text-[10px] text-mute max-w-[200px] text-right leading-snug">
+            {bmi.description}
+          </p>
+        </div>
+      )}
 
       <div>
         <Label>Gender</Label>
@@ -289,18 +320,22 @@ function StepProtocol({ data, set, maxDays }) {
       <div>
         <Divider className="mb-6" />
         <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-mute">Formula Summary</p>
-        <div className="mt-4 grid grid-cols-2 gap-y-4 sm:grid-cols-4">
-          {[
-            ['Level', LABELS.experience[data.experience]],
-            ['Frequency', `${data.daysPerWeek} D / WK`],
-            ['Goal', LABELS.goal[data.goal] || '—'],
-            ['Equipment', LABELS.equipment[data.equipment] || '—'],
-          ].map(([k, v]) => (
-            <div key={k}>
-              <p className="text-[9px] uppercase tracking-[0.3em] text-white/30">{k}</p>
-              <p className="mt-1 font-display text-sm font-bold uppercase tracking-[0.1em] text-gold">{v}</p>
-            </div>
-          ))}
+        <div className="mt-4 grid grid-cols-2 gap-y-4 sm:grid-cols-5">
+          {(() => {
+            const bmi = calculateBMI(data.height, data.heightUnit, data.weight, data.weightUnit)
+            return [
+              ['Level', LABELS.experience[data.experience]],
+              ['Frequency', `${data.daysPerWeek} D / WK`],
+              ['Goal', LABELS.goal[data.goal] || '—'],
+              ['Equipment', LABELS.equipment[data.equipment] || '—'],
+              ['BMI Index', bmi ? `${bmi.value} (${bmi.category})` : '—'],
+            ].map(([k, v]) => (
+              <div key={k}>
+                <p className="text-[9px] uppercase tracking-[0.3em] text-white/30">{k}</p>
+                <p className="mt-1 font-display text-sm font-bold uppercase tracking-[0.1em] text-gold truncate">{v}</p>
+              </div>
+            ))
+          })()}
         </div>
       </div>
     </div>
@@ -310,11 +345,12 @@ function StepProtocol({ data, set, maxDays }) {
 // ─── Processing ─────────────────────────────────────────────────────────────
 
 const PROC_MSGS = [
-  'Analyzing profile',
-  'Calculating volume',
+  'Analyzing profile & biometrics',
+  'Evaluating BMI & metabolic targets',
+  'Calculating training volume',
   'Resolving equipment constraints',
   'Structuring weekly split',
-  'Finalizing formula',
+  'Finalizing precision formula',
 ]
 
 function Processing({ name }) {

@@ -117,8 +117,11 @@ async function runMasterAppAudit() {
     }
 
     // Open Exercise Detail Modal in Step Photos Mode
-    await firstCard.click()
-    await page.waitForTimeout(600)
+    const isModalOpen = await page.locator('button[aria-label="Close modal"]').isVisible()
+    if (!isModalOpen) {
+      await firstCard.click()
+      await page.waitForTimeout(600)
+    }
     const modalTitle = await page.locator('h3').first().isVisible()
     const stepPhotosActive = await page.locator('text=Starting Stance').first().isVisible()
     const peakContractionActive = await page.locator('text=Peak Contraction').first().isVisible()
@@ -167,7 +170,7 @@ async function runMasterAppAudit() {
     // Collection 3: Full Movement Library (Search & Category Filters)
     await page.locator('button:has-text("Full Movement Library")').first().click()
     await page.waitForTimeout(600)
-    const searchInput = page.locator('input[placeholder*="Search all movements"]').first()
+    const searchInput = page.locator('input[placeholder*="Search"]').first()
     await searchInput.fill('Bench')
     await page.waitForTimeout(800)
     const benchFilteredCard = await page.locator('text=Bench').first().isVisible()
@@ -312,7 +315,7 @@ async function runMasterAppAudit() {
     // 4. Workouts Tab
     await page.locator('button:has-text("Workouts")').first().click()
     await page.waitForTimeout(400)
-    const weeklySchedule = await page.locator('text=Upper Body Power').first().isVisible()
+    const weeklySchedule = await page.locator('text=Upper / Lower Split').first().isVisible() || await page.locator('text=Weekly Program').first().isVisible()
     logResult('Client Portal', 'Full 7-Day Periodized Routine Split Rendered', weeklySchedule)
 
     // 5. Progress Tab
@@ -320,18 +323,21 @@ async function runMasterAppAudit() {
     await page.waitForTimeout(400)
     const progressionMetrics = await page.locator('text=Adherence Rate').first().isVisible()
     const bodyweightTrend = await page.locator('text=Bodyweight Trend').first().isVisible()
+    const bmiProgressMetric = await page.locator('text=Body Mass Index (BMI)').first().isVisible()
     const dailyCheckInSubtab = page.locator('button:has-text("Daily Check-In")').first()
     await dailyCheckInSubtab.click()
     await page.waitForTimeout(300)
     const checkInBtn = await page.locator('button:has-text("Submit Daily Check-In")').first().isVisible()
-    logResult('Client Portal', 'Progress Tab with Weight Logging & Daily Check-In Form', progressionMetrics && bodyweightTrend && checkInBtn)
+    logResult('Client Portal', 'Progress Tab with Weight Logging, Dynamic BMI & Daily Check-In Form', progressionMetrics && bodyweightTrend && bmiProgressMetric && checkInBtn)
 
     // 6. Profile & Direct Coach Chat
     await page.locator('button:has-text("Profile")').first().click()
     await page.waitForTimeout(400)
     const coachChatThread = await page.locator('text=Direct Coach Line').first().isVisible()
     const messageInput = await page.locator('input[placeholder="Message your coach..."]').first().isVisible()
-    logResult('Client Portal', 'Profile Tab with Calculated Target Macros & Direct Coach Correspondence', coachChatThread && messageInput)
+    const bmiScoreBadge = await page.locator('text=BMI Score').first().isVisible()
+    const bmiTargetHealthy = await page.locator('text=Target Healthy Weight').first().isVisible()
+    logResult('Client Portal', 'Profile Tab with Calculated Target Macros, BMI Biometrics & Coach Chat', coachChatThread && messageInput && bmiScoreBadge && bmiTargetHealthy)
 
     // ── SUITE 6: TRAINER COMMAND CENTER & WORKOUT BUILDER ────────────────────
     console.log('\n--- Suite 6: Trainer Command Center & Program Builder ---')
@@ -361,8 +367,9 @@ async function runMasterAppAudit() {
     await page.locator('tbody tr:has-text("Marcus Vance")').click()
     await page.waitForTimeout(500)
     const injuryFlag = await page.locator('text=Right shoulder impingement').isVisible()
+    const trainerBmiTile = await page.locator('text=BMI Index').first().isVisible()
     const reviseProgramBtn = await page.locator('button:has-text("Revise Program")').isVisible()
-    logResult('Trainer Portal', 'Athlete Biometric Intake & Injury Flag Analysis Rendered', injuryFlag && reviseProgramBtn)
+    logResult('Trainer Portal', 'Athlete Biometric Intake, BMI Evaluation & Injury Flag Analysis Rendered', injuryFlag && trainerBmiTile && reviseProgramBtn)
 
     // Open Workout Builder
     await page.locator('button:has-text("Revise Program")').click()

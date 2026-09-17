@@ -132,3 +132,69 @@ export const LABELS = {
   experience: { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' },
   lifestyle: { active: 'Highly Active', desk: 'Sedentary Desk Job', studying: 'Studying' },
 }
+
+/**
+ * Computes Body Mass Index (BMI), WHO classification category, and ideal weight boundaries.
+ * Supports both metric (cm, kg) and imperial (in, lbs) measurement units.
+ *
+ * @param {number|string} height
+ * @param {string} heightUnit - 'cm' | 'in'
+ * @param {number|string} weight
+ * @param {string} weightUnit - 'kg' | 'lbs'
+ * @returns {object|null}
+ */
+export function calculateBMI(height, heightUnit = 'cm', weight, weightUnit = 'kg') {
+  const h = parseFloat(height)
+  const w = parseFloat(weight)
+  if (!h || !w || isNaN(h) || isNaN(w) || h <= 0 || w <= 0) return null
+
+  // Convert height to meters
+  const heightInMeters = heightUnit === 'in' ? h * 0.0254 : h / 100
+  if (heightInMeters <= 0.3 || heightInMeters >= 3.0) return null
+
+  // Convert weight to kg
+  const weightInKg = weightUnit === 'lbs' ? w * 0.45359237 : w
+  if (weightInKg <= 10 || weightInKg >= 500) return null
+
+  const bmi = weightInKg / (heightInMeters * heightInMeters)
+  const rounded = Math.round(bmi * 10) / 10
+
+  let category = 'Optimal / Normal'
+  let tone = 'emerald'
+  let description = 'Healthy body composition within optimal range.'
+
+  if (rounded < 18.5) {
+    category = 'Underweight'
+    tone = 'amber'
+    description = 'Body weight is below the standard recommended range.'
+  } else if (rounded <= 24.9) {
+    category = 'Optimal'
+    tone = 'emerald'
+    description = 'Body weight is within the healthy, optimal range.'
+  } else if (rounded <= 29.9) {
+    category = 'Overweight'
+    tone = 'amber'
+    description = 'Body weight is slightly above standard range.'
+  } else {
+    category = 'Obese'
+    tone = 'red'
+    description = 'Body mass index indicates elevated health risk.'
+  }
+
+  // Ideal weight range for this height (BMI 18.5 to 24.9)
+  const minIdealKg = Math.round(18.5 * heightInMeters * heightInMeters * 10) / 10
+  const maxIdealKg = Math.round(24.9 * heightInMeters * heightInMeters * 10) / 10
+  const idealWeightText = weightUnit === 'lbs'
+    ? `${Math.round(minIdealKg * 2.20462)} – ${Math.round(maxIdealKg * 2.20462)} lbs`
+    : `${minIdealKg} – ${maxIdealKg} kg`
+
+  return {
+    value: rounded.toFixed(1),
+    num: rounded,
+    category,
+    tone,
+    description,
+    idealRange: '18.5 – 24.9',
+    idealWeightText,
+  }
+}

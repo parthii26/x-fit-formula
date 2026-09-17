@@ -6,7 +6,7 @@ import {
 import Shell from '../components/Shell.jsx'
 import { Card, Badge, BigCheck, Divider, Btn, SectionTitle, Label, TextInput, TextArea, Select, Avatar } from '../components/ui.jsx'
 import { AttachmentStrip } from '../components/Attachments.jsx'
-import { LABELS } from '../lib/planGenerator.js'
+import { LABELS, calculateBMI } from '../lib/planGenerator.js'
 import { nowStamp, isoDate, dateLabel } from '../lib/store.js'
 import { fetchExerciseById, fetchHomeWorkoutVideoById, fetchGymWorkoutVideoById } from '../lib/supabase.js'
 import { broadcastMessage, broadcastCheckIn } from '../lib/realtime.js'
@@ -591,6 +591,41 @@ function ProgressView({ client, pct, doneCount, trainingDays, onSubmitCheckIn })
               </p>
             )}
           </div>
+
+          {/* Current BMI & Body Composition Card */}
+          {(() => {
+            const p = client.profile || {}
+            const latestWeight = log.length > 0 ? log[log.length - 1].value : p.weight
+            const currentBMI = calculateBMI(p.height, p.heightUnit, latestWeight, unit)
+            if (!currentBMI) return null
+
+            return (
+              <div className="border border-white/10 bg-surface p-6 sm:p-8">
+                <SectionTitle kicker="Health Classification">Body Mass Index (BMI)</SectionTitle>
+                <div className="mt-6 flex flex-wrap items-baseline justify-between gap-4">
+                  <div className="flex items-baseline gap-3">
+                    <p className="font-display text-5xl sm:text-6xl font-extrabold leading-none text-ink">
+                      {currentBMI.value}
+                    </p>
+                    <span className={`px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider ${
+                      currentBMI.tone === 'emerald' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' :
+                      currentBMI.tone === 'amber' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' :
+                      'bg-red-500/15 text-red-400 border border-red-500/30'
+                    }`}>
+                      {currentBMI.category}
+                    </span>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <p className="text-[9px] uppercase tracking-wider text-mute">Optimal Range for {p.height} {p.heightUnit || 'cm'}</p>
+                    <p className="font-display text-sm font-bold text-gold mt-0.5">{currentBMI.idealWeightText}</p>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-mute leading-relaxed">
+                  {currentBMI.description} Automatically synced with your latest logged weight ({latestWeight} {unit}).
+                </p>
+              </div>
+            )
+          })()}
         </div>
       ) : (
         <CheckInForm client={client} onSubmit={onSubmitCheckIn} />
@@ -749,6 +784,8 @@ function ProfileView({ client, trainerName, onSendCoachMessage, onLogout }) {
     setMsgText('')
   }
 
+  const bmi = calculateBMI(p.height, p.heightUnit, p.weight, p.weightUnit)
+
   return (
     <div className="animate-fade-up space-y-8">
       {/* Athlete Header Card */}
@@ -767,24 +804,82 @@ function ProfileView({ client, trainerName, onSendCoachMessage, onLogout }) {
         </div>
 
         {/* Biometrics Strip */}
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 border-t border-white/10 pt-5">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5 border-t border-white/10 pt-5">
           <div>
             <p className="text-[8px] font-bold uppercase tracking-wider text-mute">Age</p>
             <p className="font-display text-base font-bold text-ink">{p.age || '—'}</p>
           </div>
           <div>
             <p className="text-[8px] font-bold uppercase tracking-wider text-mute">Height</p>
-            <p className="font-display text-base font-bold text-ink">{p.height ? `${p.height} ${p.heightUnit}` : '—'}</p>
+            <p className="font-display text-base font-bold text-ink">{p.height ? `${p.height} ${p.heightUnit || 'cm'}` : '—'}</p>
           </div>
           <div>
             <p className="text-[8px] font-bold uppercase tracking-wider text-mute">Weight</p>
-            <p className="font-display text-base font-bold text-ink">{p.weight ? `${p.weight} ${p.weightUnit}` : '—'}</p>
+            <p className="font-display text-base font-bold text-ink">{p.weight ? `${p.weight} ${p.weightUnit || 'kg'}` : '—'}</p>
+          </div>
+          <div>
+            <p className="text-[8px] font-bold uppercase tracking-wider text-mute">BMI Score</p>
+            <p className="font-display text-base font-bold text-gold">{bmi ? bmi.value : '—'}</p>
           </div>
           <div>
             <p className="text-[8px] font-bold uppercase tracking-wider text-mute">Equipment</p>
             <p className="font-display text-base font-bold text-ink uppercase">{LABELS.equipment[p.equipment] || 'Gym'}</p>
           </div>
         </div>
+
+        {/* Biometric Body Composition & BMI Analysis Card */}
+        {bmi && (
+          <div className="mt-6 border border-white/10 bg-surface-2 p-4 sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-gold/10 text-gold border border-gold/30 font-display font-extrabold text-xs">
+                  BMI
+                </span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-display text-lg sm:text-xl font-extrabold text-ink">
+                      {bmi.value}
+                    </p>
+                    <span className={`px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wider ${
+                      bmi.tone === 'emerald' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' :
+                      bmi.tone === 'amber' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' :
+                      'bg-red-500/15 text-red-400 border border-red-500/30'
+                    }`}>
+                      {bmi.category}
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-mute mt-0.5">
+                    WHO Classification: <span className="text-ink font-semibold">{bmi.category}</span> (Optimal: 18.5 – 24.9)
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-left sm:text-right">
+                <p className="text-[8px] uppercase tracking-wider text-mute font-bold">Target Healthy Weight</p>
+                <p className="font-display text-sm font-bold text-gold mt-0.5">{bmi.idealWeightText}</p>
+              </div>
+            </div>
+
+            {/* Visual BMI Gauge Bar */}
+            <div className="mt-4 pt-3 border-t border-white/5">
+              <div className="flex items-center justify-between text-[7px] sm:text-[8px] uppercase tracking-wider text-mute mb-1 font-mono">
+                <span>&lt;18.5 Under</span>
+                <span className="text-emerald-400 font-bold">18.5–24.9 Optimal</span>
+                <span>25–29.9 Over</span>
+                <span>30+ Obese</span>
+              </div>
+              <div className="relative h-1.5 w-full bg-white/10 overflow-hidden flex rounded-full">
+                <div className="h-full bg-blue-500/50" style={{ width: '25%' }} />
+                <div className="h-full bg-emerald-500/70" style={{ width: '35%' }} />
+                <div className="h-full bg-amber-500/70" style={{ width: '25%' }} />
+                <div className="h-full bg-red-500/70" style={{ width: '15%' }} />
+              </div>
+              <p className="mt-2.5 text-[10px] text-mute leading-relaxed">
+                {bmi.description}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Direct Coach Messaging */}
