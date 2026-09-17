@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   LayoutGrid, Users, MessageSquare, ArrowRight, ArrowLeft, Search,
   Plus, Trash2, GripVertical, Send, ChevronUp, ChevronDown, Wand2, Dumbbell, Play,
+  Scale, Sliders, RotateCcw, Copy, Check, Calculator, Sparkles,
 } from 'lucide-react'
 import Shell from '../components/Shell.jsx'
 import { Card, Badge, Avatar, Label, TextInput, TextArea, Btn, Divider, SectionTitle } from '../components/ui.jsx'
@@ -18,6 +19,7 @@ const newCheckIns = (c) => (c.checkIns || []).filter((ci) => ci.status === 'new'
 const NAV = [
   { id: 'dash', label: 'Overview', icon: LayoutGrid },
   { id: 'roster', label: 'Roster', icon: Users },
+  { id: 'calculator', label: 'BMI Calculator', icon: Scale },
   { id: 'library', label: 'Workout Library', icon: Dumbbell },
   { id: 'inbox', label: 'Inbox', icon: MessageSquare },
 ]
@@ -26,6 +28,7 @@ export default function TrainerPortal({ trainer, clients, onUpdateClient, onLogo
   const [tab, setTab] = useState(initialTab || 'dash')
   const [selectedId, setSelectedId] = useState(initialClientId || null)
   const [builderId, setBuilderId] = useState(null)
+  const [calculatorClientId, setCalculatorClientId] = useState(null)
   const [previewExercise, setPreviewExercise] = useState(null)
 
   useEffect(() => {
@@ -47,6 +50,13 @@ export default function TrainerPortal({ trainer, clients, onUpdateClient, onLogo
   const building = clients.find((c) => c.id === builderId)
 
   const openClient = (id) => { setSelectedId(id); setBuilderId(null); setTab('roster') }
+  const openCalculator = (clientId = null) => {
+    setCalculatorClientId(clientId)
+    setSelectedId(null)
+    setBuilderId(null)
+    setTab('calculator')
+  }
+
   const shellUser = { name: trainer.name, subtitle: trainer.title }
 
   const openPreview = async (name) => {
@@ -85,16 +95,37 @@ export default function TrainerPortal({ trainer, clients, onUpdateClient, onLogo
   return (
     <Shell user={shellUser} roleLabel="Trainer" nav={nav} active={tab}
       onNav={(t) => { setTab(t); setSelectedId(null); setBuilderId(null) }} onLogout={onLogout}>
-      {tab === 'dash' && <Overview trainer={trainer} clients={clients} pendingCount={pendingCount} onOpenClient={openClient} />}
+      {tab === 'dash' && (
+        <Overview
+          trainer={trainer}
+          clients={clients}
+          pendingCount={pendingCount}
+          onOpenClient={openClient}
+          onOpenCalculator={openCalculator}
+        />
+      )}
       {tab === 'roster' && !selected && !building && <Roster clients={clients} onOpen={openClient} />}
       {tab === 'roster' && selected && !building && (
-        <ClientDetail client={selected} onBack={() => setSelectedId(null)} onBuild={() => setBuilderId(selected.id)} onUpdate={onUpdateClient} />
+        <ClientDetail
+          client={selected}
+          onBack={() => setSelectedId(null)}
+          onBuild={() => setBuilderId(selected.id)}
+          onUpdate={onUpdateClient}
+          onOpenCalculator={() => openCalculator(selected.id)}
+        />
       )}
       {tab === 'roster' && building && (
         <WorkoutBuilder client={building} trainerName={trainer.name}
           onCancel={() => setBuilderId(null)}
           onSave={(updated) => { onUpdateClient(updated); setBuilderId(null) }}
           onPreview={openPreview} />
+      )}
+      {tab === 'calculator' && (
+        <TrainerBMICalculator
+          clients={clients}
+          initialClientId={calculatorClientId}
+          onUpdateClient={onUpdateClient}
+        />
       )}
       {tab === 'library' && <ExerciseLibrary embedded={true} />}
       {tab === 'inbox' && <Inbox clients={clients} onUpdateClient={onUpdateClient} />}
@@ -111,7 +142,7 @@ export default function TrainerPortal({ trainer, clients, onUpdateClient, onLogo
 
 // ─── Overview / command center ──────────────────────────────────────────────
 
-function Overview({ trainer, clients, pendingCount, onOpenClient }) {
+function Overview({ trainer, clients, pendingCount, onOpenClient, onOpenCalculator }) {
   const withInjuries = clients.filter((c) => c.profile.injuries?.trim()).length
   const pending = clients.filter((c) => c.planStatus !== 'assigned')
   const unreadThreads = clients.filter((c) => c.messages.at(-1)?.from === 'client')
@@ -120,10 +151,23 @@ function Overview({ trainer, clients, pendingCount, onOpenClient }) {
 
   return (
     <div className="animate-fade-up">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.4em] text-gold">Command Center</p>
-      <h1 className="mt-3 font-display text-4xl font-extrabold uppercase leading-[1.02] tracking-[0.08em] sm:text-5xl">
-        {trainer.name.split(' ').at(-1)}
-      </h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.4em] text-gold">Command Center</p>
+          <h1 className="mt-3 font-display text-4xl font-extrabold uppercase leading-[1.02] tracking-[0.08em] sm:text-5xl">
+            {trainer.name.split(' ').at(-1)}
+          </h1>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onOpenCalculator(null)}
+          className="inline-flex items-center gap-2 border border-gold/40 bg-gold/10 px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-gold hover:bg-gold hover:text-obsidian transition-all shadow-md"
+        >
+          <Scale className="h-4 w-4" />
+          <span>Launch BMI Calculator</span>
+        </button>
+      </div>
 
       {/* Stat strip */}
       <div className="mt-12 grid grid-cols-2 gap-px border border-white/10 bg-white/10 lg:grid-cols-4">
@@ -140,6 +184,23 @@ function Overview({ trainer, clients, pendingCount, onOpenClient }) {
             <p className="mt-3 text-[9px] font-semibold uppercase tracking-[0.3em] text-mute">{label}</p>
           </div>
         ))}
+      </div>
+
+      {/* Quick Diagnostic Station Banner */}
+      <div className="mt-8 border border-white/10 bg-surface p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-gold">Coach Diagnostic Station</p>
+          <h3 className="font-display text-lg font-bold uppercase tracking-wider text-ink">
+            On-Demand BMI & Biometric Evaluation Engine
+          </h3>
+          <p className="text-xs text-mute max-w-xl">
+            Calculate WHO body mass index categories, target healthy weight bounds, BMR, and daily macronutrient prescriptions on demand for any athlete in your roster or custom intakes.
+          </p>
+        </div>
+        <Btn variant="gold" onClick={() => onOpenCalculator(null)} className="shrink-0 flex items-center gap-2">
+          <Scale className="h-4 w-4" />
+          <span>Open Calculator</span>
+        </Btn>
       </div>
 
       {/* Queue */}
@@ -296,7 +357,7 @@ function Roster({ clients, onOpen }) {
 
 // ─── Client detail ──────────────────────────────────────────────────────────
 
-function ClientDetail({ client, onBack, onBuild, onUpdate }) {
+function ClientDetail({ client, onBack, onBuild, onUpdate, onOpenCalculator }) {
   const p = client.profile
   const hasInjury = !!p.injuries?.trim()
   const [reply, setReply] = useState('')
@@ -377,7 +438,19 @@ function ClientDetail({ client, onBack, onBuild, onUpdate }) {
 
       {/* Intake data grid */}
       <div className="mt-10">
-        <SectionTitle kicker="Intake">Client Data</SectionTitle>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <SectionTitle kicker="Intake">Client Data</SectionTitle>
+          {onOpenCalculator && (
+            <button
+              type="button"
+              onClick={onOpenCalculator}
+              className="inline-flex items-center gap-1.5 border border-gold/40 bg-gold/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gold hover:bg-gold hover:text-obsidian transition-colors"
+            >
+              <Scale className="h-3.5 w-3.5" />
+              <span>Simulate / Recalculate BMI</span>
+            </button>
+          )}
+        </div>
         <div className="mt-6 grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-3 lg:grid-cols-5">
           {(() => {
             const bmi = calculateBMI(p.height, p.heightUnit, p.weight, p.weightUnit)
@@ -941,6 +1014,542 @@ function Inbox({ clients, onUpdateClient }) {
             Select a thread
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Trainer On-Demand BMI & Biometric Calculator ───────────────────────────
+
+function TrainerBMICalculator({ clients, initialClientId, onUpdateClient }) {
+  const [selectedClientId, setSelectedClientId] = useState(initialClientId || (clients[0]?.id || 'custom'))
+  const [copied, setCopied] = useState(false)
+  const [savedSuccess, setSavedSuccess] = useState(false)
+
+  const selectedClient = clients.find((c) => c.id === selectedClientId)
+
+  // Form State
+  const [height, setHeight] = useState('175')
+  const [heightUnit, setHeightUnit] = useState('cm')
+  const [weight, setWeight] = useState('75')
+  const [weightUnit, setWeightUnit] = useState('kg')
+  const [age, setAge] = useState('28')
+  const [gender, setGender] = useState('men')
+  const [lifestyle, setLifestyle] = useState('active')
+  const [goal, setGoal] = useState('muscle')
+
+  // Load client data when selection changes or initialClientId changes
+  useEffect(() => {
+    if (selectedClient && selectedClient.profile) {
+      const p = selectedClient.profile
+      if (p.height && p.height !== '—') setHeight(String(p.height))
+      if (p.heightUnit) setHeightUnit(p.heightUnit)
+      if (p.weight && p.weight !== '—') setWeight(String(p.weight))
+      if (p.weightUnit) setWeightUnit(p.weightUnit)
+      if (p.age && p.age !== '—') setAge(String(p.age))
+      if (p.gender) setGender(p.gender === 'women' ? 'women' : 'men')
+      if (p.lifestyle) setLifestyle(p.lifestyle)
+      if (p.goal) setGoal(p.goal)
+      setSavedSuccess(false)
+    }
+  }, [selectedClientId, selectedClient])
+
+  // Reset to initial client values or defaults
+  const handleReset = () => {
+    if (selectedClient && selectedClient.profile) {
+      const p = selectedClient.profile
+      setHeight(p.height && p.height !== '—' ? String(p.height) : '175')
+      setHeightUnit(p.heightUnit || 'cm')
+      setWeight(p.weight && p.weight !== '—' ? String(p.weight) : '75')
+      setWeightUnit(p.weightUnit || 'kg')
+      setAge(p.age && p.age !== '—' ? String(p.age) : '28')
+      setGender(p.gender || 'men')
+      setLifestyle(p.lifestyle || 'active')
+      setGoal(p.goal || 'muscle')
+    } else {
+      setHeight('175')
+      setHeightUnit('cm')
+      setWeight('75')
+      setWeightUnit('kg')
+      setAge('28')
+      setGender('men')
+      setLifestyle('active')
+      setGoal('muscle')
+    }
+    setSavedSuccess(false)
+  }
+
+  // Live BMI Calculation
+  const bmi = calculateBMI(height, heightUnit, weight, weightUnit)
+
+  // Calculations for BMR, TDEE, Caloric Targets
+  const hNum = parseFloat(height) || 0
+  const wNum = parseFloat(weight) || 0
+  const aNum = parseFloat(age) || 28
+
+  const heightInCm = heightUnit === 'in' ? hNum * 2.54 : hNum
+  const weightInKg = weightUnit === 'lbs' ? wNum * 0.45359237 : wNum
+  const heightInMeters = heightInCm / 100
+
+  // BMR (Mifflin-St Jeor)
+  const bmr = heightInCm > 0 && weightInKg > 0 && aNum > 0
+    ? Math.round(
+        gender === 'women'
+          ? 10 * weightInKg + 6.25 * heightInCm - 5 * aNum - 161
+          : 10 * weightInKg + 6.25 * heightInCm - 5 * aNum + 5
+      )
+    : 0
+
+  // Activity multiplier
+  const actMultipliers = {
+    sedentary: 1.2,
+    desk: 1.2,
+    studying: 1.3,
+    moderate: 1.45,
+    active: 1.65,
+    extreme: 1.85,
+  }
+  const mult = actMultipliers[lifestyle] || 1.45
+  const tdee = Math.round(bmr * mult)
+
+  // Calorie adjustments
+  const calorieTargets = {
+    fatloss: tdee - 500,
+    muscle: tdee + 300,
+    strength: tdee + 150,
+    general: tdee,
+  }
+  const targetCalories = Math.max(calorieTargets[goal] || tdee, 1200)
+
+  // Macro distribution
+  const proteinGrams = Math.round(weightInKg * (goal === 'fatloss' ? 2.2 : 2.0))
+  const fatGrams = Math.round((targetCalories * 0.25) / 9)
+  const carbGrams = Math.max(Math.round((targetCalories - (proteinGrams * 4 + fatGrams * 9)) / 4), 50)
+
+  // Weight Delta from optimal
+  let weightDeltaText = ''
+  let weightDeltaTone = 'emerald'
+  if (bmi && heightInMeters > 0) {
+    const minIdealKg = 18.5 * heightInMeters * heightInMeters
+    const maxIdealKg = 24.9 * heightInMeters * heightInMeters
+    if (weightInKg > maxIdealKg) {
+      const diffKg = Math.round((weightInKg - maxIdealKg) * 10) / 10
+      const diffText = weightUnit === 'lbs' ? `${Math.round(diffKg * 2.20462)} lbs` : `${diffKg} kg`
+      weightDeltaText = `${diffText} above optimal threshold (24.9 BMI)`
+      weightDeltaTone = 'amber'
+    } else if (weightInKg < minIdealKg) {
+      const diffKg = Math.round((minIdealKg - weightInKg) * 10) / 10
+      const diffText = weightUnit === 'lbs' ? `${Math.round(diffKg * 2.20462)} lbs` : `${diffKg} kg`
+      weightDeltaText = `${diffText} below optimal floor (18.5 BMI)`
+      weightDeltaTone = 'amber'
+    } else {
+      weightDeltaText = 'Within optimal WHO health range'
+      weightDeltaTone = 'emerald'
+    }
+  }
+
+  // Save to athlete profile
+  const handleSaveToProfile = () => {
+    if (!selectedClient || !onUpdateClient) return
+    const updated = {
+      ...selectedClient,
+      profile: {
+        ...selectedClient.profile,
+        height: String(height),
+        heightUnit,
+        weight: String(weight),
+        weightUnit,
+        age: String(age),
+        gender,
+        lifestyle,
+        goal,
+      },
+    }
+    onUpdateClient(updated)
+    setSavedSuccess(true)
+    setTimeout(() => setSavedSuccess(false), 4000)
+  }
+
+  // Copy report
+  const handleCopyReport = () => {
+    if (!bmi) return
+    const clientLabel = selectedClient ? selectedClient.profile.name : 'Custom Client Assessment'
+    const report = `X FIT FORMULA — BIOMETRIC & BMI DIAGNOSTIC REPORT
+Athlete: ${clientLabel}
+Age: ${age} | Gender: ${gender === 'women' ? 'Female' : 'Male'}
+Height: ${height} ${heightUnit} | Weight: ${weight} ${weightUnit}
+----------------------------------------
+WHO BMI Score: ${bmi.value} (${bmi.category})
+Target Healthy Weight: ${bmi.idealWeightText}
+Status: ${weightDeltaText}
+----------------------------------------
+Estimated BMR: ${bmr} kcal/day
+Maintenance (TDEE): ${tdee} kcal/day
+Target Daily Intake (${LABELS.goal[goal] || goal}): ${targetCalories} kcal/day
+Target Macros: ${proteinGrams}g Protein | ${carbGrams}g Carbs | ${fatGrams}g Fats
+----------------------------------------
+Prescription: ${bmi.description}`
+
+    navigator.clipboard.writeText(report).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 3000)
+    })
+  }
+
+  // Gauge marker position (% across 15 to 35 BMI range)
+  const gaugePercent = bmi
+    ? Math.min(Math.max(((bmi.num - 15) / (35 - 15)) * 100, 2), 98)
+    : 50
+
+  return (
+    <div className="animate-fade-up space-y-8">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.4em] text-gold">Trainer Diagnostic Station</p>
+          <h1 className="mt-2 font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-[0.08em] text-ink">
+            On-Demand BMI & Biometric Calculator
+          </h1>
+          <p className="mt-2 text-xs text-mute max-w-2xl">
+            Evaluate anthropometric composition, clinical WHO categories, ideal healthy weight boundaries, BMR, and daily macronutrient prescriptions on the fly.
+          </p>
+        </div>
+
+        {/* Quick Athlete Switcher Dropdown */}
+        <div className="sm:w-80">
+          <label className="block text-[9px] font-bold uppercase tracking-wider text-mute mb-1.5">
+            Preload Athlete Biometrics
+          </label>
+          <select
+            value={selectedClientId}
+            onChange={(e) => setSelectedClientId(e.target.value)}
+            className="w-full min-h-[44px] border border-white/20 bg-surface px-3 py-2 text-xs font-bold uppercase tracking-wide text-ink outline-none focus:border-gold"
+          >
+            <option value="custom">⚡ Custom / Ad-Hoc Assessment</option>
+            {clients.map((c) => (
+              <option key={c.id} value={c.id}>
+                👤 {c.profile.name} ({c.profile.height ? `${c.profile.height}${c.profile.heightUnit || 'cm'}` : 'No H'} • {c.profile.weight ? `${c.profile.weight}${c.profile.weightUnit || 'kg'}` : 'No W'})
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        {/* LEFT COLUMN: Input Controls */}
+        <div className="space-y-6 lg:col-span-5">
+          <div className="border border-white/10 bg-surface p-6 sm:p-7 space-y-5">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <h3 className="font-display text-sm font-bold uppercase tracking-wider text-ink flex items-center gap-2">
+                <Sliders className="h-4 w-4 text-gold" />
+                <span>Biometric Parameters</span>
+              </h3>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-mute hover:text-ink transition-colors"
+                title="Reset values"
+              >
+                <RotateCcw className="h-3 w-3" />
+                <span>Reset</span>
+              </button>
+            </div>
+
+            {/* Height Input */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <Label>Height</Label>
+                <div className="flex border border-white/20">
+                  <button
+                    type="button"
+                    onClick={() => setHeightUnit('cm')}
+                    className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                      heightUnit === 'cm' ? 'bg-gold text-obsidian font-black' : 'bg-surface text-mute hover:text-ink'
+                    }`}
+                  >
+                    cm
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHeightUnit('in')}
+                    className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                      heightUnit === 'in' ? 'bg-gold text-obsidian font-black' : 'bg-surface text-mute hover:text-ink'
+                    }`}
+                  >
+                    in
+                  </button>
+                </div>
+              </div>
+              <TextInput
+                type="number"
+                step="0.5"
+                min="50"
+                max="260"
+                value={height}
+                onChange={(e) => setHeight(e.target.value)}
+                placeholder={heightUnit === 'cm' ? '175' : '69'}
+              />
+            </div>
+
+            {/* Weight Input */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <Label>Weight</Label>
+                <div className="flex border border-white/20">
+                  <button
+                    type="button"
+                    onClick={() => setWeightUnit('kg')}
+                    className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                      weightUnit === 'kg' ? 'bg-gold text-obsidian font-black' : 'bg-surface text-mute hover:text-ink'
+                    }`}
+                  >
+                    kg
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWeightUnit('lbs')}
+                    className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                      weightUnit === 'lbs' ? 'bg-gold text-obsidian font-black' : 'bg-surface text-mute hover:text-ink'
+                    }`}
+                  >
+                    lbs
+                  </button>
+                </div>
+              </div>
+              <TextInput
+                type="number"
+                step="0.1"
+                min="20"
+                max="300"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder={weightUnit === 'kg' ? '75' : '165'}
+              />
+            </div>
+
+            {/* Age & Gender */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Age (Years)</Label>
+                <TextInput
+                  type="number"
+                  min="14"
+                  max="100"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  placeholder="28"
+                />
+              </div>
+              <div>
+                <Label>Gender</Label>
+                <div className="grid grid-cols-2 gap-1 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => setGender('men')}
+                    className={`min-h-[44px] border text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                      gender === 'men' ? 'border-gold bg-gold text-obsidian font-black' : 'border-white/15 bg-obsidian text-mute hover:text-ink'
+                    }`}
+                  >
+                    Male
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGender('women')}
+                    className={`min-h-[44px] border text-[9px] font-bold uppercase tracking-wider transition-colors ${
+                      gender === 'women' ? 'border-gold bg-gold text-obsidian font-black' : 'border-white/15 bg-obsidian text-mute hover:text-ink'
+                    }`}
+                  >
+                    Female
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Lifestyle / Activity Level */}
+            <div>
+              <Label>Lifestyle Activity</Label>
+              <select
+                value={lifestyle}
+                onChange={(e) => setLifestyle(e.target.value)}
+                className="w-full min-h-[44px] border border-white/15 bg-obsidian px-3 py-2 text-xs font-semibold uppercase tracking-wider text-ink outline-none focus:border-gold"
+              >
+                <option value="sedentary">Sedentary (Desk Job, Minimal Movement)</option>
+                <option value="moderate">Moderate Activity (1–3 training days/wk)</option>
+                <option value="active">Highly Active (4–5 training days/wk)</option>
+                <option value="extreme">Extreme Athletic Volume (6–7 days/wk)</option>
+              </select>
+            </div>
+
+            {/* Goal */}
+            <div>
+              <Label>Primary Coaching Goal</Label>
+              <select
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                className="w-full min-h-[44px] border border-white/15 bg-obsidian px-3 py-2 text-xs font-semibold uppercase tracking-wider text-ink outline-none focus:border-gold"
+              >
+                <option value="fatloss">🔥 Fat Loss / Caloric Deficit (-500 kcal)</option>
+                <option value="muscle">💪 Muscle Hypertrophy / Surplus (+300 kcal)</option>
+                <option value="strength">⚡ Strength & Power (+150 kcal)</option>
+                <option value="general">⚖️ General Fitness / Maintenance</option>
+              </select>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-2 space-y-3">
+              {selectedClient && (
+                <Btn
+                  type="button"
+                  variant="gold"
+                  onClick={handleSaveToProfile}
+                  className="w-full min-h-[48px] flex items-center justify-center gap-2"
+                >
+                  <Check className="h-4 w-4" />
+                  <span>Update {selectedClient.profile.name}'s Profile</span>
+                </Btn>
+              )}
+
+              {savedSuccess && (
+                <div className="p-2.5 border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 text-center text-xs font-semibold uppercase tracking-wider animate-fade-up">
+                  ✓ Athlete profile updated with latest biometrics!
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={handleCopyReport}
+                disabled={!bmi}
+                className="w-full min-h-[44px] border border-white/20 bg-surface-2 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-ink hover:border-gold hover:text-gold transition-colors flex items-center justify-center gap-2"
+              >
+                {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                <span>{copied ? 'Report Copied to Clipboard!' : 'Copy Biometric Report'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Live Clinical & Metabolic Assessment */}
+        <div className="space-y-6 lg:col-span-7">
+          {bmi ? (
+            <>
+              {/* Main BMI Result Card */}
+              <div className="border border-white/10 bg-surface p-6 sm:p-8 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/10 pb-6">
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-mute">WHO Clinical Index</p>
+                    <div className="mt-2 flex items-baseline gap-4">
+                      <span className="font-display text-5xl sm:text-6xl font-extrabold leading-none text-gold">
+                        {bmi.value}
+                      </span>
+                      <span className={`px-3 py-1 text-xs font-extrabold uppercase tracking-wider border ${
+                        bmi.tone === 'emerald' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' :
+                        bmi.tone === 'amber' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' :
+                        'bg-red-500/15 text-red-400 border-red-500/30'
+                      }`}>
+                        {bmi.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-white/10 pt-4 sm:border-0 sm:pt-0 sm:text-right">
+                    <p className="text-[8px] uppercase tracking-wider text-mute font-bold">Target Healthy Weight</p>
+                    <p className="font-display text-xl font-bold text-ink mt-0.5">{bmi.idealWeightText}</p>
+                    <p className={`text-[10px] font-semibold mt-1 ${
+                      weightDeltaTone === 'emerald' ? 'text-emerald-400' : 'text-amber-400'
+                    }`}>
+                      {weightDeltaText}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Visual Gauge Bar with Position Marker */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[8px] sm:text-[9px] uppercase tracking-wider text-mute font-mono">
+                    <span>&lt;18.5 Underweight</span>
+                    <span className="text-emerald-400 font-bold">18.5 – 24.9 Optimal</span>
+                    <span>25.0 – 29.9 Overweight</span>
+                    <span>30.0+ Obese</span>
+                  </div>
+
+                  <div className="relative pt-2 pb-3">
+                    <div className="h-3 w-full bg-white/10 overflow-hidden flex rounded-full border border-white/10">
+                      <div className="h-full bg-blue-500/60" style={{ width: '25%' }} title="Underweight (<18.5)" />
+                      <div className="h-full bg-emerald-500/80" style={{ width: '35%' }} title="Optimal (18.5-24.9)" />
+                      <div className="h-full bg-amber-500/80" style={{ width: '25%' }} title="Overweight (25-29.9)" />
+                      <div className="h-full bg-red-500/80" style={{ width: '15%' }} title="Obese (>=30)" />
+                    </div>
+
+                    {/* Needle Indicator */}
+                    <div
+                      className="absolute top-0 flex flex-col items-center -translate-x-1/2 transition-all duration-300 pointer-events-none"
+                      style={{ left: `${gaugePercent}%` }}
+                    >
+                      <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] border-t-gold" />
+                      <div className="w-1 h-3 bg-gold" />
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-mute leading-relaxed pt-1">
+                    {bmi.description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Metabolic & Macronutrient Engine */}
+              <div className="border border-white/10 bg-surface p-6 sm:p-8 space-y-6">
+                <SectionTitle kicker="Metabolic Profile">Energy Expenditure & Macro Target</SectionTitle>
+
+                <div className="grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-3">
+                  <div className="bg-surface-2 p-4 sm:p-5">
+                    <p className="text-[8px] font-bold uppercase tracking-wider text-mute">Basal Metabolic Rate</p>
+                    <p className="font-display text-xl sm:text-2xl font-extrabold text-ink mt-1">{bmr}</p>
+                    <p className="text-[9px] text-mute uppercase mt-0.5">kcal / day (Rest)</p>
+                  </div>
+
+                  <div className="bg-surface-2 p-4 sm:p-5">
+                    <p className="text-[8px] font-bold uppercase tracking-wider text-mute">Maintenance (TDEE)</p>
+                    <p className="font-display text-xl sm:text-2xl font-extrabold text-ink mt-1">{tdee}</p>
+                    <p className="text-[9px] text-mute uppercase mt-0.5">kcal / day ({lifestyle})</p>
+                  </div>
+
+                  <div className="bg-surface-2 p-4 sm:p-5 col-span-2 sm:col-span-1 border-t sm:border-t-0 border-white/10">
+                    <p className="text-[8px] font-bold uppercase tracking-wider text-gold">Programmed Target</p>
+                    <p className="font-display text-xl sm:text-2xl font-extrabold text-gold mt-1">{targetCalories}</p>
+                    <p className="text-[9px] text-gold/80 uppercase mt-0.5">kcal / day ({LABELS.goal[goal]})</p>
+                  </div>
+                </div>
+
+                {/* Macro Split Strip */}
+                <div className="border-t border-white/10 pt-5">
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-mute mb-3">Daily Macronutrient Breakdown</p>
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div className="border border-white/10 bg-surface-2 p-3">
+                      <p className="text-[8px] font-bold uppercase tracking-wider text-mute">Protein</p>
+                      <p className="font-display text-lg font-bold text-ink mt-0.5">{proteinGrams}g</p>
+                      <p className="text-[8px] text-mute uppercase mt-0.5">~{proteinGrams * 4} kcal</p>
+                    </div>
+                    <div className="border border-white/10 bg-surface-2 p-3">
+                      <p className="text-[8px] font-bold uppercase tracking-wider text-mute">Carbohydrates</p>
+                      <p className="font-display text-lg font-bold text-ink mt-0.5">{carbGrams}g</p>
+                      <p className="text-[8px] text-mute uppercase mt-0.5">~{carbGrams * 4} kcal</p>
+                    </div>
+                    <div className="border border-white/10 bg-surface-2 p-3">
+                      <p className="text-[8px] font-bold uppercase tracking-wider text-mute">Healthy Fats</p>
+                      <p className="font-display text-lg font-bold text-ink mt-0.5">{fatGrams}g</p>
+                      <p className="text-[8px] text-mute uppercase mt-0.5">~{fatGrams * 9} kcal</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="border border-white/10 bg-surface p-12 text-center text-mute">
+              <Scale className="mx-auto h-10 w-10 text-white/20 mb-3" />
+              <p className="font-display text-sm font-bold uppercase tracking-wider text-ink">Enter Valid Biometrics</p>
+              <p className="text-xs text-mute mt-1">Provide non-zero height and weight values to render live BMI and body composition analytics.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

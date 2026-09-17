@@ -389,6 +389,22 @@ async function runMasterAppAudit() {
       await page.waitForTimeout(400)
     }
 
+    // Test Trainer On-Demand BMI & Biometric Calculator
+    await page.locator('aside nav button:has-text("BMI Calculator")').click()
+    await page.waitForTimeout(500)
+    const bmiCalculatorHeader = await page.locator('text=On-Demand BMI & Biometric Calculator').first().isVisible()
+    const whoClinicalCard = await page.locator('text=WHO Clinical Index').first().isVisible()
+    const macroTargetsSection = await page.locator('text=Energy Expenditure & Macro Target').first().isVisible()
+    logResult('Trainer BMI Calculator', 'On-Demand Biometric Station & Live WHO Diagnostic Engine Rendered', bmiCalculatorHeader && whoClinicalCard && macroTargetsSection)
+
+    // Test Preloading Athlete in Calculator
+    const athleteSelect = page.locator('select').first()
+    await athleteSelect.selectOption({ label: '👤 Marcus Vance (182cm • 84kg)' })
+    await page.waitForTimeout(400)
+    const marcusBmiResult = await page.locator('text=25.4').first().isVisible()
+    const updateProfileBtn = await page.locator('button:has-text("Update Marcus Vance\'s Profile")').first().isVisible()
+    logResult('Trainer BMI Calculator', 'Athlete Data Preloading, Dynamic Recalculation & Profile Update Action', marcusBmiResult && updateProfileBtn)
+
     // Test Inbox Tab
     await page.locator('aside nav button:has-text("Inbox")').click()
     await page.waitForTimeout(500)
